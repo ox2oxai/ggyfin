@@ -126,7 +126,8 @@ export default function ContactPage() {
       fieldType: 'Inquiry Category',
       fieldMsg: 'Your Message or Question',
       btnSend: 'Submit Message',
-      successMsg: 'Thank you! Your ticket reference is TKT-KA-2026-8812. Our relationship team will call you shortly.'
+      successMsg: 'Thank you! Your ticket reference is TKT-KA-2026-8812. Our relationship team will call you shortly.',
+      resetContactBtn: 'Send Another Inquiry'
     },
     kn: {
       badge: 'ಗ್ರಾಹಕ ಬೆಂಬಲ',
@@ -151,7 +152,8 @@ export default function ContactPage() {
       fieldType: 'ವಿಷಯದ ವಿಭಾಗ',
       fieldMsg: 'ನಿಮ್ಮ ಸಂದೇಶ ಅಥವಾ ಪ್ರಶ್ನೆ',
       btnSend: 'ಸಂದೇಶ ಕಳುಹಿಸಿ',
-      successMsg: 'ಧನ್ಯವಾದಗಳು! ನಿಮ್ಮ ಟಿಕೆಟ್ ರೆಫರೆನ್ಸ್ TKT-KA-2026-8812. ನಮ್ಮ ಅಧಿಕಾರಿಗಳು ಶೀಘ್ರದಲ್ಲೇ ಕರೆ ಮಾಡಲಿದ್ದಾರೆ.'
+      successMsg: 'ಧನ್ಯವಾದಗಳು! ನಿಮ್ಮ ಟಿಕೆಟ್ ರೆಫರೆನ್ಸ್ TKT-KA-2026-8812. ನಮ್ಮ ಅಧಿಕಾರಿಗಳು ಶೀಘ್ರದಲ್ಲೇ ಕರೆ ಮಾಡಲಿದ್ದಾರೆ.',
+      resetContactBtn: 'ಮತ್ತೊಂದು ಸಂದೇಶ ಕಳುಹಿಸಿ'
     }
   }[lang];
 
@@ -200,7 +202,7 @@ export default function ContactPage() {
               <p className="text-slate-600 leading-relaxed mt-1 text-[11px]">{t.chatWhatsappDesc}</p>
             </div>
             <a
-              href="https://wa.me/919845123450?text=Namaskara%20GGY%20Finance,%20I%20need%20assistance%20with%20Loans%20or%20Investments."
+              href={`https://wa.me/919845123450?text=${encodeURIComponent('Namaskara GGY Finance, I need assistance with Loans or Investments.')}`}
               target="_blank"
               rel="noopener noreferrer"
               className="py-3 px-3 bg-[#064e3b] hover:bg-[#043e2f] text-white rounded-xl font-bold text-center flex items-center justify-center gap-1.5 transition-all shadow-xs min-h-[44px]"
@@ -369,9 +371,23 @@ export default function ContactPage() {
             </div>
 
             {isSubmitted ? (
-              <div className="p-5 bg-emerald-50 border border-emerald-200 rounded-2xl text-center space-y-2 text-xs">
+              <div className="p-5 bg-emerald-50 border border-emerald-200 rounded-2xl text-center space-y-3 text-xs">
                 <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto" />
                 <p className="font-extrabold text-emerald-950">{t.successMsg}</p>
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsSubmitted(false);
+                      setFullName('');
+                      setPhone('');
+                      setMessage('');
+                    }}
+                    className="text-xs font-bold text-orange-600 hover:text-orange-700 underline cursor-pointer"
+                  >
+                    {t.resetContactBtn}
+                  </button>
+                </div>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4 text-xs font-bold">
@@ -411,6 +427,7 @@ export default function ContactPage() {
                     <option value="LOAN_INQUIRY">Rural Micro Loan (Kirana, Dairy, Artisan, Agri)</option>
                     <option value="MUTUAL_FUND_SIP">Rural Mutual Fund &amp; Micro-SIP Advisory</option>
                     <option value="FIXED_DEPOSIT">High-Yield Fixed Deposit (FD)</option>
+                    <option value="PIGGY_DEPOSIT">Daily Piggy Deposit (Doorstep Savings)</option>
                     <option value="UPI_REPAYMENT">Repayment &amp; UPI QR Clarification</option>
                     <option value="GRIEVANCE">Customer Grievance Redressal</option>
                   </select>
@@ -437,7 +454,7 @@ export default function ContactPage() {
                   </button>
 
                   <a
-                    href="https://wa.me/919845123450?text=Namaskara,%20I%20have%20an%20inquiry%20regarding%20GGY%20Finance."
+                    href={`https://wa.me/919845123450?text=${encodeURIComponent('Namaskara, I have an inquiry regarding GGY Finance loans and investments.')}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="py-3.5 px-6 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 rounded-xl font-extrabold flex items-center justify-center gap-2 transition-all"

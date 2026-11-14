@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { GGYBrandMark } from './brand-mark';
@@ -11,6 +11,23 @@ export function PublicHeader() {
   const { lang, setLang } = useLanguage();
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsMobileMenuOpen(false);
+    };
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) setIsMobileMenuOpen(false);
+    };
+    if (isMobileMenuOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+      window.addEventListener('resize', handleResize);
+    }
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [isMobileMenuOpen]);
 
   const labels = {
     en: {
@@ -58,7 +75,7 @@ export function PublicHeader() {
             </a>
             <span className="hidden md:inline">•</span>
             <a
-              href="https://wa.me/919845123450?text=Namaskara%20GGY%20Finance,%20I%20want%20information%20about%20Rural%20Loans%20and%20Mutual%20Fund%20Investments."
+              href={`https://wa.me/919845123450?text=${encodeURIComponent('Namaskara GGY Finance, I want information about Rural Loans, Investments, and Daily Piggy.')}`}
               target="_blank"
               rel="noopener noreferrer"
               className="hidden md:inline-flex items-center gap-1.5 text-amber-300 hover:text-white font-bold transition-colors"
@@ -231,7 +248,7 @@ export function PublicHeader() {
 
             <div className="pt-2 border-t border-slate-200 text-center">
               <a
-                href="https://wa.me/919845123450?text=Namaskara%20GGY%20Finance,%20I%20want%20information%20about%20Rural%20Loans%20and%20Mutual%20Fund%20Investments."
+                href={`https://wa.me/919845123450?text=${encodeURIComponent('Namaskara GGY Finance, I want information about Rural Loans, Investments, and Daily Piggy.')}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 text-xs font-extrabold text-emerald-950 bg-emerald-50 px-4 py-3 rounded-xl border border-emerald-200 w-full justify-center min-h-[44px]"

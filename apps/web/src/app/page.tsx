@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   calculateEMI,
@@ -246,6 +246,22 @@ export default function HomePage() {
   const [selectedProduct, setSelectedProduct] = useState<string>('prod-dairy');
   const [selectedVideo, setSelectedVideo] = useState<CustomerVideo | null>(null);
   const [isVideoPlaying, setIsVideoPlaying] = useState<boolean>(true);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setSelectedVideo(null);
+      }
+    };
+    if (selectedVideo) {
+      window.addEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = '';
+    };
+  }, [selectedVideo]);
 
   const monthlyEmi = calculateEMI(loanAmount, interestRate, tenure);
   const totalAmount = monthlyEmi * tenure;
@@ -863,7 +879,7 @@ export default function HomePage() {
               </Link>
 
               <a
-                href="https://wa.me/919845123450?text=Namaskara,%20I%20want%20information%20regarding%20Rural%20Mutual%20Funds%20and%20Fixed%20Deposits."
+                href={`https://wa.me/919845123450?text=${encodeURIComponent('Namaskara, I want information regarding Rural Mutual Funds, Fixed Deposits, and Daily Piggy savings.')}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-[#064e3b] hover:bg-[#043e2f] active:scale-[0.98] text-white font-extrabold text-sm rounded-xl shadow-lg border border-emerald-500/50 transition-all"
@@ -1058,7 +1074,7 @@ export default function HomePage() {
                   Apply for Doorstep Loan &rarr;
                 </Link>
                 <a
-                  href={`https://wa.me/919845123450?text=Namaskara,%20I%20watched%20the%20case%20study%20of%20${encodeURIComponent(selectedVideo.nameEn)}%20and%20want%20loan%20details.`}
+                  href={`https://wa.me/919845123450?text=${encodeURIComponent(`Namaskara, I watched the case study of ${selectedVideo.nameEn} and want loan details.`)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="py-3 px-5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl font-extrabold flex items-center justify-center gap-1.5 transition-colors border border-emerald-600"

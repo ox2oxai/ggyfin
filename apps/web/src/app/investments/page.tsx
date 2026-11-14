@@ -69,11 +69,11 @@ export default function InvestmentsPage() {
   const fdInterest = Math.round(fdAmount * (effectiveFdRate / 100) * (fdTenureMonths / 12));
   const fdMaturityAmount = fdAmount + fdInterest;
 
-  // Calculate Daily Piggy Returns
-  const piggyTotalInvested = piggyDaily * piggyDays;
-  const piggyInterest = Math.round(piggyTotalInvested * (piggyRate / 100) * (piggyDays / 365) / 2);
+  // Calculate Daily Piggy Returns (guarded against negative or zero bounds)
+  const piggyTotalInvested = Math.max(0, piggyDaily * piggyDays);
+  const piggyInterest = Math.max(0, Math.round(piggyTotalInvested * (piggyRate / 100) * (piggyDays / 365) / 2));
   const piggyMaturity = piggyTotalInvested + piggyInterest;
-  const potentialLoanInterestSaved = Math.round(piggyTotalInvested * 0.13 * (piggyDays / 365));
+  const potentialLoanInterestSaved = Math.max(0, Math.round(piggyTotalInvested * 0.13 * (piggyDays / 365)));
 
   const t = {
     en: {
@@ -131,6 +131,7 @@ export default function InvestmentsPage() {
       formPhone: 'Mobile Phone Number',
       formTaluk: 'Taluk / Village Location',
       formBtn: 'Request Callback & Advisory',
+      resetCallbackBtn: 'Request Another Callback',
       formSuccess: 'Thank you! Your inquiry reference is TKT-MF-2026. A Relationship Officer will call you within 4 hours.',
       chatWhatsapp: 'Chat Directly on WhatsApp'
     },
@@ -189,6 +190,7 @@ export default function InvestmentsPage() {
       formPhone: 'ಮೊಬೈಲ್ ದೂರವಾಣಿ ಸಂಖ್ಯೆ',
       formTaluk: 'ತಾಲೂಕು / ಗ್ರಾಮದ ಹೆಸರು',
       formBtn: 'ಉಚಿತ ಕರೆಗೆ ವಿನಂತಿಸಿ',
+      resetCallbackBtn: 'ಮತ್ತೊಂದು ಸಲಹಾ ಕರೆಗೆ ವಿನಂತಿಸಿ',
       formSuccess: 'ಧನ್ಯವಾದಗಳು! ನಿಮ್ಮ ರೆಫರೆನ್ಸ್ ಸಂಖ್ಯೆ TKT-MF-2026. ನಮ್ಮ ಅಧಿಕಾರಿಗಳು ೪ ಗಂಟೆಗಳಲ್ಲಿ ಕರೆ ಮಾಡಲಿದ್ದಾರೆ.',
       chatWhatsapp: 'ವಾಟ್ಸಾಪ್‌ನಲ್ಲಿ ನೇರವಾಗಿ ಮಾತನಾಡಿ'
     }
@@ -223,7 +225,7 @@ export default function InvestmentsPage() {
           {/* WhatsApp Direct Advisory Button */}
           <div className="pt-2 flex justify-center">
             <a
-              href="https://wa.me/919845123450?text=Namaskara%20GGY%20Finance,%20I%20am%20interested%20in%20Rural%20Mutual%20Fund%20Micro-SIP%20and%20Fixed%20Deposits."
+              href={`https://wa.me/919845123450?text=${encodeURIComponent('Namaskara GGY Finance, I am interested in Rural Mutual Fund Micro-SIP, Fixed Deposits, and Daily Piggy savings.')}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2.5 px-6 py-3 bg-white hover:bg-amber-50 text-orange-700 font-black text-xs sm:text-sm rounded-xl shadow-xl transition-all transform hover:-translate-y-0.5"
@@ -447,7 +449,7 @@ export default function InvestmentsPage() {
                   </div>
 
                   <a
-                    href="https://wa.me/919845123450?text=Namaskara,%20I%20want%20to%20start%20a%20Monthly%20Micro-SIP%20of%20Rs.%20500."
+                    href={`https://wa.me/919845123450?text=${encodeURIComponent(`Namaskara, I want to start a Monthly Micro-SIP of Rs. ${sipMonthly} for ${sipYears} years.`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-full py-3 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-black text-xs rounded-xl shadow-lg transition-all text-center block"
@@ -575,7 +577,7 @@ export default function InvestmentsPage() {
                 </div>
 
                 <a
-                  href="https://wa.me/919845123450?text=Namaskara,%20I%20am%20interested%20in%20booking%20a%20Fixed%20Deposit%20of%20Rs.%2050,000."
+                  href={`https://wa.me/919845123450?text=${encodeURIComponent(`Namaskara, I am interested in booking a Fixed Deposit of Rs. ${fdAmount.toLocaleString('en-IN')} for ${fdTenureMonths} months at ${effectiveFdRate.toFixed(2)}% p.a.`)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full py-3.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-black text-xs rounded-xl shadow-lg transition-all text-center block"
@@ -790,7 +792,7 @@ export default function InvestmentsPage() {
                   </div>
 
                   <a
-                    href={`https://wa.me/919845123450?text=Namaskara,%20I%20want%20to%20start%20a%20Daily%20Piggy%20Deposit%20of%20Rs.%20${piggyDaily}%20per%20day.`}
+                    href={`https://wa.me/919845123450?text=${encodeURIComponent(`Namaskara, I want to start a Daily Piggy Deposit of Rs. ${piggyDaily} per day for ${piggyDays} days.`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-full py-3.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-black text-xs rounded-xl shadow-lg transition-all text-center block"
@@ -814,9 +816,22 @@ export default function InvestmentsPage() {
             </div>
 
             {isSubmitted ? (
-              <div className="p-5 bg-emerald-50 border border-emerald-200 rounded-2xl text-center space-y-2 text-xs">
+              <div className="p-5 bg-emerald-50 border border-emerald-200 rounded-2xl text-center space-y-3 text-xs">
                 <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto" />
                 <p className="font-extrabold text-emerald-950">{t.formSuccess}</p>
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsSubmitted(false);
+                      setClientName('');
+                      setClientPhone('');
+                    }}
+                    className="text-xs font-bold text-orange-600 hover:text-orange-700 underline cursor-pointer"
+                  >
+                    {t.resetCallbackBtn}
+                  </button>
+                </div>
               </div>
             ) : (
               <form onSubmit={handleCallbackSubmit} className="space-y-4 text-xs font-bold">
@@ -870,7 +885,7 @@ export default function InvestmentsPage() {
                   </button>
 
                   <a
-                    href="https://wa.me/919845123450?text=Namaskara,%20I%20want%20information%20regarding%20Rural%20Investments."
+                    href={`https://wa.me/919845123450?text=${encodeURIComponent('Namaskara, I want information regarding Rural Investments and Daily Piggy.')}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="py-3.5 px-5 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 rounded-xl font-extrabold flex items-center justify-center gap-2 transition-all"
