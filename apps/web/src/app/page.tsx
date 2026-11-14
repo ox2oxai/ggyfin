@@ -42,6 +42,10 @@ const content = {
     emiDesc: 'Move the sliders to see your exact monthly installment. No surprises, no hidden compound traps.',
     loanAmount: 'Loan Amount',
     tenure: 'Tenure (Repayment Period)',
+    interestRate: 'Interest Rate (% p.a.)',
+    rateMinLabel: '8.0% p.a. (Agri / SHG)',
+    rateMaxLabel: '30.0% p.a. (RBI Cap)',
+    interestRateLabel: 'Interest Rate:',
     months: 'Months',
     installment: 'Your Monthly Installment',
     monthShort: '/ month',
@@ -76,6 +80,10 @@ const content = {
     emiDesc: 'ನಿಮ್ಮ ಸಾಲದ ಮೊತ್ತ ಮತ್ತು ತಿಂಗಳುಗಳನ್ನು ಆರಿಸಿ, ಮಾಸಿಕ ಕಂತನ್ನು ಸುಲಭವಾಗಿ ತಿಳಿಯಿರಿ.',
     loanAmount: 'ಸಾಲದ ಮೊತ್ತ',
     tenure: 'ಮರುಪಾವತಿ ಅವಧಿ (ತಿಂಗಳುಗಳಲ್ಲಿ)',
+    interestRate: 'ವಾರ್ಷಿಕ ಬಡ್ಡಿದರ (% p.a.)',
+    rateMinLabel: '8.0% ವಾರ್ಷಿಕ (ಕೃಷಿ / ಸ್ವಸಹಾಯ)',
+    rateMaxLabel: '30.0% ವಾರ್ಷಿಕ (ಆರ್.ಬಿ.ಐ ಮಿತಿ)',
+    interestRateLabel: 'ವಾರ್ಷಿಕ ಬಡ್ಡಿದರ:',
     months: 'ತಿಂಗಳುಗಳು',
     installment: 'ನಿಮ್ಮ ಮಾಸಿಕ ಕಂತು',
     monthShort: '/ ತಿಂಗಳಿಗೆ',
@@ -109,10 +117,11 @@ export default function LandingPage() {
   const [selectedPurpose, setSelectedPurpose] = useState<LoanPurpose>(LoanPurpose.KIRANA_STORE);
   const [loanAmount, setLoanAmount] = useState<number>(50000);
   const [tenureMonths, setTenureMonths] = useState<number>(12);
+  const [interestRate, setInterestRate] = useState<number>(14.5);
 
   const t = content[lang];
   const currentConfig = LoanPurposeLabels[selectedPurpose];
-  const emi = calculateEMI(loanAmount, currentConfig.defaultRate, tenureMonths);
+  const emi = calculateEMI(loanAmount, interestRate, tenureMonths);
   const totalRepayable = Math.round(emi * tenureMonths);
   const totalInterest = Math.max(0, totalRepayable - loanAmount);
 
@@ -269,6 +278,7 @@ export default function LandingPage() {
                   onClick={() => {
                     setSelectedPurpose(purpose);
                     setLoanAmount(Math.min(loanAmount, item.maxAmount));
+                    setInterestRate(item.defaultRate);
                   }}
                   className={`cursor-pointer rounded-2xl p-6 transition-all duration-200 border-2 ${
                     isSelected
@@ -360,6 +370,27 @@ export default function LandingPage() {
                 </div>
               </div>
 
+              {/* Interest Rate Slider (Mandatory Variable Control) */}
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="text-sm font-bold text-forest-900">{t.interestRate}</label>
+                  <span className="text-lg font-black text-terracotta-600">{interestRate.toFixed(1)}% p.a.</span>
+                </div>
+                <input
+                  type="range"
+                  min="8.0"
+                  max="30.0"
+                  step="0.5"
+                  value={interestRate}
+                  onChange={(e) => setInterestRate(Number(e.target.value))}
+                  className="w-full accent-terracotta-600 h-2 bg-clay rounded-lg cursor-pointer"
+                />
+                <div className="flex justify-between text-[11px] text-forest-800/60 mt-1">
+                  <span>{t.rateMinLabel}</span>
+                  <span>{t.rateMaxLabel}</span>
+                </div>
+              </div>
+
               {/* Features List */}
               <div className="pt-4 border-t border-clay/60 grid grid-cols-2 gap-3 text-xs text-forest-800">
                 <div className="flex items-center gap-2">
@@ -390,7 +421,7 @@ export default function LandingPage() {
                   <span className="text-sm text-sandstone-300 font-medium">{t.monthShort}</span>
                 </div>
                 <p className="text-xs text-sandstone-300/80 mt-2">
-                  Calculated at {currentConfig.defaultRate}% annual reducing balance rate.
+                  Calculated at {interestRate.toFixed(1)}% annual reducing balance rate.
                 </p>
               </div>
 
@@ -398,6 +429,10 @@ export default function LandingPage() {
                 <div className="flex justify-between">
                   <span className="text-sandstone-300">{t.principalBorrowed}</span>
                   <span className="font-bold text-white">₹{loanAmount.toLocaleString('en-IN')}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sandstone-300">{t.interestRateLabel}</span>
+                  <span className="font-bold text-sandstone-200">{interestRate.toFixed(1)}% p.a.</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sandstone-300">{t.totalInterest}</span>
