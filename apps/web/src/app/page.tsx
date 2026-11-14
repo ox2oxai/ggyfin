@@ -158,7 +158,7 @@ export default function HomePage() {
   const monthlyEmi = calculateEMI(loanAmount, interestRate, tenure);
   const totalAmount = monthlyEmi * tenure;
   const totalInterest = Math.max(0, totalAmount - loanAmount);
-  const principalPercentage = Math.round((loanAmount / totalAmount) * 100);
+  const principalPercentage = totalAmount > 0 ? Math.round((loanAmount / totalAmount) * 100) : 100;
 
   const specimenUpiUri = generateUpiUri({
     vpa: 'ggycollect@icici',
@@ -171,7 +171,15 @@ export default function HomePage() {
   const handleSelectProduct = (prod: ProductItem) => {
     setSelectedProduct(prod.id);
     setInterestRate(prod.interestRate);
-    setLoanAmount(Math.min(prod.maxAmount, loanAmount));
+    setLoanAmount((prev) => Math.min(prod.maxAmount, Math.max(10000, prev)));
+
+    // Clamp tenure within product's specific regulatory scheme bounds
+    const match = prod.tenureRange.match(/(\d+)\s+to\s+(\d+)/);
+    if (match) {
+      const minT = parseInt(match[1], 10);
+      const maxT = parseInt(match[2], 10);
+      setTenure((prev) => Math.min(maxT, Math.max(minT, prev)));
+    }
   };
 
   const t = {

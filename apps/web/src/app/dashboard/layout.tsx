@@ -74,8 +74,7 @@ const ALL_TABS: NavTab[] = [
     href: '/dashboard/mailbox',
     label: 'Staff Mailbox',
     icon: Mail,
-    roles: [UserRole.FIELD_OFFICER, UserRole.AUTHORIZER, UserRole.BRANCH_MANAGER, UserRole.SYSTEM_ADMIN],
-    badge: '2'
+    roles: [UserRole.FIELD_OFFICER, UserRole.AUTHORIZER, UserRole.BRANCH_MANAGER, UserRole.SYSTEM_ADMIN]
   }
 ];
 
@@ -84,6 +83,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const router = useRouter();
   const [session, setSession] = useState<UserSession | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [unreadMailCount, setUnreadMailCount] = useState<number>(2);
 
   useEffect(() => {
     setMounted(true);
@@ -103,6 +103,30 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         branchCode: 'KA-BLR-01'
       });
     }
+
+    // Dynamic unread count listener
+    const syncMailboxCount = () => {
+      try {
+        const rawMsgs = localStorage.getItem('nbfc_staff_messages');
+        if (rawMsgs) {
+          const parsed = JSON.parse(rawMsgs);
+          if (Array.isArray(parsed)) {
+            setUnreadMailCount(parsed.filter((m: any) => !m.isRead).length);
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+    };
+
+    syncMailboxCount();
+    window.addEventListener('storage', syncMailboxCount);
+    window.addEventListener('nbfc_messages_updated', syncMailboxCount);
+
+    return () => {
+      window.removeEventListener('storage', syncMailboxCount);
+      window.removeEventListener('nbfc_messages_updated', syncMailboxCount);
+    };
   }, []);
 
   const handleLogout = () => {
@@ -123,6 +147,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return '/dashboard/workspace';
   };
 
+  const getTabBadge = (tab: NavTab) => {
+    if (tab.href === '/dashboard/mailbox') {
+      return unreadMailCount > 0 ? String(unreadMailCount) : undefined;
+    }
+    return tab.badge;
+  };
+
   return (
     <div className="min-h-screen bg-sandstone-100 flex flex-col">
       {/* Top Staff Navigation with Saffron-White-Green Bank Palette */}
@@ -138,14 +169,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               Branch: <strong>{mounted ? (session?.branchCode || 'KA-BLR-01') : 'KA-BLR-01'}</strong>
             </span>
             <span className="hidden md:inline-flex items-center gap-1.5 text-[11px] bg-saffron-500/20 text-saffron-300 py-0.5 px-2.5 rounded-full border border-saffron-500/40 font-mono font-bold">
-              ROLE: <strong>{userRole}</strong>
+              ROLE: <strong>{mounted ? userRole : '...'}</strong>
             </span>
           </div>
 
           <div className="flex items-center gap-3">
             <div className="text-right hidden sm:block">
               <p className="text-xs font-bold text-white">{mounted ? (session?.username || 'Staff User') : 'Staff User'}</p>
-              <p className="text-[10px] text-saffron-400 font-bold">{mounted ? (session?.role || 'FIELD_OFFICER') : 'FIELD_OFFICER'}</p>
+              <p className="text-[10px] text-saffron-400 font-bold">{mounted ? (session?.role || 'FIELD_OFFICER') : '...'}</p>
             </div>
 
             <button
@@ -163,6 +194,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {visibleTabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = pathname === tab.href;
+            const badge = getTabBadge(tab);
+
             return (
               <Link
                 key={tab.href}
@@ -175,9 +208,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               >
                 <Icon className={`w-4 h-4 ${isActive ? 'text-saffron-400' : 'text-emerald-400'}`} />
                 <span>{tab.label}</span>
-                {tab.badge && (
+                {badge && (
                   <span className="ml-1 bg-saffron-500 text-white text-[10px] font-black px-1.5 py-0.2 rounded-full">
-                    {tab.badge}
+                    {badge}
                   </span>
                 )}
               </Link>
@@ -186,9 +219,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </header>
 
-      {/* Main Content Area with Strict RBAC Guard */}
+      {/* Main Content Area with Strict RBAC Guard & Hydration Protection */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
-        {!isAuthorized ? (
+        {!mounted ? (
+          <div className="animate-pulse space-y-6">
+            <div className="h-28 bg-white/70 rounded-3xl border border-clay/60"></div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="h-24 bg-white/70 rounded-2xl border border-clay/60"></div>
+              <div className="h-24 bg-white/70 rounded-2xl border border-clay/60"></div>
+              <div className="h-24 bg-white/70 rounded-2xl border border-clay/60"></div>
+            </div>
+          </div>
+        ) : !isAuthorized ? (
           <div className="max-w-xl mx-auto my-12 bg-white rounded-3xl border-2 border-red-200 p-8 shadow-md text-center space-y-4">
             <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto">
               <ShieldAlert className="w-6 h-6" />

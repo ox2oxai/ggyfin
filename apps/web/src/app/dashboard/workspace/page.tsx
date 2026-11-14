@@ -23,8 +23,10 @@ import {
 
 export default function StaffWorkspacePage() {
   const [session, setSession] = useState<UserSession | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const raw = localStorage.getItem('nbfc_staff_session');
     if (raw) {
       try {
@@ -44,6 +46,19 @@ export default function StaffWorkspacePage() {
 
   const role = session?.role || UserRole.FIELD_OFFICER;
   const username = session?.username || 'Staff User';
+
+  if (!mounted) {
+    return (
+      <div className="space-y-6 animate-pulse">
+        <div className="h-32 bg-white rounded-3xl border border-clay p-6"></div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="h-28 bg-white rounded-2xl border border-clay"></div>
+          <div className="h-28 bg-white rounded-2xl border border-clay"></div>
+          <div className="h-28 bg-white rounded-2xl border border-clay"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

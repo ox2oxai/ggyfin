@@ -95,6 +95,7 @@ const INITIAL_MESSAGES: StaffMessage[] = [
 
 export default function StaffMailboxPage() {
   const [session, setSession] = useState<UserSession | null>(null);
+  const [mounted, setMounted] = useState(false);
   const [messages, setMessages] = useState<StaffMessage[]>(INITIAL_MESSAGES);
   const [activeFilter, setActiveFilter] = useState<'all' | 'unread' | 'urgent' | 'sent'>('all');
   const [selectedMessage, setSelectedMessage] = useState<StaffMessage | null>(INITIAL_MESSAGES[0]);
@@ -110,10 +111,11 @@ export default function StaffMailboxPage() {
   const [replyText, setReplyText] = useState('');
 
   useEffect(() => {
-    const raw = localStorage.getItem('nbfc_staff_session');
-    if (raw) {
+    setMounted(true);
+    const rawSession = localStorage.getItem('nbfc_staff_session');
+    if (rawSession) {
       try {
-        setSession(JSON.parse(raw));
+        setSession(JSON.parse(rawSession));
       } catch (e) {
         // fallback
       }
@@ -125,14 +127,39 @@ export default function StaffMailboxPage() {
         branchCode: 'KA-BLR-01'
       });
     }
+
+    const rawMsgs = localStorage.getItem('nbfc_staff_messages');
+    if (rawMsgs) {
+      try {
+        const parsed = JSON.parse(rawMsgs);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setMessages(parsed);
+          setSelectedMessage(parsed[0]);
+        }
+      } catch (e) {
+        // fallback
+      }
+    }
   }, []);
 
   const currentUsername = session?.username || 'field_officer_ramesh';
 
+  const updateMessagesAndSync = (newMessages: StaffMessage[]) => {
+    setMessages(newMessages);
+    try {
+      localStorage.setItem('nbfc_staff_messages', JSON.stringify(newMessages));
+      window.dispatchEvent(new Event('nbfc_messages_updated'));
+    } catch (e) {
+      // ignore
+    }
+  };
+
   const markAsRead = (msgId: string) => {
-    setMessages((prev) =>
-      prev.map((m) => (m.id === msgId ? { ...m, isRead: true } : m))
-    );
+    const updated = messages.map((m) => (m.id === msgId ? { ...m, isRead: true } : m));
+    updateMessagesAndSync(updated);
+    if (selectedMessage && selectedMessage.id === msgId) {
+      setSelectedMessage({ ...selectedMessage, isRead: true });
+    }
   };
 
   const filteredMessages = messages.filter((msg) => {
@@ -150,6 +177,27 @@ export default function StaffMailboxPage() {
     return true;
   });
 
+  const handleFilterChange = (filter: 'all' | 'unread' | 'urgent' | 'sent') => {
+    setActiveFilter(filter);
+    const newFiltered = messages.filter((msg) => {
+      if (filter === 'unread') return !msg.isRead;
+      if (filter === 'urgent') return msg.category === 'URGENT_AUDIT' || msg.category === 'KYC_CLARIFICATION';
+      if (filter === 'sent') return msg.sender === currentUsername;
+      return true;
+    });
+
+    if (newFiltered.length > 0) {
+      // Keep selected if still in filtered list, else select first
+      if (selectedMessage && newFiltered.some((m) => m.id === selectedMessage.id)) {
+        // keep current
+      } else {
+        setSelectedMessage(newFiltered[0]);
+      }
+    } else {
+      setSelectedMessage(null);
+    }
+  };
+
   const unreadCount = messages.filter((m) => !m.isRead).length;
 
   const handleSendMessage = (e: React.FormEvent) => {
@@ -164,8 +212,9 @@ export default function StaffMailboxPage() {
       all_staff: 'All Branch Staff'
     };
 
+    const newMsgId = `msg-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
     const newMsg: StaffMessage = {
-      id: `msg-${Date.now()}`,
+      id: newMsgId,
       sender: currentUsername,
       senderRole: session?.role || UserRole.FIELD_OFFICER,
       senderName: `${currentUsername} (${session?.role || 'Staff'})`,
@@ -179,7 +228,8 @@ export default function StaffMailboxPage() {
       referenceId: referenceId.trim() || undefined
     };
 
-    setMessages([newMsg, ...messages]);
+    const updated = [newMsg, ...messages];
+    updateMessagesAndSync(updated);
     setSelectedMessage(newMsg);
     setIsComposeOpen(false);
     setSubject('');
@@ -190,14 +240,21 @@ export default function StaffMailboxPage() {
   const handleSendReply = () => {
     if (!replyText.trim() || !selectedMessage) return;
 
+    // Edge case fix: If replying to a message authored by current user (in Sent folder),
+    // send to the original recipient, NOT to oneself!
+    const isAuthoredByMe = selectedMessage.sender === currentUsername;
+    const replyRecipient = isAuthoredByMe ? selectedMessage.recipient : selectedMessage.sender;
+    const replyRecipientName = isAuthoredByMe ? selectedMessage.recipientName : selectedMessage.senderName;
+
+    const replyMsgId = `msg-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
     const replyMsg: StaffMessage = {
-      id: `msg-${Date.now()}`,
+      id: replyMsgId,
       sender: currentUsername,
       senderRole: session?.role || UserRole.FIELD_OFFICER,
       senderName: `${currentUsername} (${session?.role || 'Staff'})`,
-      recipient: selectedMessage.sender,
-      recipientName: selectedMessage.senderName,
-      subject: `RE: ${selectedMessage.subject}`,
+      recipient: replyRecipient,
+      recipientName: replyRecipientName,
+      subject: selectedMessage.subject.startsWith('RE:') ? selectedMessage.subject : `RE: ${selectedMessage.subject}`,
       body: replyText,
       timestamp: 'Just now',
       category: selectedMessage.category,
@@ -205,7 +262,8 @@ export default function StaffMailboxPage() {
       referenceId: selectedMessage.referenceId
     };
 
-    setMessages([replyMsg, ...messages]);
+    const updated = [replyMsg, ...messages];
+    updateMessagesAndSync(updated);
     setSelectedMessage(replyMsg);
     setReplyText('');
   };
@@ -224,6 +282,18 @@ export default function StaffMailboxPage() {
         return null;
     }
   };
+
+  if (!mounted) {
+    return (
+      <div className="space-y-6 animate-pulse">
+        <div className="h-28 bg-white rounded-3xl border border-clay p-6"></div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-5 h-96 bg-white rounded-3xl border border-clay"></div>
+          <div className="lg:col-span-7 h-96 bg-white rounded-3xl border border-clay"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -258,7 +328,7 @@ export default function StaffMailboxPage() {
           {/* Navigation Filter Tabs */}
           <div className="bg-white p-2 rounded-2xl border border-clay flex items-center justify-between text-xs font-bold">
             <button
-              onClick={() => setActiveFilter('all')}
+              onClick={() => handleFilterChange('all')}
               className={`flex-1 py-1.5 text-center rounded-xl transition-all ${
                 activeFilter === 'all' ? 'bg-forest-900 text-white' : 'text-forest-800 hover:bg-pearl-100'
               }`}
@@ -266,7 +336,7 @@ export default function StaffMailboxPage() {
               All ({messages.length})
             </button>
             <button
-              onClick={() => setActiveFilter('unread')}
+              onClick={() => handleFilterChange('unread')}
               className={`flex-1 py-1.5 text-center rounded-xl transition-all flex items-center justify-center gap-1 ${
                 activeFilter === 'unread' ? 'bg-forest-900 text-white' : 'text-forest-800 hover:bg-pearl-100'
               }`}
@@ -277,7 +347,7 @@ export default function StaffMailboxPage() {
               )}
             </button>
             <button
-              onClick={() => setActiveFilter('urgent')}
+              onClick={() => handleFilterChange('urgent')}
               className={`flex-1 py-1.5 text-center rounded-xl transition-all ${
                 activeFilter === 'urgent' ? 'bg-forest-900 text-white' : 'text-forest-800 hover:bg-pearl-100'
               }`}
@@ -285,7 +355,7 @@ export default function StaffMailboxPage() {
               Urgent
             </button>
             <button
-              onClick={() => setActiveFilter('sent')}
+              onClick={() => handleFilterChange('sent')}
               className={`flex-1 py-1.5 text-center rounded-xl transition-all ${
                 activeFilter === 'sent' ? 'bg-forest-900 text-white' : 'text-forest-800 hover:bg-pearl-100'
               }`}
@@ -409,7 +479,12 @@ export default function StaffMailboxPage() {
               <div className="p-4 sm:p-6 border-t border-clay bg-pearl-100 mt-auto">
                 <p className="text-xs font-bold text-forest-900 mb-2 flex items-center gap-1.5">
                   <Reply className="w-3.5 h-3.5 text-saffron-600" />
-                  <span>Send Immediate Response to {selectedMessage.senderName.split('(')[0]}</span>
+                  <span>
+                    Send Immediate Response to{' '}
+                    {selectedMessage.sender === currentUsername
+                      ? selectedMessage.recipientName.split('(')[0]
+                      : selectedMessage.senderName.split('(')[0]}
+                  </span>
                 </p>
 
                 <div className="space-y-3">
