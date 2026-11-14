@@ -73,97 +73,112 @@ export default function TermsAndConditionsPage() {
   const t = content[lang];
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="min-h-screen bg-[#F8FAF8] text-slate-900 flex flex-col selection:bg-orange-500 selection:text-white">
       <PublicHeader />
 
-      <section className="bg-sandstone-50 py-12 px-4 border-b border-clay/60">
-        <div className="max-w-4xl mx-auto">
-          <div className="inline-flex items-center gap-2 bg-terracotta-50 text-terracotta-700 px-3.5 py-1.5 rounded-full text-xs font-semibold mb-4 border border-terracotta-100">
-            <Scale className="w-4 h-4 text-terracotta-500" />
+      {/* Hero Section: Royal Saffron Sunburst */}
+      <section className="relative bg-gradient-to-br from-orange-600 via-amber-600 to-orange-700 text-white pt-16 pb-20 px-4 sm:px-10 text-center border-b border-orange-800 shadow-inner overflow-hidden">
+        <div className="absolute -top-32 left-1/3 w-[600px] h-[400px] bg-white/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="max-w-4xl mx-auto relative z-10 space-y-4">
+          <div className="inline-flex items-center gap-2 bg-white/20 border border-white/30 backdrop-blur-md px-4 py-1.5 rounded-full text-xs font-black text-white shadow-sm">
+            <Scale className="w-4 h-4 text-amber-200" />
             <span>{t.badge}</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-forest-900 tracking-tight">
+          <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight drop-shadow-md">
             {t.title}
           </h1>
-          <p className="text-xs sm:text-sm text-forest-800/70 mt-2 font-medium">
+          <p className="text-amber-200 text-xs sm:text-sm font-bold">
             {t.effectiveDate}
           </p>
-          <p className="text-xs sm:text-sm text-forest-800/80 mt-4 leading-relaxed bg-sandstone-100 p-4 rounded-xl border border-clay/60">
+          <div className="bg-white/15 backdrop-blur-md p-5 rounded-2xl border border-white/20 text-white text-xs sm:text-sm leading-relaxed max-w-3xl mx-auto font-medium">
             {t.intro}
-          </p>
-        </div>
-      </section>
-
-      <section className="py-12 px-4 bg-sandstone-100 flex-1">
-        <div className="max-w-4xl mx-auto space-y-8 text-xs sm:text-sm text-forest-800/90 leading-relaxed">
-          {/* Section 1 */}
-          <div className="bg-sandstone-50 p-6 rounded-2xl border border-clay shadow-xs space-y-2">
-            <h3 className="font-bold text-base text-forest-900 flex items-center gap-2">
-              <FileText className="w-4 h-4 text-terracotta-600" />
-              <span>{t.s1Title}</span>
-            </h3>
-            <p>{t.s1Text}</p>
-          </div>
-
-          {/* Section 2 */}
-          <div className="bg-sandstone-50 p-6 rounded-2xl border border-clay shadow-xs space-y-2">
-            <h3 className="font-bold text-base text-forest-900 flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              <span>{t.s2Title}</span>
-            </h3>
-            <p>{t.s2Text}</p>
-          </div>
-
-          {/* Section 3 */}
-          <div className="bg-sandstone-50 p-6 rounded-2xl border border-clay shadow-xs space-y-3">
-            <h3 className="font-bold text-base text-forest-900">{t.s3Title}</h3>
-            <p>{t.s3Text}</p>
-            <ul className="list-disc pl-5 space-y-1.5 text-xs text-forest-800">
-              {t.s3List.map((item, idx) => (
-                <li key={idx}>{item}</li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Section 4 */}
-          <div className="bg-sandstone-50 p-6 rounded-2xl border border-clay shadow-xs space-y-2">
-            <h3 className="font-bold text-base text-forest-900 flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-emerald-600" />
-              <span>{t.s4Title}</span>
-            </h3>
-            <p>{t.s4Text}</p>
-          </div>
-
-          {/* Section 5 */}
-          <div className="bg-sandstone-50 p-6 rounded-2xl border border-clay shadow-xs space-y-2">
-            <h3 className="font-bold text-base text-forest-900">{t.s5Title}</h3>
-            <p>{t.s5Text}</p>
-          </div>
-
-          {/* Section 6 */}
-          <div className="bg-sandstone-50 p-6 rounded-2xl border border-clay shadow-xs space-y-2">
-            <h3 className="font-bold text-base text-forest-900 flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 text-terracotta-600" />
-              <span>{t.s6Title}</span>
-            </h3>
-            <p>{t.s6Text}</p>
-          </div>
-
-          {/* Section 7 */}
-          <div className="bg-forest-800 text-sandstone-100 p-6 rounded-2xl border border-forest-600 shadow-md space-y-3">
-            <h3 className="font-bold text-base text-white flex items-center gap-2">
-              <HelpCircle className="w-4 h-4 text-terracotta-400" />
-              <span>{t.s7Title}</span>
-            </h3>
-            <p className="text-sandstone-300 text-xs">{t.s7Text}</p>
-            <ul className="list-decimal pl-5 space-y-2 text-xs text-sandstone-200">
-              {t.s7Steps.map((step, idx) => (
-                <li key={idx}>{step}</li>
-              ))}
-            </ul>
           </div>
         </div>
       </section>
+
+      {/* Legal Terms Sections */}
+      <main className="py-14 px-4 sm:px-8 max-w-4xl mx-auto flex-1 w-full space-y-6">
+        {/* Section 1 */}
+        <div className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200/90 shadow-xs space-y-3">
+          <h3 className="font-black text-base sm:text-lg text-slate-950 flex items-center gap-2.5">
+            <FileText className="w-5 h-5 text-orange-600 shrink-0" />
+            <span>{t.s1Title}</span>
+          </h3>
+          <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">{t.s1Text}</p>
+        </div>
+
+        {/* Section 2 */}
+        <div className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200/90 shadow-xs space-y-3">
+          <h3 className="font-black text-base sm:text-lg text-slate-950 flex items-center gap-2.5">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+            <span>{t.s2Title}</span>
+          </h3>
+          <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">{t.s2Text}</p>
+        </div>
+
+        {/* Section 3 */}
+        <div className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200/90 shadow-xs space-y-3">
+          <h3 className="font-black text-base sm:text-lg text-slate-950 flex items-center gap-2.5">
+            <Scale className="w-5 h-5 text-amber-600 shrink-0" />
+            <span>{t.s3Title}</span>
+          </h3>
+          <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">{t.s3Text}</p>
+          <ul className="space-y-2 text-xs sm:text-sm text-slate-700 pt-1">
+            {t.s3List.map((item, idx) => (
+              <li key={idx} className="flex items-start gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-orange-500 mt-2 shrink-0"></span>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Section 4 */}
+        <div className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200/90 shadow-xs space-y-3">
+          <h3 className="font-black text-base sm:text-lg text-slate-950 flex items-center gap-2.5">
+            <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
+            <span>{t.s4Title}</span>
+          </h3>
+          <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">{t.s4Text}</p>
+        </div>
+
+        {/* Section 5 */}
+        <div className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200/90 shadow-xs space-y-3">
+          <h3 className="font-black text-base sm:text-lg text-slate-950 flex items-center gap-2.5">
+            <CheckCircle2 className="w-5 h-5 text-orange-600 shrink-0" />
+            <span>{t.s5Title}</span>
+          </h3>
+          <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">{t.s5Text}</p>
+        </div>
+
+        {/* Section 6 */}
+        <div className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200/90 shadow-xs space-y-3">
+          <h3 className="font-black text-base sm:text-lg text-slate-950 flex items-center gap-2.5">
+            <AlertCircle className="w-5 h-5 text-orange-600 shrink-0" />
+            <span>{t.s6Title}</span>
+          </h3>
+          <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">{t.s6Text}</p>
+        </div>
+
+        {/* Section 7: Grievance Redressal (Deep Imperial Forest) */}
+        <div className="bg-gradient-to-b from-[#064e3b] to-[#022c22] text-white p-7 sm:p-8 rounded-3xl border border-emerald-900 shadow-xl space-y-4">
+          <h3 className="font-black text-base sm:text-lg text-white flex items-center gap-2.5">
+            <HelpCircle className="w-5 h-5 text-amber-300 shrink-0" />
+            <span>{t.s7Title}</span>
+          </h3>
+          <p className="text-emerald-100/90 text-xs sm:text-sm leading-relaxed">{t.s7Text}</p>
+          <ul className="space-y-2.5 text-xs sm:text-sm text-emerald-100 pt-1">
+            {t.s7Steps.map((step, idx) => (
+              <li key={idx} className="flex items-start gap-2.5">
+                <span className="w-5 h-5 rounded-full bg-emerald-900 border border-emerald-700 text-amber-300 font-mono text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">
+                  {idx + 1}
+                </span>
+                <span className="leading-relaxed">{step}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </main>
 
       <PublicFooter />
     </div>

@@ -96,37 +96,38 @@ export default function AboutPage() {
   const t = content[lang];
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="min-h-screen bg-[#F8FAF8] text-slate-900 flex flex-col selection:bg-orange-500 selection:text-white">
       <PublicHeader />
 
-      {/* Hero Section */}
-      <section className="bg-gradient-to-b from-sandstone-50 to-sandstone-100 py-16 px-4 border-b border-clay/60">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 bg-terracotta-50 text-terracotta-700 px-3.5 py-1.5 rounded-full text-xs font-semibold mb-6 border border-terracotta-100">
-            <Building2 className="w-4 h-4 text-terracotta-500" />
+      {/* Hero Section: Royal Saffron Sunburst */}
+      <section className="relative bg-gradient-to-br from-orange-600 via-amber-600 to-orange-700 text-white pt-16 pb-20 px-4 sm:px-10 text-center border-b border-orange-800 shadow-inner overflow-hidden">
+        <div className="absolute -top-32 left-1/3 w-[600px] h-[400px] bg-white/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="max-w-4xl mx-auto relative z-10 space-y-4">
+          <div className="inline-flex items-center gap-2 bg-white/20 border border-white/30 backdrop-blur-md px-4 py-1.5 rounded-full text-xs font-black text-white shadow-sm">
+            <Building2 className="w-4 h-4 text-amber-200" />
             <span>{t.badge}</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-forest-900 tracking-tight">
+          <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight drop-shadow-md">
             {t.heroTitle}
           </h1>
-          <p className="text-terracotta-600 font-bold text-base sm:text-lg mt-3">
+          <p className="text-amber-200 font-extrabold text-base sm:text-lg">
             {t.heroSubtitle}
           </p>
-          <p className="text-forest-800/80 text-sm sm:text-base mt-4 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-amber-50 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed font-medium">
             {t.heroDesc}
           </p>
         </div>
       </section>
 
-      {/* Mission Box */}
-      <section className="py-12 px-4 max-w-5xl mx-auto -mt-8 w-full z-10">
-        <div className="bg-forest-800 text-sandstone-100 rounded-3xl p-8 sm:p-10 shadow-xl border border-forest-600 flex flex-col md:flex-row items-center gap-6">
-          <div className="w-16 h-16 rounded-2xl bg-terracotta-500/20 border border-terracotta-400/40 flex items-center justify-center shrink-0">
-            <Landmark className="w-8 h-8 text-terracotta-400" />
+      {/* Mission Box: Deep Imperial Forest */}
+      <section className="max-w-5xl mx-auto px-4 -mt-10 relative z-20 w-full">
+        <div className="bg-gradient-to-b from-[#064e3b] to-[#022c22] text-white rounded-3xl p-8 sm:p-10 shadow-2xl border border-emerald-900 flex flex-col md:flex-row items-center gap-6">
+          <div className="w-16 h-16 rounded-2xl bg-orange-500/20 border border-orange-400/40 flex items-center justify-center shrink-0">
+            <Landmark className="w-8 h-8 text-amber-300" />
           </div>
-          <div>
-            <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">{t.missionTitle}</h3>
-            <p className="text-sandstone-200 text-sm sm:text-base leading-relaxed">
+          <div className="space-y-2">
+            <h3 className="text-xl sm:text-2xl font-black text-white">{t.missionTitle}</h3>
+            <p className="text-emerald-100/90 text-sm sm:text-base leading-relaxed font-normal">
               {t.missionText}
             </p>
           </div>
@@ -134,140 +135,185 @@ export default function AboutPage() {
       </section>
 
       {/* Operational Pillars */}
-      <section className="py-16 px-4 bg-sandstone-50 border-b border-clay/60">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center max-w-2xl mx-auto mb-12">
-            <h2 className="text-2xl sm:text-3xl font-bold text-forest-900">{t.pillarsTitle}</h2>
+      <section className="py-16 px-4 sm:px-8 max-w-6xl mx-auto w-full space-y-10">
+        <div className="text-center max-w-2xl mx-auto space-y-2">
+          <div className="inline-flex items-center gap-1.5 text-xs font-bold text-orange-700 bg-orange-50 px-3 py-1 rounded-full border border-orange-200">
+            <ShieldCheck className="w-3.5 h-3.5 text-orange-600" />
+            <span>Institutional Principles</span>
           </div>
+          <h2 className="text-2xl sm:text-3xl font-black text-slate-950 tracking-tight">{t.pillarsTitle}</h2>
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-sandstone-100 p-6 rounded-2xl border border-clay/80 space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-terracotta-50 border border-terracotta-200 flex items-center justify-center text-terracotta-600">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white p-7 rounded-3xl border border-slate-200/90 shadow-xs hover:shadow-md transition-all flex flex-col justify-between h-full space-y-4">
+            <div className="space-y-3">
+              <div className="w-11 h-11 rounded-xl bg-orange-50 border border-orange-200 flex items-center justify-center text-orange-600">
                 <Scale className="w-5 h-5" />
               </div>
-              <h4 className="font-bold text-lg text-forest-900">{t.pillar1Title}</h4>
-              <p className="text-xs sm:text-sm text-forest-800/80 leading-relaxed">{t.pillar1Desc}</p>
+              <h3 className="font-black text-lg text-slate-950">{t.pillar1Title}</h3>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">{t.pillar1Desc}</p>
             </div>
+            <div className="text-[11px] font-bold text-orange-600 flex items-center gap-1">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              <span>Full APR Transparency</span>
+            </div>
+          </div>
 
-            <div className="bg-sandstone-100 p-6 rounded-2xl border border-clay/80 space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700">
+          <div className="bg-white p-7 rounded-3xl border border-slate-200/90 shadow-xs hover:shadow-md transition-all flex flex-col justify-between h-full space-y-4">
+            <div className="space-y-3">
+              <div className="w-11 h-11 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700">
                 <ShieldCheck className="w-5 h-5" />
               </div>
-              <h4 className="font-bold text-lg text-forest-900">{t.pillar2Title}</h4>
-              <p className="text-xs sm:text-sm text-forest-800/80 leading-relaxed">{t.pillar2Desc}</p>
+              <h3 className="font-black text-lg text-slate-950">{t.pillar2Title}</h3>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">{t.pillar2Desc}</p>
             </div>
+            <div className="text-[11px] font-bold text-emerald-700 flex items-center gap-1">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              <span>AES-256-GCM Envelope Encryption</span>
+            </div>
+          </div>
 
-            <div className="bg-sandstone-100 p-6 rounded-2xl border border-clay/80 space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-forest-50 border border-forest-200 flex items-center justify-center text-forest-800">
+          <div className="bg-white p-7 rounded-3xl border border-slate-200/90 shadow-xs hover:shadow-md transition-all flex flex-col justify-between h-full space-y-4">
+            <div className="space-y-3">
+              <div className="w-11 h-11 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700">
                 <Users2 className="w-5 h-5" />
               </div>
-              <h4 className="font-bold text-lg text-forest-900">{t.pillar3Title}</h4>
-              <p className="text-xs sm:text-sm text-forest-800/80 leading-relaxed">{t.pillar3Desc}</p>
+              <h3 className="font-black text-lg text-slate-950">{t.pillar3Title}</h3>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">{t.pillar3Desc}</p>
             </div>
+            <div className="text-[11px] font-bold text-amber-700 flex items-center gap-1">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              <span>Four-Eyes Dual Control</span>
+            </div>
+          </div>
 
-            <div className="bg-sandstone-100 p-6 rounded-2xl border border-clay/80 space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700">
+          <div className="bg-white p-7 rounded-3xl border border-slate-200/90 shadow-xs hover:shadow-md transition-all flex flex-col justify-between h-full space-y-4">
+            <div className="space-y-3">
+              <div className="w-11 h-11 rounded-xl bg-orange-50 border border-orange-200 flex items-center justify-center text-orange-600">
                 <Award className="w-5 h-5" />
               </div>
-              <h4 className="font-bold text-lg text-forest-900">{t.pillar4Title}</h4>
-              <p className="text-xs sm:text-sm text-forest-800/80 leading-relaxed">{t.pillar4Desc}</p>
+              <h3 className="font-black text-lg text-slate-950">{t.pillar4Title}</h3>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">{t.pillar4Desc}</p>
+            </div>
+            <div className="text-[11px] font-bold text-orange-600 flex items-center gap-1">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              <span>Dynamic NPCI Universal QR</span>
             </div>
           </div>
         </div>
       </section>
 
       {/* Branch Network */}
-      <section className="py-16 px-4 bg-sandstone-100">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center max-w-2xl mx-auto mb-12">
-            <h2 className="text-2xl sm:text-3xl font-bold text-forest-900">{t.branchesTitle}</h2>
-            <p className="text-sm text-forest-800/80 mt-2">{t.branchesDesc}</p>
+      <section className="py-16 px-4 sm:px-8 bg-white border-y border-slate-200">
+        <div className="max-w-6xl mx-auto space-y-10">
+          <div className="text-center max-w-2xl mx-auto space-y-2">
+            <div className="inline-flex items-center gap-1.5 text-xs font-bold text-orange-700 bg-orange-50 px-3 py-1 rounded-full border border-orange-200">
+              <MapPin className="w-3.5 h-3.5 text-orange-600" />
+              <span>Doorstep Presence</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-950 tracking-tight">{t.branchesTitle}</h2>
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">{t.branchesDesc}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-sandstone-50 p-6 rounded-2xl border border-clay shadow-xs space-y-2">
-              <div className="flex items-center gap-2 text-terracotta-600 font-bold text-sm">
-                <MapPin className="w-4 h-4" />
-                <span>Mandya</span>
+            <div className="bg-slate-50 p-6 rounded-3xl border border-slate-200 shadow-xs flex flex-col justify-between h-full space-y-3">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-orange-700 font-extrabold text-xs">
+                  <MapPin className="w-4 h-4 text-orange-600" />
+                  <span>Mandya Cluster</span>
+                </div>
+                <h3 className="font-black text-base text-slate-950">{t.mandyaBranch}</h3>
+                <p className="text-xs text-slate-600 leading-relaxed font-normal">{t.mandyaDesc}</p>
               </div>
-              <h4 className="font-bold text-base text-forest-900">{t.mandyaBranch}</h4>
-              <p className="text-xs text-forest-800/70 leading-relaxed">{t.mandyaDesc}</p>
+              <div className="pt-2 text-[11px] font-mono text-emerald-700 font-bold">
+                Sol ID: 1084-0101
+              </div>
             </div>
 
-            <div className="bg-sandstone-50 p-6 rounded-2xl border border-clay shadow-xs space-y-2">
-              <div className="flex items-center gap-2 text-terracotta-600 font-bold text-sm">
-                <MapPin className="w-4 h-4" />
-                <span>Ramanagara</span>
+            <div className="bg-slate-50 p-6 rounded-3xl border border-slate-200 shadow-xs flex flex-col justify-between h-full space-y-3">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-orange-700 font-extrabold text-xs">
+                  <MapPin className="w-4 h-4 text-orange-600" />
+                  <span>Ramanagara Cluster</span>
+                </div>
+                <h3 className="font-black text-base text-slate-950">{t.ramanagaraBranch}</h3>
+                <p className="text-xs text-slate-600 leading-relaxed font-normal">{t.ramanagaraDesc}</p>
               </div>
-              <h4 className="font-bold text-base text-forest-900">{t.ramanagaraBranch}</h4>
-              <p className="text-xs text-forest-800/70 leading-relaxed">{t.ramanagaraDesc}</p>
+              <div className="pt-2 text-[11px] font-mono text-emerald-700 font-bold">
+                Sol ID: 1084-0102
+              </div>
             </div>
 
-            <div className="bg-sandstone-50 p-6 rounded-2xl border border-clay shadow-xs space-y-2">
-              <div className="flex items-center gap-2 text-terracotta-600 font-bold text-sm">
-                <MapPin className="w-4 h-4" />
-                <span>Mysuru</span>
+            <div className="bg-slate-50 p-6 rounded-3xl border border-slate-200 shadow-xs flex flex-col justify-between h-full space-y-3">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-orange-700 font-extrabold text-xs">
+                  <MapPin className="w-4 h-4 text-orange-600" />
+                  <span>Mysuru Cluster</span>
+                </div>
+                <h3 className="font-black text-base text-slate-950">{t.mysuruBranch}</h3>
+                <p className="text-xs text-slate-600 leading-relaxed font-normal">{t.mysuruDesc}</p>
               </div>
-              <h4 className="font-bold text-base text-forest-900">{t.mysuruBranch}</h4>
-              <p className="text-xs text-forest-800/70 leading-relaxed">{t.mysuruDesc}</p>
+              <div className="pt-2 text-[11px] font-mono text-emerald-700 font-bold">
+                Sol ID: 1084-0103
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Governance & Leadership */}
-      <section className="py-16 px-4 bg-sandstone-50 border-t border-clay/60">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center max-w-2xl mx-auto mb-10">
-            <h2 className="text-2xl sm:text-3xl font-bold text-forest-900">{t.governanceTitle}</h2>
-            <p className="text-sm text-forest-800/80 mt-2">{t.governanceDesc}</p>
+      <section className="py-16 px-4 sm:px-8 max-w-4xl mx-auto w-full space-y-8">
+        <div className="text-center max-w-2xl mx-auto space-y-2">
+          <h2 className="text-2xl sm:text-3xl font-black text-slate-950 tracking-tight">{t.governanceTitle}</h2>
+          <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">{t.governanceDesc}</p>
+        </div>
+
+        <div className="space-y-4">
+          <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-xs flex items-start gap-4">
+            <div className="w-11 h-11 rounded-xl bg-[#064e3b] text-white font-black flex items-center justify-center shrink-0 text-sm">
+              SR
+            </div>
+            <div>
+              <h3 className="font-black text-sm sm:text-base text-slate-950">{t.leader1}</h3>
+              <p className="text-xs text-slate-600 mt-0.5 leading-relaxed font-normal">{t.leader1Title}</p>
+            </div>
           </div>
 
-          <div className="space-y-4">
-            <div className="bg-sandstone-100 p-5 rounded-2xl border border-clay/80 flex items-start gap-4">
-              <div className="w-10 h-10 rounded-full bg-forest-800 text-white font-bold flex items-center justify-center shrink-0 text-sm">
-                SR
-              </div>
-              <div>
-                <h5 className="font-bold text-sm sm:text-base text-forest-900">{t.leader1}</h5>
-                <p className="text-xs text-forest-800/70 mt-0.5">{t.leader1Title}</p>
-              </div>
+          <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-xs flex items-start gap-4">
+            <div className="w-11 h-11 rounded-xl bg-[#064e3b] text-white font-black flex items-center justify-center shrink-0 text-sm">
+              MS
             </div>
-
-            <div className="bg-sandstone-100 p-5 rounded-2xl border border-clay/80 flex items-start gap-4">
-              <div className="w-10 h-10 rounded-full bg-forest-800 text-white font-bold flex items-center justify-center shrink-0 text-sm">
-                MS
-              </div>
-              <div>
-                <h5 className="font-bold text-sm sm:text-base text-forest-900">{t.leader2}</h5>
-                <p className="text-xs text-forest-800/70 mt-0.5">{t.leader2Title}</p>
-              </div>
+            <div>
+              <h3 className="font-black text-sm sm:text-base text-slate-950">{t.leader2}</h3>
+              <p className="text-xs text-slate-600 mt-0.5 leading-relaxed font-normal">{t.leader2Title}</p>
             </div>
+          </div>
 
-            <div className="bg-sandstone-100 p-5 rounded-2xl border border-clay/80 flex items-start gap-4">
-              <div className="w-10 h-10 rounded-full bg-terracotta-600 text-white font-bold flex items-center justify-center shrink-0 text-sm">
-                AD
-              </div>
-              <div>
-                <h5 className="font-bold text-sm sm:text-base text-forest-900">{t.leader3}</h5>
-                <p className="text-xs text-forest-800/70 mt-0.5">{t.leader3Title}</p>
-              </div>
+          <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-xs flex items-start gap-4">
+            <div className="w-11 h-11 rounded-xl bg-orange-600 text-white font-black flex items-center justify-center shrink-0 text-sm">
+              AD
+            </div>
+            <div>
+              <h3 className="font-black text-sm sm:text-base text-slate-950">{t.leader3}</h3>
+              <p className="text-xs text-slate-600 mt-0.5 leading-relaxed font-normal">{t.leader3Title}</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* Bottom CTA */}
-      <section className="py-12 px-4 bg-sandstone-200 border-t border-clay/60 text-center">
+      <section className="py-14 px-4 bg-white border-t border-slate-200 text-center">
         <div className="max-w-3xl mx-auto space-y-4">
-          <h3 className="text-xl sm:text-2xl font-bold text-forest-900">{t.ctaTitle}</h3>
-          <Link
-            href="/#products"
-            className="inline-flex items-center gap-2 bg-terracotta-600 hover:bg-terracotta-700 text-white font-bold px-6 py-3 rounded-xl shadow-sm hover:shadow transition-all text-sm"
-          >
-            <span>{t.ctaButton}</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
+          <h2 className="text-xl sm:text-2xl font-black text-slate-950">{t.ctaTitle}</h2>
+          <div className="pt-2">
+            <Link
+              href="/#products"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-black px-7 py-3.5 rounded-xl shadow-lg hover:shadow-xl transition-all text-sm min-h-[44px]"
+            >
+              <span>{t.ctaButton}</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
         </div>
       </section>
 

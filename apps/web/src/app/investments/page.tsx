@@ -240,7 +240,7 @@ export default function InvestmentsPage() {
         <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-lg flex flex-col sm:flex-row gap-2">
           <button
             onClick={() => setActiveTab('mf')}
-            className={`flex-1 py-3 px-4 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center justify-center gap-2 ${
+            className={`flex-1 py-3 px-4 rounded-xl text-xs sm:text-sm font-extrabold transition-all min-h-[44px] flex items-center justify-center gap-2 ${
               activeTab === 'mf'
                 ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-md'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
@@ -252,7 +252,7 @@ export default function InvestmentsPage() {
 
           <button
             onClick={() => setActiveTab('fd')}
-            className={`flex-1 py-3 px-4 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center justify-center gap-2 ${
+            className={`flex-1 py-3 px-4 rounded-xl text-xs sm:text-sm font-extrabold transition-all min-h-[44px] flex items-center justify-center gap-2 ${
               activeTab === 'fd'
                 ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-md'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
@@ -264,7 +264,7 @@ export default function InvestmentsPage() {
 
           <button
             onClick={() => setActiveTab('piggy')}
-            className={`flex-1 py-3 px-4 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center justify-center gap-2 ${
+            className={`flex-1 py-3 px-4 rounded-xl text-xs sm:text-sm font-extrabold transition-all min-h-[44px] flex items-center justify-center gap-2 ${
               activeTab === 'piggy'
                 ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-md'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'

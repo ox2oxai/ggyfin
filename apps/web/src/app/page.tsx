@@ -750,7 +750,7 @@ export default function HomePage() {
                 <div className="w-full h-3 bg-slate-200 rounded-full overflow-hidden flex">
                   <div
                     style={{ width: `${principalPercentage}%` }}
-                    className="bg-[#0e4b2f] h-full transition-all duration-300"
+                    className="bg-[#064e3b] h-full transition-all duration-300"
                   ></div>
                   <div
                     style={{ width: `${100 - principalPercentage}%` }}

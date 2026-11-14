@@ -24,13 +24,13 @@ export function GGYBrandMark({
 
   const emblem = (
     <div
-      className={`${currentSize.box} bg-[#163323] text-sandstone-100 flex items-center justify-center shadow-md border border-forest-600/40 relative overflow-hidden flex-shrink-0 transition-transform hover:scale-105 ${className}`}
+      className={`${currentSize.box} bg-gradient-to-br from-[#064e3b] via-[#043e2f] to-[#022c22] text-white flex items-center justify-center shadow-md border border-emerald-500/30 ring-1 ring-white/10 relative overflow-hidden flex-shrink-0 transition-transform hover:scale-105 ${className}`}
       aria-label="GGY Finance Brand Emblem"
     >
-      {/* Subtle institutional pattern background */}
-      <div className="absolute inset-0 bg-radial from-forest-700/30 to-transparent opacity-60" />
+      {/* Subtle radial lighting for high-definition depth */}
+      <div className="absolute inset-0 bg-radial from-amber-400/20 via-transparent to-transparent opacity-80 pointer-events-none" />
 
-      {/* Stylized Modern FinTech SVG Emblem: Financial Growth & Trust */}
+      {/* Modern High-Resolution FinTech SVG Emblem: Financial Growth & Trust */}
       <svg
         width={currentSize.svg}
         height={currentSize.svg}
@@ -42,24 +42,27 @@ export function GGYBrandMark({
         {/* Foundation Arch - Stability / Micro-Lending Trust */}
         <path
           d="M6 24C6 24 10 26 16 26C22 26 26 24 26 24"
-          stroke="#E5DECE"
+          stroke="#FDE047"
           strokeWidth="2"
           strokeLinecap="round"
+          vectorEffect="non-scaling-stroke"
         />
         {/* Dynamic Growth Leaf / Prosperity Curve */}
         <path
           d="M16 6C11 6 7 10 7 15C7 20 16 23 16 23C16 23 25 20 25 15C25 10 21 6 16 6Z"
-          fill="#1E3A2F"
-          stroke="#C05621"
+          fill="#065F46"
+          stroke="#F97316"
           strokeWidth="1.8"
+          vectorEffect="non-scaling-stroke"
         />
         {/* Central Core: Golden Grain / Indian Micro-Credit Symbol */}
-        <circle cx="16" cy="14" r="3.2" fill="#E5DECE" />
+        <circle cx="16" cy="14" r="3.2" fill="#FBBF24" />
         <path
           d="M16 11V17M13.5 13H18.5"
-          stroke="#163323"
-          strokeWidth="1.2"
+          stroke="#022C22"
+          strokeWidth="1.4"
           strokeLinecap="round"
+          vectorEffect="non-scaling-stroke"
         />
       </svg>
     </div>
@@ -73,11 +76,11 @@ export function GGYBrandMark({
     <div className="flex items-center gap-3">
       {emblem}
       <div>
-        <h1 className={`font-extrabold ${currentSize.text} text-forest-900 leading-tight`}>
+        <h1 className={`font-black ${currentSize.text} text-slate-950 tracking-tight leading-tight`}>
           GGY Finance
         </h1>
         {subtitle && (
-          <p className={`${currentSize.sub} text-terracotta-600 font-bold uppercase tracking-wider`}>
+          <p className={`${currentSize.sub} text-orange-600 font-extrabold uppercase tracking-wider`}>
             {subtitle}
           </p>
         )}

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Noto+Sans+Kannada:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600;1,700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,7 +6,7 @@
 
 :root {
   --background: #f8faf8;
-  --foreground: #062e1c;
+  --foreground: #022c22;
   --primary-saffron: #f97316;
   --primary-saffron-hover: #ea580c;
   --primary-emerald: #064e3b;
@@ -16,15 +16,27 @@
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Noto Sans Kannada', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11', 'tnum';
+  text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Tabular numerals for all currency, rates, and numbers */
-.tabular-nums {
+/* Balanced text wrapping for headlines to eliminate orphans on 4K & mobile */
+h1, h2, h3, h4 {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+/* Tabular numerals & crystal-clear monospace for currency, percentages, and ledgers */
+.tabular-nums, .font-mono {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum', 'zero';
 }
 
 /* Custom Bank-Grade Scrollbar */

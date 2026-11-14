@@ -203,7 +203,7 @@ export default function ContactPage() {
               href="https://wa.me/919845123450?text=Namaskara%20GGY%20Finance,%20I%20need%20assistance%20with%20Loans%20or%20Investments."
               target="_blank"
               rel="noopener noreferrer"
-              className="py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-center flex items-center justify-center gap-1.5 transition-all shadow-xs"
+              className="py-3 px-3 bg-[#064e3b] hover:bg-[#043e2f] text-white rounded-xl font-bold text-center flex items-center justify-center gap-1.5 transition-all shadow-xs min-h-[44px]"
             >
               <span>{t.chatWhatsappBtn}</span>
             </a>
@@ -220,7 +220,7 @@ export default function ContactPage() {
             </div>
             <a
               href="tel:18002094321"
-              className="py-2.5 px-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-mono font-bold text-center block transition-all"
+              className="py-3 px-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-mono font-bold text-center flex items-center justify-center transition-all min-h-[44px]"
             >
               1800-209-4321
             </a>
@@ -237,7 +237,7 @@ export default function ContactPage() {
             </div>
             <a
               href="mailto:contact@ggyfinance.in"
-              className="py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-900 border border-slate-200 rounded-xl font-mono text-[11px] font-bold text-center block transition-all"
+              className="py-3 px-3 bg-slate-100 hover:bg-slate-200 text-slate-900 border border-slate-200 rounded-xl font-mono text-[11px] font-bold text-center flex items-center justify-center transition-all min-h-[44px]"
             >
               contact@ggyfinance.in
             </a>
@@ -254,7 +254,7 @@ export default function ContactPage() {
             </div>
             <a
               href="mailto:grievance@ggyfinance.in"
-              className="py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-900 border border-slate-200 rounded-xl text-[11px] font-bold text-center flex items-center justify-center gap-1 transition-all"
+              className="py-3 px-3 bg-slate-100 hover:bg-slate-200 text-slate-900 border border-slate-200 rounded-xl text-[11px] font-bold text-center flex items-center justify-center gap-1 transition-all min-h-[44px]"
             >
               <span>grievance@ggyfinance.in</span>
             </a>
