@@ -27,7 +27,9 @@ describe('NBFC Core Security & Business Logic Services', () => {
 
     it('fails decryption and flags tampering if authentication tag is corrupted', () => {
       const encrypted = vault.encrypt(mockDocumentContent);
-      const corruptedTag = encrypted.authTagHex.slice(0, -2) + '00';
+      // Deterministically flip bits in the first byte to guarantee corruption (prevents 1/256 collision when tag ends with '00')
+      const flippedByte = (parseInt(encrypted.authTagHex.slice(0, 2), 16) ^ 0xff).toString(16).padStart(2, '0');
+      const corruptedTag = flippedByte + encrypted.authTagHex.slice(2);
       assert.throws(() => {
         vault.decrypt(encrypted.cipherBuffer, encrypted.ivHex, corruptedTag);
       }, /Unsupported state or unable to authenticate data/);
