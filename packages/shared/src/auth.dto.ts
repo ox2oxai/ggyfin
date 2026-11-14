@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 export enum UserRole {
+  SUPER_ADMIN_IT = 'SUPER_ADMIN_IT',
   SYSTEM_ADMIN = 'SYSTEM_ADMIN',
   BRANCH_MANAGER = 'BRANCH_MANAGER',
   AUTHORIZER = 'AUTHORIZER',

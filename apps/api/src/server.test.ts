@@ -170,4 +170,110 @@ describe('Fastify REST API Server & Security Integration', () => {
 
     assert.equal(response.statusCode, 401);
   });
+
+  // ==========================================
+  // SUPER ADMIN IT & STRICT DATA ISOLATION TESTS
+  // ==========================================
+  it('GET /api/v1/it-admin/staff without JWT returns 401 Unauthorized', async () => {
+    const response = await server.inject({
+      method: 'GET',
+      url: '/api/v1/it-admin/staff'
+    });
+
+    assert.equal(response.statusCode, 401);
+  });
+
+  it('GET /api/v1/it-admin/staff with FIELD_OFFICER JWT returns 403 Forbidden', async () => {
+    const fieldToken = server.jwt.sign({
+      userId: 'u-fo-01',
+      username: 'officer_ramesh',
+      role: 'FIELD_OFFICER',
+      branchCode: 'KA-BLR-01'
+    });
+
+    const response = await server.inject({
+      method: 'GET',
+      url: '/api/v1/it-admin/staff',
+      headers: { authorization: `Bearer ${fieldToken}` }
+    });
+
+    assert.equal(response.statusCode, 403);
+    const body = JSON.parse(response.payload);
+    assert.match(body.message, /Forbidden/);
+  });
+
+  it('GET /api/v1/it-admin/config with SUPER_ADMIN_IT JWT returns 200 with gateway configurations', async () => {
+    const itToken = server.jwt.sign({
+      userId: 'u-it-01',
+      username: 'it_superadmin',
+      role: 'SUPER_ADMIN_IT',
+      branchCode: 'KA-HQ-IT'
+    });
+
+    const response = await server.inject({
+      method: 'GET',
+      url: '/api/v1/it-admin/config',
+      headers: { authorization: `Bearer ${itToken}` }
+    });
+
+    assert.equal(response.statusCode, 200);
+    const body = JSON.parse(response.payload);
+    assert.equal(body.success, true);
+    assert.ok(body.config.email.smtpHost);
+    assert.ok(body.config.whatsapp.wabaId);
+    assert.ok(body.config.sms.senderHeader);
+    assert.ok(body.telemetry.uptimeSeconds >= 0);
+  });
+
+  it('POST /api/v1/it-admin/test-gateway with SUPER_ADMIN_IT tests communication channels', async () => {
+    const itToken = server.jwt.sign({
+      userId: 'u-it-01',
+      username: 'it_superadmin',
+      role: 'SUPER_ADMIN_IT',
+      branchCode: 'KA-HQ-IT'
+    });
+
+    const emailResponse = await server.inject({
+      method: 'POST',
+      url: '/api/v1/it-admin/test-gateway',
+      headers: { authorization: `Bearer ${itToken}` },
+      payload: { gateway: 'EMAIL' }
+    });
+
+    assert.equal(emailResponse.statusCode, 200);
+    const emailBody = JSON.parse(emailResponse.payload);
+    assert.equal(emailBody.gateway, 'EMAIL');
+    assert.ok(emailBody.latencyMs > 0);
+
+    const waResponse = await server.inject({
+      method: 'POST',
+      url: '/api/v1/it-admin/test-gateway',
+      headers: { authorization: `Bearer ${itToken}` },
+      payload: { gateway: 'WHATSAPP' }
+    });
+
+    assert.equal(waResponse.statusCode, 200);
+    const waBody = JSON.parse(waResponse.payload);
+    assert.equal(waBody.gateway, 'WHATSAPP');
+  });
+
+  it('GET /api/v1/customers with SUPER_ADMIN_IT returns 403 Forbidden (Strict Data Isolation)', async () => {
+    const itToken = server.jwt.sign({
+      userId: 'u-it-01',
+      username: 'it_superadmin',
+      role: 'SUPER_ADMIN_IT',
+      branchCode: 'KA-HQ-IT'
+    });
+
+    // Technical Super Admin IT accounts are quarantined from banking customer data
+    const response = await server.inject({
+      method: 'GET',
+      url: '/api/v1/customers',
+      headers: { authorization: `Bearer ${itToken}` }
+    });
+
+    assert.equal(response.statusCode, 403);
+    const body = JSON.parse(response.payload);
+    assert.match(body.message, /Forbidden/);
+  });
 });

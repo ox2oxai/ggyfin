@@ -70,7 +70,12 @@ export async function customerRoutes(fastify: FastifyInstance) {
 
   fastify.get<{ Params: { id: string } }>(
     '/:id',
-    { preHandler: [fastify.authenticate] },
+    {
+      preHandler: [
+        fastify.authenticate,
+        requireRole(UserRole.FIELD_OFFICER, UserRole.AUTHORIZER, UserRole.BRANCH_MANAGER, UserRole.SYSTEM_ADMIN)
+      ]
+    },
     async (request, reply) => {
       const customer = await customerRepo.findById(request.params.id);
       if (!customer) {
@@ -91,7 +96,12 @@ export async function customerRoutes(fastify: FastifyInstance) {
 
   fastify.get<{ Querystring: { limit?: string; offset?: string } }>(
     '/',
-    { preHandler: [fastify.authenticate] },
+    {
+      preHandler: [
+        fastify.authenticate,
+        requireRole(UserRole.FIELD_OFFICER, UserRole.AUTHORIZER, UserRole.BRANCH_MANAGER, UserRole.SYSTEM_ADMIN)
+      ]
+    },
     async (request, reply) => {
       const limit = Number(request.query.limit) || 20;
       const offset = Number(request.query.offset) || 0;

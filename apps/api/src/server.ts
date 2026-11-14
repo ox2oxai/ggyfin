@@ -16,6 +16,7 @@ import { accountRoutes } from './controllers/account.controller.js';
 import { collectionRoutes } from './controllers/collection.controller.js';
 import { auditRoutes } from './controllers/audit.controller.js';
 import { analyticsRoutes } from './controllers/analytics.controller.js';
+import { itAdminRoutes } from './controllers/it-admin.controller.js';
 
 dotenv.config();
 
@@ -183,6 +184,7 @@ export async function buildServer(): Promise<FastifyInstance> {
   await fastify.register(collectionRoutes, { prefix: '/api/v1/collections' });
   await fastify.register(auditRoutes, { prefix: '/api/v1/audit' });
   await fastify.register(analyticsRoutes, { prefix: '/api/v1/analytics' });
+  await fastify.register(itAdminRoutes, { prefix: '/api/v1/it-admin' });
 
   return fastify;
 }

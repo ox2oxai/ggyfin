@@ -16,6 +16,7 @@ import {
 
 // 1. Staff User Roles
 export const userRoleEnum = pgEnum('user_role', [
+  'SUPER_ADMIN_IT',
   'SYSTEM_ADMIN',
   'BRANCH_MANAGER',
   'AUTHORIZER',

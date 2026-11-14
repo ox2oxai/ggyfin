@@ -19,10 +19,20 @@ export async function seedDatabase() {
   try {
     // 1. Seed Core Staff Users (Bcrypt salt rounds: 10)
     console.log('[Seed] Seeding staff users...');
+    const superAdminPassword = 'GGY#SuperAdminIT@2026!';
+    const superAdminPasswordHash = await bcrypt.hash(superAdminPassword, 10);
     const defaultPassword = 'GGYSecurePassword@2026';
     const passwordHash = await bcrypt.hash(defaultPassword, 10);
 
     const staffProfiles = [
+      {
+        username: 'it_superadmin',
+        email: 'it.admin@ggyfinance.in',
+        phone: '9800000001',
+        passwordHash: superAdminPasswordHash,
+        role: 'SUPER_ADMIN_IT' as const,
+        branchCode: 'KA-HQ-IT'
+      },
       {
         username: 'admin',
         email: 'admin@ggyfinance.in',

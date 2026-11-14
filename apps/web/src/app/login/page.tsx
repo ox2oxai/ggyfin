@@ -9,9 +9,10 @@ import { GGYBrandMark } from '../../components/brand-mark';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [username, setUsername] = useState('field_officer_ramesh');
-  const [password, setPassword] = useState('SecurePass@123');
-  const [selectedRole, setSelectedRole] = useState<UserRole>(UserRole.FIELD_OFFICER);
+  const [username, setUsername] = useState('it_superadmin');
+  const [password, setPassword] = useState('GGY#SuperAdminIT@2026!');
+  const [selectedRole, setSelectedRole] = useState<UserRole>(UserRole.SUPER_ADMIN_IT);
+  const [branchCode, setBranchCode] = useState('KA-HQ-IT');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -24,14 +25,18 @@ export default function LoginPage() {
       // In production, calls REST API: POST /api/v1/auth/login
       // Store session token in localStorage for dashboard client usage
       localStorage.setItem('nbfc_staff_session', JSON.stringify({
-        userId: 'u-' + selectedRole.toLowerCase() + '-001',
+        userId: selectedRole === UserRole.SUPER_ADMIN_IT ? 'u-superadmin-it-001' : 'u-' + selectedRole.toLowerCase() + '-001',
         username,
         role: selectedRole,
-        branchCode: 'KA-BLR-01'
+        branchCode: selectedRole === UserRole.SUPER_ADMIN_IT ? 'KA-HQ-IT' : branchCode
       }));
 
-      // Route all staff to their personalized Daily Workspace
-      router.push('/dashboard/workspace');
+      // Route technical super admin to dedicated isolated IT dashboard; banking staff to Daily Workspace
+      if (selectedRole === UserRole.SUPER_ADMIN_IT) {
+        router.push('/dashboard/it-admin');
+      } else {
+        router.push('/dashboard/workspace');
+      }
     } catch (err: unknown) {
       setErrorMessage('Failed to sign in. Please verify your credentials.');
     } finally {
@@ -39,10 +44,11 @@ export default function LoginPage() {
     }
   };
 
-  const setRolePreset = (role: UserRole, user: string) => {
+  const setRolePreset = (role: UserRole, user: string, pass: string, branch = 'KA-BLR-01') => {
     setSelectedRole(role);
     setUsername(user);
-    setPassword('SecurePass@123');
+    setPassword(pass);
+    setBranchCode(branch);
   };
 
   return (
@@ -68,30 +74,55 @@ export default function LoginPage() {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-sandstone-50 py-8 px-6 shadow-md rounded-3xl border border-clay sm:px-10">
           {/* Quick Role Preset Picker */}
-          <div className="mb-6">
-            <label className="block text-xs font-bold text-forest-900 mb-2">
-              Select Demo Staff Persona:
+          <div className="mb-6 space-y-2">
+            <label className="block text-xs font-bold text-forest-900">
+              Select Staff Persona to Test:
             </label>
+
+            {/* Featured: Super Admin IT (Technical Lead) */}
+            <button
+              type="button"
+              onClick={() => setRolePreset(UserRole.SUPER_ADMIN_IT, 'it_superadmin', 'GGY#SuperAdminIT@2026!', 'KA-HQ-IT')}
+              className={`w-full text-xs p-3 rounded-2xl border text-left transition-all ${
+                selectedRole === UserRole.SUPER_ADMIN_IT
+                  ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold shadow-md border-orange-600'
+                  : 'bg-orange-50/70 border-orange-200 text-slate-800 hover:bg-orange-100/70'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <p className="font-black flex items-center gap-1.5">
+                  <span className={`w-2 h-2 rounded-full ${selectedRole === UserRole.SUPER_ADMIN_IT ? 'bg-emerald-300 animate-pulse' : 'bg-orange-600'}`}></span>
+                  Super Admin IT (Technical Admin)
+                </p>
+                <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${selectedRole === UserRole.SUPER_ADMIN_IT ? 'bg-white text-orange-700' : 'bg-orange-600 text-white'}`}>
+                  Primary System Admin
+                </span>
+              </div>
+              <p className={`text-[10px] mt-1 ${selectedRole === UserRole.SUPER_ADMIN_IT ? 'text-orange-100 font-medium' : 'text-slate-600'}`}>
+                Staff Provisioning • Gateway Settings (Email/WhatsApp/SMS) • Isolated
+              </p>
+            </button>
+
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
-                onClick={() => setRolePreset(UserRole.SYSTEM_ADMIN, 'admin_suresh')}
+                onClick={() => setRolePreset(UserRole.SYSTEM_ADMIN, 'admin', 'GGYSecurePassword@2026', 'KA-HQ-01')}
                 className={`text-xs p-2.5 rounded-xl border text-left font-medium transition-all ${
                   selectedRole === UserRole.SYSTEM_ADMIN
-                    ? 'bg-terracotta-50 border-terracotta-500 text-terracotta-700 font-bold'
+                    ? 'bg-emerald-50 border-emerald-500 text-emerald-800 font-bold'
                     : 'bg-sandstone-100 border-clay text-forest-800 hover:bg-sandstone-200'
                 }`}
               >
-                <p className="font-bold">System Admin</p>
-                <p className="text-[10px] text-forest-800/60">Full Oversight • Setup</p>
+                <p className="font-bold">System Admin (Banking)</p>
+                <p className="text-[10px] text-forest-800/60">Portfolio & Risk Oversight</p>
               </button>
 
               <button
                 type="button"
-                onClick={() => setRolePreset(UserRole.BRANCH_MANAGER, 'manager_anita')}
+                onClick={() => setRolePreset(UserRole.BRANCH_MANAGER, 'manager_blr', 'GGYSecurePassword@2026', 'KA-BLR-01')}
                 className={`text-xs p-2.5 rounded-xl border text-left font-medium transition-all ${
                   selectedRole === UserRole.BRANCH_MANAGER
-                    ? 'bg-terracotta-50 border-terracotta-500 text-terracotta-700 font-bold'
+                    ? 'bg-emerald-50 border-emerald-500 text-emerald-800 font-bold'
                     : 'bg-sandstone-100 border-clay text-forest-800 hover:bg-sandstone-200'
                 }`}
               >
@@ -101,10 +132,10 @@ export default function LoginPage() {
 
               <button
                 type="button"
-                onClick={() => setRolePreset(UserRole.AUTHORIZER, 'checker_sharma')}
+                onClick={() => setRolePreset(UserRole.AUTHORIZER, 'authorizer_blr', 'GGYSecurePassword@2026', 'KA-BLR-01')}
                 className={`text-xs p-2.5 rounded-xl border text-left font-medium transition-all ${
                   selectedRole === UserRole.AUTHORIZER
-                    ? 'bg-terracotta-50 border-terracotta-500 text-terracotta-700 font-bold'
+                    ? 'bg-emerald-50 border-emerald-500 text-emerald-800 font-bold'
                     : 'bg-sandstone-100 border-clay text-forest-800 hover:bg-sandstone-200'
                 }`}
               >
@@ -114,15 +145,15 @@ export default function LoginPage() {
 
               <button
                 type="button"
-                onClick={() => setRolePreset(UserRole.FIELD_OFFICER, 'field_officer_ramesh')}
+                onClick={() => setRolePreset(UserRole.FIELD_OFFICER, 'officer_ramesh', 'GGYSecurePassword@2026', 'KA-BLR-01')}
                 className={`text-xs p-2.5 rounded-xl border text-left font-medium transition-all ${
                   selectedRole === UserRole.FIELD_OFFICER
-                    ? 'bg-terracotta-50 border-terracotta-500 text-terracotta-700 font-bold'
+                    ? 'bg-emerald-50 border-emerald-500 text-emerald-800 font-bold'
                     : 'bg-sandstone-100 border-clay text-forest-800 hover:bg-sandstone-200'
                 }`}
               >
                 <p className="font-bold">Field Officer (Maker)</p>
-                <p className="text-[10px] text-forest-800/60">Mobile PWA • Onboarding</p>
+                <p className="text-[10px] text-forest-800/60">Doorstep Onboarding & UPI</p>
               </button>
             </div>
           </div>

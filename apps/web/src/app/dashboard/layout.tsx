@@ -7,6 +7,7 @@ import { UserRole, UserSession } from '@nbfc/shared';
 import {
   Smartphone,
   ShieldCheck,
+  Shield,
   LogOut,
   FileCheck2,
   Users,
@@ -28,6 +29,12 @@ interface NavTab {
 }
 
 const ALL_TABS: NavTab[] = [
+  {
+    href: '/dashboard/it-admin',
+    label: 'IT Super Admin Control Center',
+    icon: Shield,
+    roles: [UserRole.SUPER_ADMIN_IT]
+  },
   {
     href: '/dashboard/workspace',
     label: 'My Daily Workspace',
@@ -144,6 +151,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const isAuthorized = !currentTabConfig || currentTabConfig.roles.includes(userRole);
 
   const getDefaultRouteForRole = (role: UserRole) => {
+    if (role === UserRole.SUPER_ADMIN_IT) {
+      return '/dashboard/it-admin';
+    }
     return '/dashboard/workspace';
   };
 
@@ -237,7 +247,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
             <h3 className="text-lg font-black text-forest-900">Access Restricted — Segregation of Duties</h3>
             <p className="text-xs text-forest-800/80 leading-relaxed">
-              Under Four-Eyes Corporate Governance principles, your role (<strong>{userRole}</strong>) is strictly segregated from this module. Field officers cannot authorize loans or view institutional risk analytics, and authorizers cannot execute field collections.
+              {userRole === UserRole.SUPER_ADMIN_IT ? (
+                <>
+                  Under statutory Core Banking data isolation principles, <strong>Super Admin IT</strong> accounts are strictly quarantined from customer financial accounts, borrower identities, and credit operations. IT staff are restricted to technical infrastructure, gateway configurations, and staff provisioning.
+                </>
+              ) : (
+                <>
+                  Under Four-Eyes Corporate Governance principles, your role (<strong>{userRole}</strong>) is strictly segregated from this module. Field officers cannot authorize loans or view institutional risk analytics, and authorizers cannot execute field collections.
+                </>
+              )}
             </p>
             <div className="pt-2">
               <Link
