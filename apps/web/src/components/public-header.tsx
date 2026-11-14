@@ -1,15 +1,16 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { GGYBrandMark } from './brand-mark';
 import { useLanguage } from './language-context';
-import { Lock, User } from 'lucide-react';
+import { Lock, User, Menu, X, TrendingUp, PhoneCall, MessageCircle } from 'lucide-react';
 
 export function PublicHeader() {
   const { lang, setLang } = useLanguage();
   const pathname = usePathname();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const labels = {
     en: {
@@ -17,22 +18,28 @@ export function PublicHeader() {
       brandName: 'GGY Finance',
       tagline: 'Micro Money Lending Platform',
       home: 'Home',
+      investments: 'Investments (MF & FD)',
       about: 'About Us',
+      contact: 'Contact Us',
       borrowerPortal: 'Borrower Portal',
       staffPortal: 'Staff Portal',
       tollFree: 'Toll-Free: 1800-209-4321',
-      dpdp: 'DPDP Act 2023 Compliant'
+      dpdp: 'DPDP Act 2023 Compliant',
+      whatsappQuick: 'WhatsApp Advisory'
     },
     kn: {
       topBar: 'ಆರ್.ಬಿ.ಐ ನೋಂದಾಯಿತ ಕಿರು ಸಾಲ ಸಂಸ್ಥೆ (NBFC-BL) | ಪ್ರಮಾಣಪತ್ರ: B-14.02981',
       brandName: 'ಜಿಜಿವೈ ಫೈನಾನ್ಸ್ (GGY Finance)',
       tagline: 'ಕಿರು ಹಣಕಾಸು ಸಾಲ ವೇದಿಕೆ (Micro Money Lending Platform)',
-      home: 'ಮುಖಪುಟ (Home)',
-      about: 'ನಮ್ಮ ಬಗ್ಗೆ (About)',
+      home: 'ಮುಖಪುಟ',
+      investments: 'ಹೂಡಿಕೆಗಳು (ಮ್ಯೂಚುಯಲ್ ಫಂಡ್ & ಎಫ್‌ಡಿ)',
+      about: 'ನಮ್ಮ ಬಗ್ಗೆ',
+      contact: 'ಸಂಪರ್ಕಿಸಿ',
       borrowerPortal: 'ಗ್ರಾಹಕರ ಪೋರ್ಟಲ್',
       staffPortal: 'ಸಿಬ್ಬಂದಿ ಪೋರ್ಟಲ್',
       tollFree: 'ಉಚಿತ ಕರೆ: 1800-209-4321',
-      dpdp: 'DPDP ಕಾಯ್ದೆ 2023 ಅನುಸರಣೆ'
+      dpdp: 'DPDP ಕಾಯ್ದೆ 2023 ಅನುಸರಣೆ',
+      whatsappQuick: 'ವಾಟ್ಸಾಪ್ ಸಹಾಯ'
     }
   };
 
@@ -50,7 +57,19 @@ export function PublicHeader() {
           <div className="flex items-center gap-4 text-emerald-300/80 font-medium">
             <span>{t.dpdp}</span>
             <span>•</span>
-            <span className="font-mono text-emerald-200 font-bold">{t.tollFree}</span>
+            <a href="tel:18002094321" className="font-mono text-emerald-200 font-bold hover:underline">
+              {t.tollFree}
+            </a>
+            <span className="hidden md:inline">•</span>
+            <a
+              href="https://wa.me/919845123450?text=Namaskara%20GGY%20Finance,%20I%20want%20information%20about%20Rural%20Loans%20and%20Mutual%20Fund%20Investments."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden md:inline-flex items-center gap-1.5 text-amber-300 hover:text-white font-bold transition-colors"
+            >
+              <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
+              <span>{t.whatsappQuick}</span>
+            </a>
           </div>
         </div>
       </div>
@@ -70,12 +89,12 @@ export function PublicHeader() {
             </div>
           </Link>
 
-          {/* Navigation Links: Home and About */}
-          <nav className="flex items-center gap-2 sm:gap-4">
-            <div className="hidden md:flex items-center gap-1 bg-pearl-200/80 p-1 rounded-xl border border-pearl-300 text-xs font-bold">
+          {/* Desktop Navigation Links */}
+          <nav className="hidden lg:flex items-center gap-4 text-xs font-bold">
+            <div className="flex items-center gap-1 bg-pearl-200/80 p-1 rounded-xl border border-pearl-300">
               <Link
                 href="/"
-                className={`px-3.5 py-1.5 rounded-lg transition-all ${
+                className={`px-3 py-1.5 rounded-lg transition-all ${
                   pathname === '/'
                     ? 'bg-bankGreen-900 text-white shadow-xs font-extrabold'
                     : 'text-bankGreen-900 hover:text-saffron-600 hover:bg-white'
@@ -84,8 +103,28 @@ export function PublicHeader() {
                 {t.home}
               </Link>
               <Link
+                href="/investments"
+                className={`px-3 py-1.5 rounded-lg transition-all ${
+                  pathname === '/investments'
+                    ? 'bg-bankGreen-900 text-white shadow-xs font-extrabold'
+                    : 'text-bankGreen-900 hover:text-saffron-600 hover:bg-white'
+                }`}
+              >
+                {t.investments}
+              </Link>
+              <Link
+                href="/contact"
+                className={`px-3 py-1.5 rounded-lg transition-all ${
+                  pathname === '/contact'
+                    ? 'bg-bankGreen-900 text-white shadow-xs font-extrabold'
+                    : 'text-bankGreen-900 hover:text-saffron-600 hover:bg-white'
+                }`}
+              >
+                {t.contact}
+              </Link>
+              <Link
                 href="/about"
-                className={`px-3.5 py-1.5 rounded-lg transition-all ${
+                className={`px-3 py-1.5 rounded-lg transition-all ${
                   pathname === '/about'
                     ? 'bg-bankGreen-900 text-white shadow-xs font-extrabold'
                     : 'text-bankGreen-900 hover:text-saffron-600 hover:bg-white'
@@ -96,11 +135,11 @@ export function PublicHeader() {
             </div>
 
             {/* Bilingual Switcher: English | Kannada */}
-            <div className="flex items-center gap-1 bg-pearl-200 p-1 rounded-xl border border-pearl-300 text-xs font-bold">
+            <div className="flex items-center gap-1 bg-pearl-200 p-1 rounded-xl border border-pearl-300">
               <button
                 type="button"
                 onClick={() => setLang('en')}
-                className={`px-2.5 sm:px-3 py-1.5 rounded-lg transition-all ${
+                className={`px-2.5 py-1.5 rounded-lg transition-all ${
                   lang === 'en'
                     ? 'bg-bankGreen-900 text-white shadow-xs font-extrabold'
                     : 'text-bankGreen-900 hover:text-saffron-600'
@@ -111,7 +150,7 @@ export function PublicHeader() {
               <button
                 type="button"
                 onClick={() => setLang('kn')}
-                className={`px-2.5 sm:px-3 py-1.5 rounded-lg transition-all ${
+                className={`px-2.5 py-1.5 rounded-lg transition-all ${
                   lang === 'kn'
                     ? 'bg-bankGreen-900 text-white shadow-xs font-extrabold'
                     : 'text-bankGreen-900 hover:text-saffron-600'
@@ -121,27 +160,130 @@ export function PublicHeader() {
               </button>
             </div>
 
-            {/* Borrower Self-Service Portal Login */}
+            {/* Borrower Portal Login */}
             <Link
               href="/portal"
-              className="inline-flex items-center gap-1.5 bg-bankGreen-50 hover:bg-bankGreen-100 text-bankGreen-900 px-3 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all border border-bankGreen-200"
+              className="inline-flex items-center gap-1.5 bg-bankGreen-50 hover:bg-bankGreen-100 text-bankGreen-900 px-3.5 py-2 rounded-xl font-bold transition-all border border-bankGreen-200"
             >
               <User className="w-3.5 h-3.5 text-bankGreen-700" />
-              <span className="hidden sm:inline">{t.borrowerPortal}</span>
-              <span className="sm:hidden">Borrower</span>
+              <span>{t.borrowerPortal}</span>
             </Link>
 
             {/* Bank Staff Portal Login */}
             <Link
               href="/login"
-              className="inline-flex items-center gap-2 bg-saffron-500 hover:bg-saffron-600 text-white px-3.5 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all shadow-md hover:shadow-lg shadow-saffron-500/20"
+              className="inline-flex items-center gap-2 bg-saffron-500 hover:bg-saffron-600 text-white px-4 py-2 rounded-xl font-extrabold transition-all shadow-md hover:shadow-lg shadow-saffron-500/20"
             >
               <Lock className="w-3.5 h-3.5 text-white" />
-              <span className="hidden sm:inline">{t.staffPortal}</span>
-              <span className="sm:hidden">Staff</span>
+              <span>{t.staffPortal}</span>
             </Link>
           </nav>
+
+          {/* Mobile Right Controls: Language + Hamburger */}
+          <div className="flex items-center gap-2 lg:hidden">
+            <div className="flex items-center gap-0.5 bg-pearl-200 p-0.5 rounded-lg border border-pearl-300 text-xs font-bold">
+              <button
+                type="button"
+                onClick={() => setLang('en')}
+                className={`px-2 py-1 rounded ${lang === 'en' ? 'bg-bankGreen-900 text-white' : 'text-slate-700'}`}
+              >
+                EN
+              </button>
+              <button
+                type="button"
+                onClick={() => setLang('kn')}
+                className={`px-2 py-1 rounded ${lang === 'kn' ? 'bg-bankGreen-900 text-white' : 'text-slate-700'}`}
+              >
+                ಕನ್ನ
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="p-2 rounded-xl bg-pearl-200 text-bankGreen-950 border border-pearl-300 hover:bg-pearl-300 transition-colors"
+              aria-label="Toggle Navigation Menu"
+            >
+              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
+
+        {/* Responsive Mobile Drawer Menu */}
+        {isMobileMenuOpen && (
+          <div className="lg:hidden border-t border-pearl-300 bg-white px-4 py-4 space-y-3 shadow-xl animate-in slide-in-from-top-2 duration-200">
+            <div className="grid grid-cols-2 gap-2 text-xs font-bold">
+              <Link
+                href="/"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`p-3 rounded-xl border text-center transition-all ${
+                  pathname === '/' ? 'bg-bankGreen-900 text-white' : 'bg-pearl-100 text-slate-800'
+                }`}
+              >
+                {t.home}
+              </Link>
+              <Link
+                href="/investments"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`p-3 rounded-xl border text-center transition-all ${
+                  pathname === '/investments' ? 'bg-bankGreen-900 text-white' : 'bg-pearl-100 text-slate-800'
+                }`}
+              >
+                {t.investments}
+              </Link>
+              <Link
+                href="/contact"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`p-3 rounded-xl border text-center transition-all ${
+                  pathname === '/contact' ? 'bg-bankGreen-900 text-white' : 'bg-pearl-100 text-slate-800'
+                }`}
+              >
+                {t.contact}
+              </Link>
+              <Link
+                href="/about"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`p-3 rounded-xl border text-center transition-all ${
+                  pathname === '/about' ? 'bg-bankGreen-900 text-white' : 'bg-pearl-100 text-slate-800'
+                }`}
+              >
+                {t.about}
+              </Link>
+            </div>
+
+            <div className="pt-2 border-t border-pearl-200 grid grid-cols-2 gap-2 text-xs font-bold">
+              <Link
+                href="/portal"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-3 bg-bankGreen-50 text-bankGreen-900 border border-bankGreen-200 rounded-xl text-center flex items-center justify-center gap-1.5"
+              >
+                <User className="w-4 h-4 text-bankGreen-700" />
+                <span>{t.borrowerPortal}</span>
+              </Link>
+
+              <Link
+                href="/login"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-3 bg-saffron-500 text-white rounded-xl text-center font-extrabold flex items-center justify-center gap-1.5 shadow-sm"
+              >
+                <Lock className="w-4 h-4 text-white" />
+                <span>{t.staffPortal}</span>
+              </Link>
+            </div>
+
+            <div className="pt-2 border-t border-pearl-200 text-center">
+              <a
+                href="https://wa.me/919845123450?text=Namaskara%20GGY%20Finance,%20I%20want%20information%20about%20Rural%20Loans%20and%20Mutual%20Fund%20Investments."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-xs font-extrabold text-emerald-800 bg-emerald-50 px-4 py-2 rounded-xl border border-emerald-200 w-full justify-center"
+              >
+                <MessageCircle className="w-4 h-4 text-emerald-600" />
+                <span>Chat with Advisor on WhatsApp</span>
+              </a>
+            </div>
+          </div>
+        )}
       </header>
     </>
   );

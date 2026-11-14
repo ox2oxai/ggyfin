@@ -27,7 +27,13 @@ import {
   BadgeCheck,
   IndianRupee,
   PhoneCall,
-  Check
+  Check,
+  Play,
+  Video,
+  X,
+  Volume2,
+  MessageCircle,
+  PiggyBank
 } from 'lucide-react';
 import { GGYBrandMark } from '../components/brand-mark';
 import { PublicHeader } from '../components/public-header';
@@ -148,12 +154,98 @@ const BANK_PRODUCTS: ProductItem[] = [
   }
 ];
 
+interface CustomerVideo {
+  id: string;
+  nameEn: string;
+  nameKn: string;
+  villageEn: string;
+  villageKn: string;
+  district: string;
+  schemeEn: string;
+  schemeKn: string;
+  amount: string;
+  metricEn: string;
+  metricKn: string;
+  duration: string;
+  quoteEn: string;
+  quoteKn: string;
+  transcriptEn: string;
+  transcriptKn: string;
+  tagEn: string;
+  tagKn: string;
+}
+
+const CUSTOMER_VIDEOS: CustomerVideo[] = [
+  {
+    id: 'vid-lakshmi',
+    nameEn: 'Smt. Lakshmi Gowda',
+    nameKn: 'ಶ್ರೀಮತಿ ಲಕ್ಷ್ಮಿ ಗೌಡ',
+    villageEn: 'Channapatna Taluk',
+    villageKn: 'ಚನ್ನಪಟ್ಟಣ ತಾಲೂಕು',
+    district: 'Ramanagara',
+    schemeEn: 'Dairy Development Term Loan',
+    schemeKn: 'ಹೈನುಗಾರಿಕೆ ಅಭಿವೃದ್ಧಿ ಸಾಲ',
+    amount: '₹1,20,000',
+    metricEn: 'Daily milk yield rose from 15L to 35L',
+    metricKn: 'ದೈನಂದಿನ ಹಾಲಿನ ಇಳುವರಿ ೧೫ ಲೀ ನಿಂದ ೩೫ ಲೀಟರ್‌ಗೆ ಏರಿಕೆ',
+    duration: '2:45 min',
+    quoteEn: '“With GGY’s doorstep UPI collection, I bought two HF crossbred cows without paying any broker commission. My family now earns ₹38,000 net profit every month.”',
+    quoteKn: '“ದಲ್ಲಾಳಿಗಳಿಲ್ಲದೆ ನೇರವಾಗಿ ಸಾಲ ಪಡೆದು ೨ ಸಂಕರ ತಳಿಯ ಹಸುಗಳನ್ನು ಖರೀದಿಸಿದೆ. ಈಗ ಪ್ರತಿ ತಿಂಗಳು ನಮ್ಮ ಕುಟುಂಬಕ್ಕೆ ₹೩೮,೦೦೦ ನಿವ್ವಳ ಆದಾಯ ಸಿಗುತ್ತಿದೆ.”',
+    transcriptEn: 'Lakshmi explains how she applied for the dairy loan through the GGY Field Officer in Channapatna. Approval took 15 minutes with masked Aadhaar, and repayment is deducted via weekly UPI directly from her milk cooperative payout.',
+    transcriptKn: 'ಲಕ್ಷ್ಮಿಯವರು ಚನ್ನಪಟ್ಟಣದಲ್ಲಿ ಜಿಜಿವೈ ಕ್ಷೇತ್ರಾಧಿಕಾರಿಯ ಮೂಲಕ ಸಾಲ ಪಡೆದ ಅನುಭವವನ್ನು ಹಂಚಿಕೊಳ್ಳುತ್ತಾರೆ. ಆಧಾರ್ ಪರಿಶೀಲನೆಯೊಂದಿಗೆ ೧೫ ನಿಮಿಷಗಳಲ್ಲಿ ಅನುಮೋದನೆ ದೊರೆತಿದ್ದು, ಡೇರಿ ಹಾಲಿನ ಹಣದಿಂದಲೇ ಯುಪಿಐ ಮೂಲಕ ವಾರದ ಕಂತು ಪಾವತಿಸುತ್ತಿದ್ದಾರೆ.',
+    tagEn: 'Dairy Transformation',
+    tagKn: 'ಹೈನುಗಾರಿಕೆ ಯಶೋಗಾಥೆ'
+  },
+  {
+    id: 'vid-basavaraj',
+    nameEn: 'Sri Basavaraj Patil',
+    nameKn: 'ಶ್ರೀ ಬಸವರಾಜ್ ಪಾಟೀಲ್',
+    villageEn: 'Kunigal Town',
+    villageKn: 'ಕುಣಿಗಲ್ ಪಟ್ಟಣ',
+    district: 'Tumakuru',
+    schemeEn: 'Kirana & Village Retail Capital',
+    schemeKn: 'ಕಿರಾಣಿ & ಸಣ್ಣ ವ್ಯಾಪಾರ ಬಂಡವಾಳ',
+    amount: '₹80,000',
+    metricEn: 'Inventory expanded with 2.5x monthly turnover',
+    metricKn: 'ದಿನಸಿ ಸರಕು ವಿಸ್ತರಣೆ ಮತ್ತು ೨.೫ ಪಟ್ಟು ವಹಿವಾಟು ಹೆಚ್ಚಳ',
+    duration: '3:15 min',
+    quoteEn: '“The wholesale FMCG supplier received direct payment from GGY at 0% processing fee. I installed a UPI soundbox and my customers pay digitally without hassle.”',
+    quoteKn: '“ಸಗಟು ವಿತರಕರಿಗೆ ನೇರವಾಗಿ ಹಣ ಪಾವತಿಯಾಗಿದ್ದರಿಂದ ೧೫% ರಿಯಾಯಿತಿ ಸಿಕ್ಕಿತು. ಅಂಗಡಿಯಲ್ಲಿ ಯುಪಿಐ ಸೌಂಡ್‌ಬಾಕ್ಸ್ ಅಳವಡಿಸಿದ್ದು, ಗ್ರಾಹಕರು ಸುಲಭವಾಗಿ ಪಾವತಿಸುತ್ತಿದ್ದಾರೆ.”',
+    transcriptEn: 'Basavaraj shares how eliminating local money lenders helped his grocery store stock seasonal FMCG items in bulk, increasing gross margins by 18%.',
+    transcriptKn: 'ಸ್ಥಳೀಯ ಲೇವಾದೇವಿದಾರರ ದುಬಾರಿ ಬಡ್ಡಿಯನ್ನು ತಪ್ಪಿಸಿ, ನೇರ ಬಂಡವಾಳದ ಮೂಲಕ ದಿನಸಿ ಅಂಗಡಿಯನ್ನು ಆಧುನೀಕರಿಸಿ ಲಾಭ ಹೆಚ್ಚಿಸಿಕೊಂಡ ಬಗೆಯನ್ನು ಬಸವರಾಜ್ ವಿವರಿಸುತ್ತಾರೆ.',
+    tagEn: 'Retail Enterprise',
+    tagKn: 'ಸಣ್ಣ ವ್ಯಾಪಾರ ಪ್ರಗತಿ'
+  },
+  {
+    id: 'vid-kavitha',
+    nameEn: 'Smt. Kavitha Revanna',
+    nameKn: 'ಶ್ರೀಮತಿ ಕವಿತಾ ರೇವಣ್ಣ',
+    villageEn: 'Ramanagara Silk Cluster',
+    villageKn: 'ರಾಮನಗರ ರೇಷ್ಮೆ ಕ್ಲಸ್ಟರ್',
+    district: 'Ramanagara',
+    schemeEn: 'Powerloom Artisan Credit',
+    schemeKn: 'ನೇಯ್ಗೆ & ಕೈಮಗ್ಗ ಕುಶಲಕರ್ಮಿ ಸಾಲ',
+    amount: '₹1,50,000',
+    metricEn: 'Direct yarn procurement saved 14% raw material cost',
+    metricKn: 'ನೇರ ರೇಷ್ಮೆ ನೂಲು ಖರೀದಿಯಿಂದ ೧೪% ಉಳಿತಾಯ',
+    duration: '2:10 min',
+    quoteEn: '“We eliminated predatory loan sharks. With GGY’s 14% reducing rate, we bought pure mulberry silk yarn directly from the Ramanagara Silk Exchange for the wedding season.”',
+    quoteKn: '“ಖಾಸಗಿ ಲೇವಾದೇವಿದಾರರ ಹಾವಳಿ ತಪ್ಪಿತು. ಜಿಜಿವೈ ಸಾಲದಿಂದ ನೇರವಾಗಿ ರಾಮನಗರ ರೇಷ್ಮೆ ಮಾರುಕಟ್ಟೆಯಿಂದಲೇ ನೂಲು ಖರೀದಿಸಿ ಮದುವೆ ಸೀಸನ್‌ಗೆ ಸೀರೆಗಳನ್ನು ತಯಾರಿಸಿದ್ದೇವೆ.”',
+    transcriptEn: 'Kavitha demonstrates how modern motorized jacquard looms doubled weaving speed while keeping debt service predictable with zero foreclosure penalty.',
+    transcriptKn: 'ಕವಿತಾರವರು ಮಗ್ಗದ ಆಧುನೀಕರಣದಿಂದ ನೇಯ್ಗೆ ವೇಗ ದುಪ್ಪಟ್ಟಾಗಿದ್ದು, ಯಾವುದೇ ಮುಂಗಡ ರದ್ದು ಶುಲ್ಕವಿಲ್ಲದೆ ನೆಮ್ಮದಿಯಿಂದ ವ್ಯಾಪಾರ ಮಾಡುತ್ತಿರುವುದಾಗಿ ತಿಳಿಸುತ್ತಾರೆ.',
+    tagEn: 'Artisan & Weaving',
+    tagKn: 'ಕುಶಲಕರ್ಮಿ ಸಬಲೀಕರಣ'
+  }
+];
+
 export default function HomePage() {
   const { lang } = useLanguage();
   const [loanAmount, setLoanAmount] = useState<number>(60000);
   const [tenure, setTenure] = useState<number>(12);
   const [interestRate, setInterestRate] = useState<number>(12.5);
   const [selectedProduct, setSelectedProduct] = useState<string>('prod-dairy');
+  const [selectedVideo, setSelectedVideo] = useState<CustomerVideo | null>(null);
+  const [isVideoPlaying, setIsVideoPlaying] = useState<boolean>(true);
 
   const monthlyEmi = calculateEMI(loanAmount, interestRate, tenure);
   const totalAmount = monthlyEmi * tenure;
@@ -212,7 +304,25 @@ export default function HomePage() {
       qrDesc: 'Scan with any UPI App (PhonePe, GPay, Paytm, BHIM) to settle your monthly installment instantly.',
       trustTitle: 'Institutional Bank-Grade Governance',
       trustDesc: '100% Indian Data Sovereignty under DPDP Act 2023 with RBI Four-Eyes segregation of duties.',
-      applyPwa: 'Request Doorstep Application via Field Officer'
+      applyPwa: 'Request Doorstep Application via Field Officer',
+      videoSectionBadge: 'Real Stories of Rural Transformation',
+      videoSectionTitle: 'Voices from the Field: Karnataka Borrowers',
+      videoSectionDesc: 'Watch how village entrepreneurs, dairy farmers, and weavers unlocked economic freedom through honest, doorstep credit.',
+      watchVideo: 'Watch Video Story',
+      playingPreview: 'Video Case Study Simulator',
+      verifiedBorrower: 'Verified Borrower',
+      loanSanctioned: 'Loan Sanctioned:',
+      impactMetric: 'Key Transformation:',
+      videoTranscript: 'Story Summary & Field Officer Notes',
+      closeVideo: 'Close Video',
+      investmentBannerBadge: 'New Rural Wealth Creation Initiative',
+      investmentBannerTitle: 'From Disciplined Borrowers to Confident Wealth Creators',
+      investmentBannerDesc: 'Did you know? Even ₹250 or ₹500 a month in a SEBI-regulated Mutual Fund works like your Village Milk Cooperative to build lasting family wealth.',
+      btnExploreInvestments: 'Explore Mutual Funds & FDs',
+      btnWhatsappAdvisor: 'Chat with Investment Advisor',
+      pillMf: 'SEBI & AMFI Regulated Micro-SIP',
+      pillFd: 'High-Yield FDs up to 8.50% p.a.',
+      pillUpi: 'Automated UPI AutoPay Savings'
     },
     kn: {
       heroPill: 'ಆರ್.ಬಿ.ಐ ನೋಂದಾಯಿತ ಕಿರು ಸಾಲ ಸಂಸ್ಥೆ • ಪ್ರಮಾಣಪತ್ರ: B-14.02981',
@@ -243,7 +353,25 @@ export default function HomePage() {
       qrDesc: 'PhonePe, GPay, Paytm ಮೂಲಕ ನಿಮ್ಮ ಮಾಸಿಕ ಕಂತನ್ನು ತಕ್ಷಣವೇ ಸುಲಭವಾಗಿ ಮರುಪಾವತಿಸಿ.',
       trustTitle: 'ಆರ್.ಬಿ.ಐ ನಿಯಮಾವಳಿಗಳ ಕಟ್ಟುನಿಟ್ಟಾದ ಅನುಸರಣೆ',
       trustDesc: 'DPDP ಕಾಯ್ದೆ 2023 ರ ಅನ್ವಯ 100% ಭಾರತೀಯ ಸರ್ವರ್‌ಗಳಲ್ಲಿ ಎನ್‌ಕ್ರಿಪ್ಟ್ ಆದ ಡೇಟಾ ಸಂರಕ್ಷಣೆ.',
-      applyPwa: 'ಕ್ಷೇತ್ರಾಧಿಕಾರಿಗಳ ಮೂಲಕ ಮನೆಬಾಗಿಲಿಗೆ ಅರ್ಜಿ ಸಲ್ಲಿಸಿ'
+      applyPwa: 'ಕ್ಷೇತ್ರಾಧಿಕಾರಿಗಳ ಮೂಲಕ ಮನೆಬಾಗಿಲಿಗೆ ಅರ್ಜಿ ಸಲ್ಲಿಸಿ',
+      videoSectionBadge: 'ನೈಜ ಗ್ರಾಮೀಣ ಪ್ರಗತಿ ಕಥೆಗಳು',
+      videoSectionTitle: 'ಕರ್ನಾಟಕದ ರೈತರು & ವ್ಯಾಪಾರಿಗಳ ಯಶೋಗಾಥೆಗಳು',
+      videoSectionDesc: 'ಪ್ರಾಮಾಣಿಕ ಮನೆಬಾಗಿಲ ಸಾಲ ಸೌಲಭ್ಯದಿಂದ ಗ್ರಾಮೀಣ ಸಣ್ಣ ವ್ಯಾಪಾರಿಗಳು ಮತ್ತು ಹೈನುಗಾರಿಕೆ ಕುಟುಂಬಗಳು ಆರ್ಥಿಕ ಸ್ವಾತಂತ್ರ್ಯ ಪಡೆದ ನೈಜ ವೀಡಿಯೊಗಳು.',
+      watchVideo: 'ವಿಡಿಯೋ ವೀಕ್ಷಿಸಿ',
+      playingPreview: 'ವೀಡಿಯೊ ಕೇಸ್ ಸ್ಟಡಿ ಸಿಮ್ಯುಲೇಟರ್',
+      verifiedBorrower: 'ದೃಢೀಕೃತ ಗ್ರಾಹಕರು',
+      loanSanctioned: 'ಮಂಜೂರಾದ ಸಾಲ:',
+      impactMetric: 'ಪ್ರಮುಖ ಬದಲಾವಣೆ:',
+      videoTranscript: 'ಕಥೆಯ ಮುಖ್ಯಾಂಶಗಳು & ಕ್ಷೇತ್ರಾಧಿಕಾರಿ ಟಿಪ್ಪಣಿ',
+      closeVideo: 'ಮುಚ್ಚಿ',
+      investmentBannerBadge: 'ಹೊಸ ಗ್ರಾಮೀಣ ಸಂಪತ್ತು ಸೃಷ್ಟಿ ಯೋಜನೆ',
+      investmentBannerTitle: 'ಸಾಲಗಾರರಿಂದ ಸಂಪತ್ತಿನ ಒಡೆಯರಾಗುವ ಸುವರ್ಣಾವಕಾಶ',
+      investmentBannerDesc: 'ಗ್ರಾಮೀಣ ಹಾಲಿನ ಡೇರಿ ಸಹಕಾರ ಸಂಘದಂತೆ ಕಾರ್ಯನಿರ್ವಹಿಸುವ ಮ್ಯೂಚುಯಲ್ ಫಂಡ್‌ನಲ್ಲಿ ತಿಂಗಳಿಗೆ ಕೇವಲ ₹೨೫೦ ಅಥವಾ ₹೫೦೦ ಉಳಿತಾಯ ಮಾಡಿ ನಿಮ್ಮ ಮಕ್ಕಳ ಭವಿಷ್ಯ ರೂಪಿಸಿ.',
+      btnExploreInvestments: 'ಮ್ಯೂಚುಯಲ್ ಫಂಡ್ & ಎಫ್‌ಡಿ ವಿವರಗಳು',
+      btnWhatsappAdvisor: 'ವಾಟ್ಸಾಪ್‌ನಲ್ಲಿ ತಜ್ಞರ ಸಲಹೆ ಪಡೆಯಿರಿ',
+      pillMf: 'SEBI & AMFI ನಿಯಂತ್ರಿತ ಕಿರು SIP',
+      pillFd: 'ಶೇ ೮.೫೦ ವರೆಗೆ ಗರಿಷ್ಠ ಎಫ್‌ಡಿ ಬಡ್ಡಿ',
+      pillUpi: 'ಸುಲಭ ಯುಪಿಐ (UPI) ಸ್ವಯಂ ಉಳಿತಾಯ'
     }
   }[lang];
 
@@ -420,6 +548,110 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* 4.5. CUSTOMER VIDEO SHOWCASE: REAL RURAL TRANSFORMATION STORIES */}
+      <section id="stories" className="py-16 sm:py-20 px-4 sm:px-10 max-w-6xl mx-auto space-y-10">
+        <div className="text-center space-y-2 max-w-2xl mx-auto">
+          <div className="inline-flex items-center gap-1.5 text-xs font-extrabold text-orange-700 bg-orange-50 border border-orange-200 px-3.5 py-1 rounded-full shadow-2xs">
+            <Video className="w-3.5 h-3.5 text-orange-600" />
+            <span>{t.videoSectionBadge}</span>
+          </div>
+          <h2 className="text-2xl sm:text-4xl font-black text-slate-950 tracking-tight">
+            {t.videoSectionTitle}
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
+            {t.videoSectionDesc}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {CUSTOMER_VIDEOS.map((vid) => {
+            return (
+              <div
+                key={vid.id}
+                className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-xl hover:border-orange-400 transition-all flex flex-col justify-between group"
+              >
+                {/* Simulated Video Player Thumbnail */}
+                <div
+                  onClick={() => {
+                    setSelectedVideo(vid);
+                    setIsVideoPlaying(true);
+                  }}
+                  className="relative aspect-video bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center cursor-pointer overflow-hidden"
+                >
+                  {/* Visual Ambient Glow */}
+                  <div className="absolute inset-0 bg-radial from-orange-500/20 via-transparent to-transparent opacity-60 group-hover:opacity-100 transition-opacity"></div>
+                  
+                  {/* Top Overlay Badges */}
+                  <div className="absolute top-3 left-3 right-3 flex justify-between items-center z-10">
+                    <span className="text-[10px] font-black uppercase tracking-wider bg-orange-600 text-white px-2.5 py-0.5 rounded-full shadow-md">
+                      {lang === 'kn' ? vid.tagKn : vid.tagEn}
+                    </span>
+                    <span className="text-[10px] font-mono font-bold bg-black/60 backdrop-blur-xs text-amber-300 px-2 py-0.5 rounded-md border border-white/10">
+                      {vid.duration}
+                    </span>
+                  </div>
+
+                  {/* Pulsing Play Button */}
+                  <div className="w-14 h-14 rounded-full bg-orange-600 group-hover:bg-orange-500 text-white flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform z-10">
+                    <Play className="w-6 h-6 ml-0.5 fill-current" />
+                  </div>
+
+                  {/* Bottom Video Banner */}
+                  <div className="absolute bottom-2 left-3 right-3 text-left z-10">
+                    <p className="text-[11px] font-bold text-white/90 truncate">
+                      {lang === 'kn' ? vid.nameKn : vid.nameEn} • {vid.district}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Card Content & Testimonial Quote */}
+                <div className="p-6 space-y-4 flex-1 flex flex-col justify-between">
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="text-base font-black text-slate-950 flex items-center gap-1.5">
+                          <span>{lang === 'kn' ? vid.nameKn : vid.nameEn}</span>
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600 inline shrink-0" />
+                        </h3>
+                        <p className="text-xs text-slate-500 font-semibold">
+                          {lang === 'kn' ? vid.villageKn : vid.villageEn}, {vid.district}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Sanctioned</span>
+                        <span className="text-xs font-black text-orange-600 font-mono bg-orange-50 px-2 py-0.5 rounded-md border border-orange-200">
+                          {vid.amount}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="p-2.5 bg-emerald-50/80 border border-emerald-200/80 rounded-xl text-[11px] font-bold text-emerald-900 flex items-center gap-2">
+                      <Sparkles className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span>{lang === 'kn' ? vid.metricKn : vid.metricEn}</span>
+                    </div>
+
+                    <p className="text-xs text-slate-600 italic leading-relaxed">
+                      {lang === 'kn' ? vid.quoteKn : vid.quoteEn}
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      setSelectedVideo(vid);
+                      setIsVideoPlaying(true);
+                    }}
+                    className="w-full mt-2 py-2.5 px-4 bg-orange-50 hover:bg-orange-600 text-orange-700 hover:text-white rounded-xl font-extrabold text-xs flex items-center justify-center gap-2 transition-all border border-orange-200 group-hover:border-orange-600"
+                  >
+                    <Play className="w-3.5 h-3.5 fill-current" />
+                    <span>{t.watchVideo}</span>
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
       {/* 5. INTERACTIVE EMI CALCULATOR SECTION */}
       <section id="calculator" className="py-16 bg-[#FBFBFA] border-y border-slate-200">
         <div className="max-w-6xl mx-auto px-4 sm:px-10 space-y-8">
@@ -584,6 +816,68 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* 5.5. RURAL WEALTH & INVESTMENTS SPOTLIGHT BANNER */}
+      <section id="wealth-initiative" className="py-12 px-4 sm:px-10 max-w-6xl mx-auto">
+        <div className="relative bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 rounded-3xl p-8 sm:p-12 text-white shadow-2xl overflow-hidden border border-orange-800">
+          {/* Subtle Ambient Decorative Circles */}
+          <div className="absolute -top-16 -right-16 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+          <div className="absolute -bottom-16 -left-16 w-64 h-64 bg-amber-400/20 rounded-full blur-2xl pointer-events-none"></div>
+
+          <div className="relative z-10 max-w-3xl space-y-5">
+            <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-3.5 py-1 rounded-full text-xs font-black text-white border border-white/30 shadow-xs">
+              <PiggyBank className="w-4 h-4 text-amber-200" />
+              <span>{t.investmentBannerBadge}</span>
+            </div>
+
+            <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight leading-tight">
+              {t.investmentBannerTitle}
+            </h2>
+
+            <p className="text-amber-50 text-sm sm:text-base leading-relaxed font-medium">
+              {t.investmentBannerDesc}
+            </p>
+
+            {/* 3 Feature Pills */}
+            <div className="flex flex-wrap gap-2.5 pt-1 text-xs font-bold text-white/90">
+              <span className="inline-flex items-center gap-1.5 bg-black/20 backdrop-blur-xs px-3 py-1.5 rounded-xl border border-white/20">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />
+                <span>{t.pillMf}</span>
+              </span>
+              <span className="inline-flex items-center gap-1.5 bg-black/20 backdrop-blur-xs px-3 py-1.5 rounded-xl border border-white/20">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />
+                <span>{t.pillFd}</span>
+              </span>
+              <span className="inline-flex items-center gap-1.5 bg-black/20 backdrop-blur-xs px-3 py-1.5 rounded-xl border border-white/20">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />
+                <span>{t.pillUpi}</span>
+              </span>
+            </div>
+
+            {/* CTAs: White button for primary action + Forest green button for WhatsApp */}
+            <div className="pt-3 flex flex-col sm:flex-row gap-3.5">
+              <Link
+                href="/investments"
+                className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-white hover:bg-amber-50 active:scale-[0.98] text-orange-700 font-black text-sm rounded-xl shadow-xl transition-all"
+              >
+                <TrendingUp className="w-4 h-4 text-orange-700" />
+                <span>{t.btnExploreInvestments}</span>
+                <ArrowRight className="w-4 h-4 text-orange-700" />
+              </Link>
+
+              <a
+                href="https://wa.me/919845123450?text=Namaskara,%20I%20want%20information%20regarding%20Rural%20Mutual%20Funds%20and%20Fixed%20Deposits."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-[#064e3b] hover:bg-[#043e2f] active:scale-[0.98] text-white font-extrabold text-sm rounded-xl shadow-lg border border-emerald-500/50 transition-all"
+              >
+                <MessageCircle className="w-4 h-4 text-emerald-300" />
+                <span>{t.btnWhatsappAdvisor}</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* 6. GOVERNANCE & TRUST WALL */}
       <section className="py-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white rounded-3xl border border-slate-200 p-8 sm:p-10 shadow-xs space-y-6">
@@ -629,6 +923,156 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* 7. INTERACTIVE VIDEO PLAYER SIMULATOR MODAL */}
+      {selectedVideo && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200"
+          onClick={() => setSelectedVideo(null)}
+        >
+          <div
+            className="relative bg-slate-900 border border-slate-700 text-white rounded-3xl max-w-2xl w-full shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="p-4 bg-slate-800/90 border-b border-slate-700 flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span className="text-xs font-black uppercase tracking-wider text-amber-300">
+                  {t.playingPreview}
+                </span>
+                <span className="text-slate-400 text-xs hidden sm:inline">•</span>
+                <span className="text-xs text-slate-300 font-semibold truncate max-w-[200px] sm:max-w-xs">
+                  {lang === 'kn' ? selectedVideo.nameKn : selectedVideo.nameEn} ({selectedVideo.district})
+                </span>
+              </div>
+              <button
+                onClick={() => setSelectedVideo(null)}
+                aria-label={t.closeVideo}
+                className="w-8 h-8 rounded-full bg-slate-700/80 hover:bg-slate-600 flex items-center justify-center text-slate-300 hover:text-white transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Video Screen Simulation */}
+            <div className="relative aspect-video bg-black flex flex-col justify-between p-4 overflow-hidden select-none">
+              {/* Camera Lens Flare / Ambient Lighting */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/60 pointer-events-none"></div>
+
+              {/* Top Watermark */}
+              <div className="relative z-10 flex justify-between items-center text-[10px] text-white/70 font-mono">
+                <span className="bg-black/60 backdrop-blur-xs px-2.5 py-1 rounded-md border border-white/10">
+                  GGY Ground Reality Case Study • {selectedVideo.district}
+                </span>
+                <span className="bg-red-600/90 text-white font-black px-2 py-0.5 rounded-md flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
+                  HD
+                </span>
+              </div>
+
+              {/* Center Play/Pause Overlay Toggle */}
+              <div className="relative z-10 flex flex-col items-center justify-center my-auto">
+                <button
+                  onClick={() => setIsVideoPlaying(!isVideoPlaying)}
+                  className="w-16 h-16 rounded-full bg-orange-600/90 hover:bg-orange-500 text-white flex items-center justify-center shadow-2xl transition-transform hover:scale-110 active:scale-95 border border-white/20 cursor-pointer"
+                >
+                  <Play className={`w-7 h-7 ml-0.5 fill-current ${isVideoPlaying ? 'opacity-80' : 'opacity-100'}`} />
+                </button>
+                <p className="text-[11px] text-slate-300 mt-2 font-mono bg-black/60 px-2.5 py-0.5 rounded-md">
+                  {isVideoPlaying ? 'Playing case study audio' : 'Paused'}
+                </p>
+              </div>
+
+              {/* Bottom Video Progress Scrub Bar & Controls */}
+              <div className="relative z-10 space-y-2">
+                {/* Scrub line */}
+                <div className="w-full h-1.5 bg-white/20 rounded-full overflow-hidden flex">
+                  <div className={`h-full bg-orange-500 rounded-full transition-all duration-300 ${isVideoPlaying ? 'w-2/3 animate-pulse' : 'w-1/3'}`}></div>
+                </div>
+
+                <div className="flex justify-between items-center text-xs text-slate-300 font-mono">
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setIsVideoPlaying(!isVideoPlaying)}
+                      className="hover:text-white font-bold cursor-pointer"
+                    >
+                      {isVideoPlaying ? 'Pause' : 'Play'}
+                    </button>
+                    <span className="text-[11px] text-slate-400">01:18 / {selectedVideo.duration}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Volume2 className="w-4 h-4 text-slate-300" />
+                    <span className="text-[10px] text-emerald-400 font-bold bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-700/60 hidden sm:inline">
+                      Kannada + English Subtitles
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Body: Borrower Profile & Transcripts */}
+            <div className="p-6 overflow-y-auto space-y-4 text-xs bg-slate-900">
+              <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-slate-800 pb-3">
+                <div>
+                  <h4 className="text-base font-black text-white flex items-center gap-1.5">
+                    <span>{lang === 'kn' ? selectedVideo.nameKn : selectedVideo.nameEn}</span>
+                    <span className="text-[10px] font-bold text-emerald-300 bg-emerald-950/80 border border-emerald-700/80 px-2 py-0.5 rounded-full">
+                      {t.verifiedBorrower}
+                    </span>
+                  </h4>
+                  <p className="text-slate-400 text-xs">
+                    {lang === 'kn' ? selectedVideo.villageKn : selectedVideo.villageEn}, {selectedVideo.district}
+                  </p>
+                </div>
+                <div className="text-left sm:text-right">
+                  <span className="text-slate-400 text-[10px] uppercase font-bold block">{t.loanSanctioned}</span>
+                  <span className="text-base font-black text-orange-400 font-mono">{selectedVideo.amount}</span>
+                </div>
+              </div>
+
+              {/* Quote bubble */}
+              <div className="bg-slate-800/80 p-3.5 rounded-2xl border border-slate-700 space-y-1">
+                <p className="text-amber-200 font-bold text-xs italic leading-relaxed">
+                  {lang === 'kn' ? selectedVideo.quoteKn : selectedVideo.quoteEn}
+                </p>
+              </div>
+
+              {/* Story Summary / Transcript */}
+              <div className="space-y-1">
+                <p className="font-extrabold text-slate-300 uppercase tracking-wider text-[10px]">
+                  {t.videoTranscript}
+                </p>
+                <p className="text-slate-300 leading-relaxed font-normal">
+                  {lang === 'kn' ? selectedVideo.transcriptKn : selectedVideo.transcriptEn}
+                </p>
+              </div>
+
+              {/* Modal CTAs */}
+              <div className="pt-2 flex flex-col sm:flex-row gap-2.5">
+                <Link
+                  href="/contact"
+                  onClick={() => setSelectedVideo(null)}
+                  className="flex-1 py-3 px-4 bg-orange-600 hover:bg-orange-500 text-white rounded-xl font-black text-center transition-colors shadow-md"
+                >
+                  Apply for Doorstep Loan &rarr;
+                </Link>
+                <a
+                  href={`https://wa.me/919845123450?text=Namaskara,%20I%20watched%20the%20case%20study%20of%20${encodeURIComponent(selectedVideo.nameEn)}%20and%20want%20loan%20details.`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="py-3 px-5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl font-extrabold flex items-center justify-center gap-1.5 transition-colors border border-emerald-600"
+                >
+                  <MessageCircle className="w-4 h-4 text-emerald-300" />
+                  <span>WhatsApp</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <PublicFooter />
     </div>

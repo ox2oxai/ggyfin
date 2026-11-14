@@ -17,12 +17,14 @@ export function PublicFooter() {
       scheme2: 'SCHM-702: Dairy Development Loan',
       scheme3: 'SCHM-703: Powerloom Artisan Loan',
       scheme4: 'SCHM-704: Organic Agri-Allied Loan',
+      investmentsLink: 'Rural Wealth: Micro-SIP & FDs',
       branchesTitle: 'Karnataka Branches',
       branch1: 'Bengaluru City & Rural Hub',
       branch2: 'Ramanagara & Channapatna Hub',
       branch3: 'Mandya & Maddur Hub',
       branch4: 'Tumakuru & Kunigal Hub',
       branch5: 'Mysuru & Nanjangud Hub',
+      contactAllLink: 'All Branches & Nodal Office →',
       grievanceTitle: 'Nodal Grievance Redressal',
       grievanceOfficer: 'Principal Nodal Officer: Smt. Anita Deshmukh',
       tollFree: 'Toll-Free: 1800-209-4321 (9 AM - 6 PM)',
@@ -42,12 +44,14 @@ export function PublicFooter() {
       scheme2: 'SCHM-702: ಹೈನುಗಾರಿಕೆ ಅಭಿವೃದ್ಧಿ ಸಾಲ',
       scheme3: 'SCHM-703: ನೇಯ್ಗೆ & ಕೈಮಗ್ಗ ಕುಶಲಕರ್ಮಿ ಸಾಲ',
       scheme4: 'SCHM-704: ಕಿರು ಕೃಷಿ & ತೋಟಗಾರಿಕೆ ಸಾಲ',
+      investmentsLink: 'ಗ್ರಾಮೀಣ ಹೂಡಿಕೆ: ಮ್ಯೂಚುಯಲ್ ಫಂಡ್ & ಎಫ್‌ಡಿ',
       branchesTitle: 'ಕರ್ನಾಟಕ ಶಾಖಾ ಜಾಲ',
       branch1: 'ಬೆಂಗಳೂರು ನಗರ & ಗ್ರಾಮಾಂತರ',
       branch2: 'ರಾಮನಗರ & ಚನ್ನಪಟ್ಟಣ',
       branch3: 'ಮಂಡ್ಯ & ಮದ್ದೂರು',
       branch4: 'ತುಮಕೂರು & ಕುಣಿಗಲ್',
       branch5: 'ಮೈಸೂರು & ನಂಜನಗೂಡು',
+      contactAllLink: 'ಎಲ್ಲಾ ಶಾಖೆಗಳ ಸಂಪರ್ಕ & ನೊಡಲ್ ಕಚೇರಿ →',
       grievanceTitle: 'ಕುಂದುಕೊರತೆ ನಿವಾರಣೆ',
       grievanceOfficer: 'ಮುಖ್ಯ ಕುಂದುಕೊರತೆ ಅಧಿಕಾರಿ: ಶ್ರೀಮತಿ ಅನಿತಾ ದೇಶಮುಖ್',
       tollFree: 'ಉಚಿತ ಕರೆ: 1800-209-4321 (ಬೆಳಿಗ್ಗೆ 9 - ಸಂಜೆ 6)',
@@ -114,6 +118,12 @@ export function PublicFooter() {
                 {t.scheme4}
               </Link>
             </li>
+            <li className="pt-1.5 border-t border-emerald-800/60">
+              <Link href="/investments" className="text-amber-300 hover:text-white font-bold flex items-center gap-1">
+                <span>{t.investmentsLink}</span>
+                <span>&rarr;</span>
+              </Link>
+            </li>
           </ul>
         </div>
 
@@ -128,6 +138,11 @@ export function PublicFooter() {
             <li>{t.branch3}</li>
             <li>{t.branch4}</li>
             <li>{t.branch5}</li>
+            <li className="pt-1.5 border-t border-emerald-800/60">
+              <Link href="/contact" className="text-amber-300 hover:text-white font-bold block">
+                {t.contactAllLink}
+              </Link>
+            </li>
           </ul>
         </div>
 
