@@ -1,27 +1,44 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600;1,700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --background: #faf8f5;
-  --foreground: #142720;
+  --background: #f8faf8;
+  --foreground: #062e1c;
+  --primary-saffron: #f97316;
+  --primary-saffron-hover: #ea580c;
+  --primary-emerald: #064e3b;
+  --deep-forest: #062e1c;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11', 'tnum';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom scrollbar for mobile / desktop */
+/* Tabular numerals for all currency, rates, and numbers */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Custom Bank-Grade Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
 }
 ::-webkit-scrollbar-track {
-  background: #f3ece2;
+  background: #f1f5f2;
 }
 ::-webkit-scrollbar-thumb {
-  background: #c85a32;
+  background: #0e4b2f;
   border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #f97316;
 }
