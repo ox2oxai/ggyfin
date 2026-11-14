@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { LanguageProvider } from '../components/language-context';
 
 export const metadata: Metadata = {
   title: 'GGY Finance | Micro Money Lending Platform',
@@ -14,7 +15,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body className="min-h-screen bg-sandstone-100 text-forest-900 antialiased selection:bg-terracotta-500 selection:text-white">
-        {children}
+        <LanguageProvider>
+          {children}
+        </LanguageProvider>
       </body>
     </html>
   );
