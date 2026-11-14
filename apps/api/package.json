@@ -1,0 +1,37 @@
+{
+  "name": "@nbfc/api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Clean REST API backend for Indian NBFC Platform with 100% PostgreSQL Parity",
+  "type": "module",
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "tsc -b",
+    "start": "node dist/server.js",
+    "dev": "tsx watch src/server.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx src/db/migrate.ts",
+    "test": "node --test dist/**/*.test.js"
+  },
+  "dependencies": {
+    "@fastify/cors": "^9.0.1",
+    "@fastify/jwt": "^8.0.1",
+    "@fastify/multipart": "^8.3.0",
+    "@fastify/rate-limit": "^9.1.0",
+    "@nbfc/shared": "*",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.33.0",
+    "fastify": "^4.28.1",
+    "pg": "^8.12.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^22.5.4",
+    "@types/pg": "^8.11.8",
+    "drizzle-kit": "^0.24.2",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.4"
+  }
+}

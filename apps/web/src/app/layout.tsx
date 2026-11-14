@@ -1,0 +1,21 @@
+import type { Metadata } from 'next';
+import './globals.css';
+
+export const metadata: Metadata = {
+  title: 'GGY Finance | Micro Money Lending Platform',
+  description: 'RBI-Registered Base-Layer Micro Money Lending Platform providing transparent credit for micro-enterprises, dairy, and rural livelihoods.',
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en" className="scroll-smooth">
+      <body className="min-h-screen bg-sandstone-100 text-forest-900 antialiased selection:bg-terracotta-500 selection:text-white">
+        {children}
+      </body>
+    </html>
+  );
+}

@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  # 1. Native PostgreSQL 16 Transactional Database (100% Parity with Supabase)
+  postgres:
+    image: postgres:16-alpine
+    container_name: ggy_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ggy_admin
+      POSTGRES_PASSWORD: GGYSecurePassword@2026
+      POSTGRES_DB: ggy_finance
+      TZ: Asia/Kolkata
+    ports:
+      - "5432:5432"
+    volumes:
+      - ggy_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ggy_admin -d ggy_finance"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. Fastify Core Banking REST API (Maker-Checker, AES-256-GCM Vault, Collections, Analytics)
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: ggy_api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      HOST: 0.0.0.0
+      DATABASE_URL: postgresql://ggy_admin:GGYSecurePassword@2026@postgres:5432/ggy_finance
+      JWT_SECRET: super_secure_production_jwt_signing_key_for_ggy_finance_2026
+      KYC_MASTER_KEY: c39121a8eb83794d0e527d7f7e914bb491a61c3f2d2b51614e56994ec81358a9
+      UPI_VPA: ggycollect@icici
+      UPI_PAYEE_NAME: GGY Finance
+      STORAGE_DRIVER: local
+      TZ: Asia/Kolkata
+    ports:
+      - "4000:4000"
+    volumes:
+      - ggy_vault_data:/app/vault_storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # 3. Next.js Bharat-Modern Frontend (Public Landing + Field PWA + Checker Console + Analytics)
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    container_name: ggy_web
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+      NEXT_PUBLIC_API_URL: http://localhost:4000
+      TZ: Asia/Kolkata
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+volumes:
+  ggy_pgdata:
+    name: ggy_postgres_data
+  ggy_vault_data:
+    name: ggy_vault_storage

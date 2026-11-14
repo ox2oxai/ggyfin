@@ -1,0 +1,33 @@
+{
+  "name": "nbfc-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Production-grade, secure, single-tenant white-label NBFC Core Banking & Lending Platform",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "dev:api": "npm run dev --workspace=@nbfc/api",
+    "dev:web": "npm run dev --workspace=@nbfc/web",
+    "db:migrate": "npm run db:migrate --workspace=@nbfc/api",
+    "docker:build": "docker compose build",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f"
+  },
+  "keywords": [
+    "nbfc",
+    "banking",
+    "fintech",
+    "india",
+    "lending",
+    "maker-checker",
+    "upi"
+  ],
+  "author": "",
+  "license": "UNLICENSED"
+}

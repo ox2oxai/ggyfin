@@ -1,0 +1,302 @@
+'use client';
+
+import React, { useState } from 'react';
+import {
+  ShieldCheck,
+  FileCheck2,
+  AlertCircle,
+  Eye,
+  CheckCircle,
+  XCircle,
+  Clock,
+  UserCheck,
+  FileText,
+  Lock
+} from 'lucide-react';
+
+interface PendingApplication {
+  id: string;
+  cifNumber: string;
+  customerName: string;
+  phone: string;
+  address: string;
+  maskedAadhaar: string;
+  loanPurpose: string;
+  principalAmount: number;
+  interestRate: number;
+  tenureMonths: number;
+  emiAmount: number;
+  makerName: string;
+  submittedAt: string;
+}
+
+export default function ApprovalsPage() {
+  const [applications, setApplications] = useState<PendingApplication[]>([
+    {
+      id: 'acc-app-001',
+      cifNumber: 'CIF-2026-F9A1B2',
+      customerName: 'Suresh Gowda',
+      phone: '+91 98450 12345',
+      address: 'Plot No 4, Maddur Taluk, Mandya, Karnataka - 571428',
+      maskedAadhaar: 'XXXX-XXXX-4821',
+      loanPurpose: 'Dairy & Cattle Purchase',
+      principalAmount: 75000,
+      interestRate: 13.0,
+      tenureMonths: 18,
+      emiAmount: 4607.33,
+      makerName: 'Field Officer Ramesh (Branch KA-BLR-01)',
+      submittedAt: 'Today, 03:45 PM'
+    },
+    {
+      id: 'acc-app-002',
+      cifNumber: 'CIF-2026-C4B8E1',
+      customerName: 'Anandi Devi',
+      phone: '+91 97410 54321',
+      address: 'Near Bus Stand, Ramanagara, Karnataka - 562159',
+      maskedAadhaar: 'XXXX-XXXX-9023',
+      loanPurpose: 'Kirana / Retail Inventory',
+      principalAmount: 50000,
+      interestRate: 14.5,
+      tenureMonths: 12,
+      emiAmount: 4501.25,
+      makerName: 'Field Officer Ramesh (Branch KA-BLR-01)',
+      submittedAt: 'Today, 02:15 PM'
+    }
+  ]);
+
+  const [selectedAppId, setSelectedAppId] = useState<string>('acc-app-001');
+  const [remarks, setRemarks] = useState('KYC documents audited. Livelihood verification completed. Approved under RBI dual-control.');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [decisionNotice, setDecisionNotice] = useState<{ type: 'APPROVED' | 'REJECTED'; accountNo?: string } | null>(null);
+
+  const activeApp = applications.find((a) => a.id === selectedAppId);
+
+  const handleApprove = () => {
+    if (!activeApp) return;
+    setIsProcessing(true);
+
+    setTimeout(() => {
+      const generatedAccountNo = `GGY-2026-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+      setIsProcessing(false);
+      setDecisionNotice({ type: 'APPROVED', accountNo: generatedAccountNo });
+      setApplications(applications.filter((a) => a.id !== activeApp.id));
+    }, 700);
+  };
+
+  const handleReject = () => {
+    if (!activeApp) return;
+    setIsProcessing(true);
+
+    setTimeout(() => {
+      setIsProcessing(false);
+      setDecisionNotice({ type: 'REJECTED' });
+      setApplications(applications.filter((a) => a.id !== activeApp.id));
+    }, 700);
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Top Banner */}
+      <div className="bg-sandstone-50 p-6 rounded-3xl border border-clay shadow-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <div className="inline-flex items-center gap-1.5 text-xs font-bold text-forest-800 bg-sandstone-200 px-2.5 py-1 rounded-full border border-clay mb-2">
+            <UserCheck className="w-3.5 h-3.5 text-terracotta-600" />
+            <span>Authorizer / Checker Workstation • RBI Four-Eyes Control</span>
+          </div>
+          <h2 className="text-xl sm:text-2xl font-black text-forest-900">Pending Approvals Queue</h2>
+          <p className="text-xs text-forest-800/70 mt-0.5">
+            Sole authority to approve or reject customer accounts. Maker cannot approve their own drafted applications.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 text-xs font-bold bg-terracotta-50 text-terracotta-700 px-3.5 py-2 rounded-xl border border-terracotta-200">
+          <Clock className="w-4 h-4 text-terracotta-600" />
+          <span>{applications.length} Applications Awaiting Decision</span>
+        </div>
+      </div>
+
+      {decisionNotice && (
+        <div
+          className={`p-5 rounded-2xl border flex items-start gap-3 text-xs ${
+            decisionNotice.type === 'APPROVED'
+              ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+              : 'bg-amber-50 border-amber-200 text-amber-900'
+          }`}
+        >
+          {decisionNotice.type === 'APPROVED' ? (
+            <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+          ) : (
+            <XCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+          )}
+          <div>
+            <p className="font-bold text-sm">
+              {decisionNotice.type === 'APPROVED'
+                ? `Account Approved & Activated! Core Account No: ${decisionNotice.accountNo}`
+                : 'Application Returned to Maker in DRAFT status with remediation notes.'}
+            </p>
+            <p className="mt-0.5">
+              Decision permanently committed to immutable audit logs with authorizer signature and timestamp.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {applications.length === 0 ? (
+        <div className="bg-sandstone-50 p-12 text-center rounded-3xl border border-clay">
+          <CheckCircle className="w-12 h-12 text-emerald-600 mx-auto mb-3" />
+          <h3 className="font-bold text-lg text-forest-900">All Approvals Cleared</h3>
+          <p className="text-xs text-forest-800/70 mt-1">
+            No pending loan applications in your branch queue.
+          </p>
+        </div>
+      ) : (
+        /* Dual-Pane Layout */
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Left Pane: Customer Application Details */}
+          <div className="lg:col-span-7 bg-sandstone-50 rounded-3xl p-6 border border-clay shadow-xs space-y-6">
+            <div className="flex justify-between items-center border-b border-clay/60 pb-3">
+              <div>
+                <span className="text-[11px] font-bold text-forest-800/60 uppercase">Application Reference</span>
+                <h3 className="font-black text-lg text-forest-900">{activeApp?.cifNumber}</h3>
+              </div>
+              <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
+                PENDING_APPROVAL
+              </span>
+            </div>
+
+            {/* Profile Fields */}
+            <div className="grid grid-cols-2 gap-4 text-xs">
+              <div>
+                <span className="text-forest-800/60 block">Customer Name</span>
+                <span className="font-bold text-forest-900 text-sm">{activeApp?.customerName}</span>
+              </div>
+              <div>
+                <span className="text-forest-800/60 block">Mobile Number</span>
+                <span className="font-bold text-forest-900 text-sm">{activeApp?.phone}</span>
+              </div>
+              <div className="col-span-2">
+                <span className="text-forest-800/60 block">Permanent Address</span>
+                <span className="font-medium text-forest-900">{activeApp?.address}</span>
+              </div>
+              <div>
+                <span className="text-forest-800/60 block">Masked Aadhaar Identifier</span>
+                <span className="font-mono font-bold text-forest-900 text-sm">{activeApp?.maskedAadhaar}</span>
+              </div>
+              <div>
+                <span className="text-forest-800/60 block">Drafted By (Maker)</span>
+                <span className="font-medium text-forest-900">{activeApp?.makerName}</span>
+              </div>
+            </div>
+
+            {/* Loan Terms Summary */}
+            <div className="p-4 bg-sandstone-100 rounded-2xl border border-clay space-y-3">
+              <div className="flex justify-between items-center text-xs">
+                <span className="font-bold text-forest-900">Loan Purpose:</span>
+                <span className="font-extrabold text-terracotta-600">{activeApp?.loanPurpose}</span>
+              </div>
+              <div className="grid grid-cols-3 gap-2 text-center pt-2 border-t border-clay/60 text-xs">
+                <div>
+                  <span className="text-[11px] text-forest-800/60 block">Principal</span>
+                  <span className="font-bold text-forest-900">₹{activeApp?.principalAmount.toLocaleString('en-IN')}</span>
+                </div>
+                <div>
+                  <span className="text-[11px] text-forest-800/60 block">Tenure</span>
+                  <span className="font-bold text-forest-900">{activeApp?.tenureMonths} Mos</span>
+                </div>
+                <div>
+                  <span className="text-[11px] text-forest-800/60 block">Monthly EMI</span>
+                  <span className="font-bold text-emerald-700">₹{activeApp?.emiAmount.toLocaleString('en-IN')}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Checker Remarks Input */}
+            <div>
+              <label className="block text-xs font-bold text-forest-900 mb-1">
+                Authorizer Audit Remarks (Mandatory for RBI Compliance)
+              </label>
+              <textarea
+                rows={2}
+                value={remarks}
+                onChange={(e) => setRemarks(e.target.value)}
+                className="w-full p-2.5 bg-sandstone-100 border border-clay rounded-xl text-xs text-forest-900 focus:ring-2 focus:ring-terracotta-500 outline-hidden"
+              />
+            </div>
+
+            {/* Action Buttons */}
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <button
+                type="button"
+                onClick={handleReject}
+                disabled={isProcessing}
+                className="py-3 px-4 rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 font-bold text-xs flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+              >
+                <XCircle className="w-4 h-4 text-red-600" />
+                <span>Return with Remarks</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleApprove}
+                disabled={isProcessing}
+                className="py-3 px-4 rounded-xl bg-forest-800 hover:bg-forest-900 text-sandstone-50 font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all disabled:opacity-50"
+              >
+                <ShieldCheck className="w-4 h-4 text-terracotta-400" />
+                <span>Approve & Issue Account</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Right Pane: Decrypted KYC Inspection Viewport */}
+          <div className="lg:col-span-5 bg-sandstone-50 rounded-3xl p-6 border border-clay shadow-xs space-y-4">
+            <div className="flex justify-between items-center border-b border-clay/60 pb-3">
+              <h4 className="font-bold text-xs uppercase tracking-wider text-forest-900 flex items-center gap-2">
+                <Lock className="w-4 h-4 text-emerald-600" />
+                <span>Encrypted KYC Document Vault</span>
+              </h4>
+              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                AES-256-GCM
+              </span>
+            </div>
+
+            <div className="bg-sandstone-100 p-3 rounded-xl border border-clay text-[11px] text-forest-800/80 flex items-center gap-2">
+              <Clock className="w-4 h-4 text-terracotta-600 shrink-0" />
+              <span>Inspection View Token: <strong>Active (58s remaining)</strong></span>
+            </div>
+
+            {/* Document Preview Box */}
+            <div className="border border-clay rounded-2xl overflow-hidden bg-sandstone-100/70 p-4 space-y-4 text-center">
+              <div className="w-24 h-24 rounded-full bg-clay mx-auto flex items-center justify-center text-forest-800 font-bold text-2xl border-2 border-forest-800 shadow-sm">
+                SP
+              </div>
+              <div>
+                <p className="text-xs font-bold text-forest-900">{activeApp?.customerName}</p>
+                <p className="text-[10px] text-forest-800/60">Live Field Selfie Verified</p>
+              </div>
+
+              {/* Masked Card Mockup */}
+              <div className="bg-sandstone-50 p-4 rounded-xl border border-clay text-left shadow-xs space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] font-bold text-forest-800/60">GOVT OF INDIA ID PROOF</span>
+                  <span className="text-[10px] font-bold text-emerald-700">MASKED</span>
+                </div>
+                <div className="font-mono text-xs font-extrabold text-forest-900 tracking-wider">
+                  {activeApp?.maskedAadhaar}
+                </div>
+                <p className="text-[9px] text-forest-800/50">
+                  First 8 digits masked under UIDAI regulations. Verified against field physical document.
+                </p>
+              </div>
+            </div>
+
+            <div className="p-3 bg-sandstone-100 rounded-xl text-[10px] text-forest-800/70 leading-relaxed border border-clay/60">
+              <p>
+                <strong>Audit Notice:</strong> Every inspection view event logs your Authorizer user ID, timestamp, and IP address under Section 8 of the DPDP Act 2023.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

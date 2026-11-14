@@ -1,0 +1,46 @@
+# ==========================================
+# GGY Finance - Git Ignore Rules
+# ==========================================
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build Outputs
+dist/
+build/
+.next/
+out/
+*.tsbuildinfo
+
+# Sensitive Secrets & Environment (NEVER COMMIT)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+*.key
+
+# KYC Private Vault Storage (Encrypted KYC Files)
+vault_storage/
+temp_test_storage/
+
+# Logs & Diagnostics
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS & Editor Artifacts
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

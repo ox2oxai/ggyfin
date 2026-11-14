@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #faf8f5;
+  --foreground: #142720;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+}
+
+/* Custom scrollbar for mobile / desktop */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f3ece2;
+}
+::-webkit-scrollbar-thumb {
+  background: #c85a32;
+  border-radius: 4px;
+}
