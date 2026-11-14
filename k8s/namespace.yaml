@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ggy-finance
+  labels:
+    app.kubernetes.io/name: ggy-finance
+    app.kubernetes.io/part-of: core-banking

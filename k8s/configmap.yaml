@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ggy-config
+  namespace: ggy-finance
+data:
+  NODE_ENV: "production"
+  PORT: "4000"
+  HOST: "0.0.0.0"
+  UPI_MERCHANT_VPA: "ggycollect@icici"
+  UPI_PAYEE_NAME: "GGY Finance"
+  STORAGE_DRIVER: "s3"
+  S3_REGION: "ap-south-1"
+  S3_BUCKET_NAME: "ggy-finance-kyc-vault"
+  TRAI_DLT_HEADER: "GGYFIN"
+  TZ: "Asia/Kolkata"
+  NEXT_PUBLIC_API_URL: "https://api.ggyfinance.in"

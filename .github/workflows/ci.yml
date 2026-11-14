@@ -1,0 +1,44 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  test-and-build:
+    name: Build & Test Monorepo
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [ 20.x, 22.x ]
+
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install Monorepo Dependencies
+        run: npm ci
+
+      - name: Build Shared Domain Engine
+        run: npm run build --workspace=@nbfc/shared
+
+      - name: Build Fastify REST API Server
+        run: npm run build --workspace=@nbfc/api
+
+      - name: Execute Full Monorepo Test Suite
+        run: npm test
+        env:
+          NODE_ENV: test
+
+      - name: Build Next.js 14 Presentation Web App
+        run: npm run build --workspace=@nbfc/web
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:4000
