@@ -13,7 +13,9 @@ import {
   ArrowLeftRight,
   Settings,
   ShieldAlert,
-  ArrowRight
+  ArrowRight,
+  Briefcase,
+  Mail
 } from 'lucide-react';
 import { GGYBrandMark } from '../../components/brand-mark';
 
@@ -22,9 +24,16 @@ interface NavTab {
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   roles: UserRole[];
+  badge?: string;
 }
 
 const ALL_TABS: NavTab[] = [
+  {
+    href: '/dashboard/workspace',
+    label: 'My Daily Workspace',
+    icon: Briefcase,
+    roles: [UserRole.FIELD_OFFICER, UserRole.AUTHORIZER, UserRole.BRANCH_MANAGER, UserRole.SYSTEM_ADMIN]
+  },
   {
     href: '/dashboard/field',
     label: 'Field Agent PWA (Onboarding & UPI)',
@@ -60,6 +69,13 @@ const ALL_TABS: NavTab[] = [
     label: 'Core Banking (CBS) & CIF Config',
     icon: Settings,
     roles: [UserRole.SYSTEM_ADMIN]
+  },
+  {
+    href: '/dashboard/mailbox',
+    label: 'Staff Mailbox',
+    icon: Mail,
+    roles: [UserRole.FIELD_OFFICER, UserRole.AUTHORIZER, UserRole.BRANCH_MANAGER, UserRole.SYSTEM_ADMIN],
+    badge: '2'
   }
 ];
 
@@ -96,7 +112,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const userRole = session?.role || UserRole.FIELD_OFFICER;
 
-  // Filter tabs visible to this specific role
+  // Filter tabs visible strictly to this specific role
   const visibleTabs = ALL_TABS.filter((tab) => tab.roles.includes(userRole));
 
   // Check if current route is authorized for this user
@@ -104,57 +120,46 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const isAuthorized = !currentTabConfig || currentTabConfig.roles.includes(userRole);
 
   const getDefaultRouteForRole = (role: UserRole) => {
-    switch (role) {
-      case UserRole.FIELD_OFFICER:
-        return '/dashboard/field';
-      case UserRole.AUTHORIZER:
-        return '/dashboard/approvals';
-      case UserRole.BRANCH_MANAGER:
-        return '/dashboard/transactions';
-      case UserRole.SYSTEM_ADMIN:
-        return '/dashboard/analytics';
-      default:
-        return '/dashboard/field';
-    }
+    return '/dashboard/workspace';
   };
 
   return (
     <div className="min-h-screen bg-sandstone-100 flex flex-col">
-      {/* Top Staff Navigation */}
-      <header className="bg-forest-900 text-sandstone-100 border-b border-forest-800 sticky top-0 z-50">
+      {/* Top Staff Navigation with Saffron-White-Green Bank Palette */}
+      <header className="bg-bankGreen-950 text-sandstone-100 border-b border-bankGreen-800 sticky top-0 z-50 shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-2.5">
               <GGYBrandMark size="sm" />
-              <span className="font-bold text-sm tracking-tight hidden sm:inline">GGY Finance</span>
+              <span className="font-bold text-sm tracking-tight text-white hidden sm:inline">GGY Finance</span>
             </Link>
-            <span className="text-xs text-sandstone-400 hidden sm:inline">•</span>
-            <span className="text-xs bg-forest-800 text-sandstone-200 py-0.5 px-2.5 rounded-full border border-forest-700">
+            <span className="text-xs text-emerald-600 hidden sm:inline">•</span>
+            <span className="text-xs bg-bankGreen-900 text-emerald-200 py-0.5 px-2.5 rounded-full border border-bankGreen-700/60 font-medium">
               Branch: <strong>{mounted ? (session?.branchCode || 'KA-BLR-01') : 'KA-BLR-01'}</strong>
             </span>
-            <span className="hidden md:inline-flex items-center gap-1.5 text-[11px] bg-terracotta-500/20 text-terracotta-300 py-0.5 px-2 rounded-full border border-terracotta-500/40 font-mono">
-              RBAC: <strong>{userRole}</strong>
+            <span className="hidden md:inline-flex items-center gap-1.5 text-[11px] bg-saffron-500/20 text-saffron-300 py-0.5 px-2.5 rounded-full border border-saffron-500/40 font-mono font-bold">
+              ROLE: <strong>{userRole}</strong>
             </span>
           </div>
 
           <div className="flex items-center gap-3">
             <div className="text-right hidden sm:block">
               <p className="text-xs font-bold text-white">{mounted ? (session?.username || 'Staff User') : 'Staff User'}</p>
-              <p className="text-[10px] text-terracotta-400 font-semibold">{mounted ? (session?.role || 'FIELD_OFFICER') : 'FIELD_OFFICER'}</p>
+              <p className="text-[10px] text-saffron-400 font-bold">{mounted ? (session?.role || 'FIELD_OFFICER') : 'FIELD_OFFICER'}</p>
             </div>
 
             <button
               onClick={handleLogout}
-              className="inline-flex items-center gap-1.5 text-xs bg-forest-800 hover:bg-forest-700 text-sandstone-200 py-1.5 px-3 rounded-lg border border-forest-700 transition-all"
+              className="inline-flex items-center gap-1.5 text-xs bg-bankGreen-900 hover:bg-bankGreen-800 text-pearl-100 py-1.5 px-3 rounded-lg border border-bankGreen-700 transition-all font-semibold"
             >
-              <LogOut className="w-3.5 h-3.5 text-terracotta-400" />
+              <LogOut className="w-3.5 h-3.5 text-saffron-400" />
               <span className="hidden sm:inline">Sign Out</span>
             </button>
           </div>
         </div>
 
         {/* Role-Filtered Tab Bar */}
-        <div className="bg-forest-800/80 px-4 sm:px-8 flex gap-6 text-xs font-semibold overflow-x-auto border-t border-forest-700/60">
+        <div className="bg-bankGreen-900/90 px-4 sm:px-8 flex gap-6 text-xs font-semibold overflow-x-auto border-t border-bankGreen-800/80">
           {visibleTabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = pathname === tab.href;
@@ -164,22 +169,27 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 href={tab.href}
                 className={`py-3 inline-flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${
                   isActive
-                    ? 'border-terracotta-500 text-white font-bold'
-                    : 'border-transparent text-sandstone-300 hover:text-white'
+                    ? 'border-saffron-500 text-white font-black'
+                    : 'border-transparent text-emerald-200/80 hover:text-white hover:border-emerald-500/40'
                 }`}
               >
-                <Icon className="w-4 h-4 text-terracotta-400" />
+                <Icon className={`w-4 h-4 ${isActive ? 'text-saffron-400' : 'text-emerald-400'}`} />
                 <span>{tab.label}</span>
+                {tab.badge && (
+                  <span className="ml-1 bg-saffron-500 text-white text-[10px] font-black px-1.5 py-0.2 rounded-full">
+                    {tab.badge}
+                  </span>
+                )}
               </Link>
             );
           })}
         </div>
       </header>
 
-      {/* Main Content Area with RBAC Guard */}
+      {/* Main Content Area with Strict RBAC Guard */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
         {!isAuthorized ? (
-          <div className="max-w-xl mx-auto my-12 bg-sandstone-50 rounded-3xl border-2 border-red-200 p-8 shadow-md text-center space-y-4">
+          <div className="max-w-xl mx-auto my-12 bg-white rounded-3xl border-2 border-red-200 p-8 shadow-md text-center space-y-4">
             <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto">
               <ShieldAlert className="w-6 h-6" />
             </div>

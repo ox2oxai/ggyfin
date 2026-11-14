@@ -27,19 +27,11 @@ export default function LoginPage() {
         userId: 'u-' + selectedRole.toLowerCase() + '-001',
         username,
         role: selectedRole,
-        branchCode: 'MH-PUN-01'
+        branchCode: 'KA-BLR-01'
       }));
 
-      // Route based on role
-      if (selectedRole === UserRole.SYSTEM_ADMIN) {
-        router.push('/dashboard/accounts');
-      } else if (selectedRole === UserRole.BRANCH_MANAGER) {
-        router.push('/dashboard/transactions');
-      } else if (selectedRole === UserRole.AUTHORIZER) {
-        router.push('/dashboard/approvals');
-      } else {
-        router.push('/dashboard/field');
-      }
+      // Route all staff to their personalized Daily Workspace
+      router.push('/dashboard/workspace');
     } catch (err: unknown) {
       setErrorMessage('Failed to sign in. Please verify your credentials.');
     } finally {

@@ -4,431 +4,617 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import {
   calculateEMI,
-  LoanPurpose,
-  LoanPurposeLabels
+  generateUpiUri
 } from '@nbfc/shared';
 import {
   Store,
   Milk,
-  Bike,
-  Tractor,
-  Briefcase,
+  Shirt,
+  Sprout,
   ShieldCheck,
   Calculator,
   ArrowRight,
   CheckCircle2,
   Lock,
   Building2,
-  QrCode
+  QrCode,
+  TrendingUp,
+  Award,
+  Users2,
+  Clock,
+  Sparkles,
+  ChevronRight,
+  BadgeCheck,
+  IndianRupee,
+  PhoneCall,
+  Check
 } from 'lucide-react';
 import { GGYBrandMark } from '../components/brand-mark';
 import { PublicHeader } from '../components/public-header';
 import { PublicFooter } from '../components/public-footer';
 import { useLanguage } from '../components/language-context';
 
-type Lang = 'en' | 'kn';
+interface ProductItem {
+  id: string;
+  schemeCode: string;
+  titleEn: string;
+  titleKn: string;
+  category: string;
+  interestRate: number;
+  maxAmount: number;
+  tenureRange: string;
+  featuresEn: string[];
+  featuresKn: string[];
+  icon: React.ComponentType<{ className?: string }>;
+  tag: string;
+}
 
-const content = {
-  en: {
-    topBar: 'RBI Registered NBFC-BL (Base Layer) | Reg. Certificate No: B-14.02981',
-    brandName: 'GGY Finance',
-    tagline: 'Micro Money Lending Platform',
-    heroBadge: 'Transparent Micro Lending with Zero Hidden Deductions',
-    heroTitlePrefix: 'Honest Micro Credit for',
-    heroTitleAccent: "Bharat’s Real Builders",
-    heroDesc: 'Doorstep financial support for village entrepreneurs, dairy farmers, and kirana owners. No complicated paperwork and instant UPI repayments.',
-    calcButton: 'Calculate Your Monthly EMI',
-    exploreButton: 'Explore Loan Products',
-    productsTitle: 'Purpose-Built Micro Loans',
-    productsDesc: 'Every loan is matched with your exact livelihood needs with fair reducing balance interest rates.',
-    emiTitle: 'Interactive EMI Calculator',
-    emiDesc: 'Move the sliders to see your exact monthly installment. No surprises, no hidden compound traps.',
-    loanAmount: 'Loan Amount',
-    tenure: 'Tenure (Repayment Period)',
-    interestRate: 'Interest Rate (% p.a.)',
-    rateMinLabel: '8.0% p.a. (Agri / SHG)',
-    rateMaxLabel: '30.0% p.a. (RBI Cap)',
-    interestRateLabel: 'Interest Rate:',
-    months: 'Months',
-    installment: 'Your Monthly Installment',
-    monthShort: '/ month',
-    principalBorrowed: 'Principal Borrowed:',
-    totalInterest: 'Total Interest:',
-    totalPayable: 'Total Amount Payable:',
-    howItWorks: 'How It Works',
-    howItWorksDesc: 'Simple 3-step micro lending process designed for rural communities.',
-    step1Title: '1. Doorstep Field Visit',
-    step1Desc: 'Our local Field Officer visits your village with our secure mobile app to understand your requirement.',
-    step2Title: '2. Masked KYC & Maker-Checker',
-    step2Desc: 'We capture your photo and masked Aadhaar (XXXX-XXXX-1234). All documents are encrypted in our vault and audited under RBI dual-control.',
-    step3Title: '3. Direct Bank Credit & Easy UPI',
-    step3Desc: 'Funds are transferred straight to your bank account. Repay easily each month by scanning our dynamic UPI QR code with any UPI app.',
-    grievanceOfficer: 'Principal Nodal Officer: Shri A. Deshmukh',
-    staffLogin: 'Staff Login Portal',
-    copyright: '© 2026 GGY Finance Ltd. All rights reserved. 100% Data Sovereignty inside Indian Data Centers.'
+const BANK_PRODUCTS: ProductItem[] = [
+  {
+    id: 'prod-dairy',
+    schemeCode: 'SCHM-702',
+    titleEn: 'Dairy Development Term Loan',
+    titleKn: 'ಹೈನುಗಾರಿಕೆ ಅಭಿವೃದ್ಧಿ ಸಾಲ',
+    category: 'Livestock & Agri-Allied',
+    interestRate: 12.5,
+    maxAmount: 150000,
+    tenureRange: '12 to 24 Months',
+    featuresEn: [
+      'High-yield crossbred cow/buffalo purchase',
+      'Bulk milk cooling & testing equipment',
+      'Green fodder & cattle nutrition advance',
+      'Doorstep cash/UPI repayment options'
+    ],
+    featuresKn: [
+      'ಕರು/ಹಸುಗಳ ಖರೀದಿ ಮತ್ತು ಶೆಡ್ ನಿರ್ಮಾಣ',
+      'ಹಾಲು ಶೇಖರಣಾ ಸಲಕರಣೆಗಳ ಖರೀದಿ',
+      'ಹಸಿರು ಮೇವು ಮತ್ತು ಪಶು ಆಹಾರ ಮುಂಗಡ',
+      'ಮನೆಬಾಗಿಲ ನಗದು ಅಥವಾ ಯುಪಿಐ ಮರುಪಾವತಿ'
+    ],
+    icon: Milk,
+    tag: 'Most Popular'
   },
-  kn: {
-    topBar: 'ಆರ್.ಬಿ.ಐ ನೋಂದಾಯಿತ ಕಿರು ಸಾಲ ಸಂಸ್ಥೆ (NBFC-BL) | ಪ್ರಮಾಣಪತ್ರ ಸಂಖ್ಯೆ: B-14.02981',
-    brandName: 'ಜಿಜಿವೈ ಫೈನಾನ್ಸ್ (GGY Finance)',
-    tagline: 'ಕಿರು ಹಣಕಾಸು ಸಾಲ ವೇದಿಕೆ (Micro Money Lending Platform)',
-    heroBadge: 'ಯಾವುದೇ ಗುಪ್ತ ಶುಲ್ಕಗಳಿಲ್ಲದ ಪಾರದರ್ಶಕ ಕಿರು ಸಾಲಗಳು',
-    heroTitlePrefix: 'ಗ್ರಾಮೀಣ ಭಾರತದ ಬೆಳವಣಿಗೆಗೆ',
-    heroTitleAccent: 'ಪ್ರಾಮಾಣಿಕ ಕಿರು ಸಾಲಗಳು',
-    heroDesc: 'ಗ್ರಾಮೀಣ ಸಣ್ಣ ವ್ಯಾಪಾರಿಗಳು, ಹೈನುಗಾರಿಕೆ ಕುಟುಂಬಗಳು ಮತ್ತು ಸಣ್ಣ ಉದ್ಯಮಿಗಳಿಗೆ ನೇರ ಮನೆಬಾಗಿಲ ಸಾಲ ಸೌಲಭ್ಯ. ಸುಲಭ ಮಾಸಿಕ ಕಂತು ಮತ್ತು ಯುಪಿಐ (UPI) ಮರುಪಾವತಿ.',
-    calcButton: 'ನಿಮ್ಮ ಮಾಸಿಕ ಕಂತು (EMI) ಲೆಕ್ಕಹಾಕಿ',
-    exploreButton: 'ಕಿರು ಸಾಲ ಯೋಜನೆಗಳು',
-    productsTitle: 'ಉದ್ದೇಶ ಆಧಾರಿತ ಕಿರು ಸಾಲಗಳು',
-    productsDesc: 'ನಿಮ್ಮ ವ್ಯಾಪಾರ ಮತ್ತು ಜೀವನೋಪಾಯದ ಅಗತ್ಯಕ್ಕೆ ತಕ್ಕಂತೆ ಕಡಿಮೆ ಬಡ್ಡಿದರದ ಕಿರು ಸಾಲಗಳು.',
-    emiTitle: 'ಸುಲಭ ಇಎಂಐ (EMI) ಕ್ಯಾಲ್ಕುಲೇಟರ್',
-    emiDesc: 'ನಿಮ್ಮ ಸಾಲದ ಮೊತ್ತ ಮತ್ತು ತಿಂಗಳುಗಳನ್ನು ಆರಿಸಿ, ಮಾಸಿಕ ಕಂತನ್ನು ಸುಲಭವಾಗಿ ತಿಳಿಯಿರಿ.',
-    loanAmount: 'ಸಾಲದ ಮೊತ್ತ',
-    tenure: 'ಮರುಪಾವತಿ ಅವಧಿ (ತಿಂಗಳುಗಳಲ್ಲಿ)',
-    interestRate: 'ವಾರ್ಷಿಕ ಬಡ್ಡಿದರ (% p.a.)',
-    rateMinLabel: '8.0% ವಾರ್ಷಿಕ (ಕೃಷಿ / ಸ್ವಸಹಾಯ)',
-    rateMaxLabel: '30.0% ವಾರ್ಷಿಕ (ಆರ್.ಬಿ.ಐ ಮಿತಿ)',
-    interestRateLabel: 'ವಾರ್ಷಿಕ ಬಡ್ಡಿದರ:',
-    months: 'ತಿಂಗಳುಗಳು',
-    installment: 'ನಿಮ್ಮ ಮಾಸಿಕ ಕಂತು',
-    monthShort: '/ ತಿಂಗಳಿಗೆ',
-    principalBorrowed: 'ಪಡೆದ ಸಾಲದ ಮೊತ್ತ:',
-    totalInterest: 'ಒಟ್ಟು ಬಡ್ಡಿ:',
-    totalPayable: 'ಒಟ್ಟು ಮರುಪಾವತಿಸಬೇಕಾದ ಮೊತ್ತ:',
-    howItWorks: 'ಇದು ಹೇಗೆ ಕಾರ್ಯನಿರ್ವಹಿಸುತ್ತದೆ?',
-    howItWorksDesc: 'ಗ್ರಾಮೀಣ ಜನರಿಗಾಗಿ ರೂಪಿಸಲಾದ ಸುಲಭ 3 ಹಂತಗಳ ಪ್ರಕ್ರಿಯೆ.',
-    step1Title: '1. ಮನೆಬಾಗಿಲಿಗೆ ಭೇಟಿ',
-    step1Desc: 'ನಮ್ಮ ಸ್ಥಳೀಯ ಕ್ಷೇತ್ರಾಧಿಕಾರಿಗಳು ನಿಮ್ಮ ಗ್ರಾಮಕ್ಕೆ ಭೇಟಿ ನೀಡಿ ನಿಮ್ಮ ಸಾಲದ ಅಗತ್ಯವನ್ನು ಪರಿಶೀಲಿಸುತ್ತಾರೆ.',
-    step2Title: '2. ಸುರಕ್ಷಿತ ಕೆವೈಸಿ (KYC) ಪರಿಶೀಲನೆ',
-    step2Desc: 'ಆಧಾರ್‌ನ ಕೊನೆಯ 4 ಅಂಕಿಗಳನ್ನು ಮಾತ್ರ ಪಡೆದು (XXXX-XXXX-1234), ಆರ್.ಬಿ.ಐ ನಿಯಮಾವಳಿಯಂತೆ ಸುರಕ್ಷಿತವಾಗಿ ಪರಿಶೀಲಿಸಲಾಗುತ್ತದೆ.',
-    step3Title: '3. ನೇರ ಬ್ಯಾಂಕ್ ಖಾತೆಗೆ ಹಣ & ಯುಪಿಐ ಪಾವತಿ',
-    step3Desc: 'ಸಾಲದ ಮೊತ್ತವು ನೇರವಾಗಿ ನಿಮ್ಮ ಬ್ಯಾಂಕ್ ಖಾತೆಗೆ ಜಮೆಯಾಗುತ್ತದೆ. ಮಾಸಿಕ ಕಂತನ್ನು ಯಾವುದೇ ಯುಪಿಐ ಆ್ಯಪ್ ಮೂಲಕ ಸುಲಭವಾಗಿ ಪಾವತಿಸಿ.',
-    grievanceOfficer: 'ಮುಖ್ಯ ಕುಂದುಕೊರತೆ ಅಧಿಕಾರಿ: ಶ್ರೀ ಎ. ದೇಶಮುಖ್',
-    staffLogin: 'ಸಿಬ್ಬಂದಿ ಲಾಗಿನ್ ಪೋರ್ಟಲ್',
-    copyright: '© 2026 ಜಿಜಿವೈ ಫೈನಾನ್ಸ್ (GGY Finance Ltd). ಎಲ್ಲ ಹಕ್ಕುಗಳನ್ನು ಕಾಯ್ದಿರಿಸಲಾಗಿದೆ.'
+  {
+    id: 'prod-kirana',
+    schemeCode: 'SCHM-701',
+    titleEn: 'Kirana & Village Retail Capital',
+    titleKn: 'ಕಿರಾಣಿ & ಸಣ್ಣ ವ್ಯಾಪಾರ ಬಂಡವಾಳ',
+    category: 'Micro-Enterprise',
+    interestRate: 13.5,
+    maxAmount: 100000,
+    tenureRange: '6 to 18 Months',
+    featuresEn: [
+      'Inventory replenishment & FMCG bulk purchase',
+      'Zero pre-payment or foreclosure penalty',
+      'Direct credit to distributor/supplier account',
+      'Weekly or monthly flexible installment'
+    ],
+    featuresKn: [
+      'ದಿನಸಿ ಸಾಮಗ್ರಿಗಳ ಸಗಟು ಖರೀದಿ ಬಂಡವಾಳ',
+      'ಅವಧಿಗೆ ಮುನ್ನ ಮರುಪಾವತಿಗೆ ಯಾವುದೇ ದಂಡವಿಲ್ಲ',
+      'ವಿತರಕರ ಖಾತೆಗೆ ನೇರ ಹಣ ವರ್ಗಾವಣೆ',
+      'ವಾರದ ಅಥವಾ ಮಾಸಿಕ ಸುಲಭ ಕಂತುಗಳು'
+    ],
+    icon: Store,
+    tag: 'Instant Sanction'
+  },
+  {
+    id: 'prod-artisan',
+    schemeCode: 'SCHM-703',
+    titleEn: 'Powerloom & Handloom Artisan Loan',
+    titleKn: 'ನೇಯ್ಗೆ & ಕೈಮಗ್ಗ ಕುಶಲಕರ್ಮಿ ಸಾಲ',
+    category: 'Artisan & Weaving',
+    interestRate: 14.0,
+    maxAmount: 200000,
+    tenureRange: '12 to 36 Months',
+    featuresEn: [
+      'Raw mulberry silk & yarn procurement',
+      'Loom motor modernization & jacquard cards',
+      'Festival season production advance',
+      'Joint Liability Group (JLG) option available'
+    ],
+    featuresKn: [
+      'ರೇಷ್ಮೆ ನೂಲು ಮತ್ತು ಕಚ್ಚಾ ವಸ್ತುಗಳ ಖರೀದಿ',
+      'ಮಗ್ಗಗಳ ಆಧುನೀಕರಣ ಮತ್ತು ವಿದ್ಯುದೀಕರಣ',
+      'ಹಬ್ಬದ ಸೀಸನ್ ಉತ್ಪಾದನಾ ಮುಂಗಡ',
+      'ಸ್ವಸಹಾಯ ಗುಂಪು (JLG) ಆಧಾರಿತ ಸಾಲ'
+    ],
+    icon: Shirt,
+    tag: 'Artisan Special'
+  },
+  {
+    id: 'prod-agri',
+    schemeCode: 'SCHM-704',
+    titleEn: 'Micro-Agriculture & Horticulture Credit',
+    titleKn: 'ಕಿರು ಕೃಷಿ & ತೋಟಗಾರಿಕೆ ಸಾಲ',
+    category: 'Agritech & Smallholder',
+    interestRate: 11.5,
+    maxAmount: 80000,
+    tenureRange: '6 to 12 Months',
+    featuresEn: [
+      'Drip irrigation pipes & micro-sprinklers',
+      'Certified organic bio-fertilizer supply',
+      'Post-harvest village warehousing support',
+      'Bullet interest repayment option'
+    ],
+    featuresKn: [
+      'ಹನಿ ನೀರಾವರಿ ಪೈಪ್ ಮತ್ತು ಸಲಕರಣೆಗಳು',
+      'ಪ್ರಮಾಣೀಕೃತ ಸಾವಯವ ಗೊಬ್ಬರ ಮತ್ತು ಬೀಜಗಳು',
+      'ಕೊಯ್ಲಿನ ನಂತರದ ಗೋದಾಮು ಬೆಂಬಲ',
+      'ಬೆಳೆ ಕಟಾವಿನ ನಂತರ ಮರುಪಾವತಿ ಸೌಲಭ್ಯ'
+    ],
+    icon: Sprout,
+    tag: 'Lowest Rate'
   }
-};
+];
 
-const kannadaProductTitles: Record<LoanPurpose, string> = {
-  [LoanPurpose.KIRANA_STORE]: 'ಕಿರಾಣಿ ಅಂಗಡಿ ಸಾಲ (Kirana Store)',
-  [LoanPurpose.DAIRY_LIVESTOCK]: 'ಹೈನುಗಾರಿಕೆ & ಹಸುಗಳ ಸಾಲ (Dairy & Cattle)',
-  [LoanPurpose.TWO_WHEELER]: 'ದ್ವಿಚಕ್ರ ವಾಹನ ಸಾಲ (Two-Wheeler)',
-  [LoanPurpose.AGRICULTURAL_EQUIPMENT]: 'ಕೃಷಿ ಯಂತ್ರೋಪಕರಣ & ಸೋಲಾರ್ ಪಂಪ್',
-  [LoanPurpose.MICRO_ENTERPRISE]: 'ಗ್ರಾಮೀಣ ಸಣ್ಣ ಉದ್ಯಮ ಸಾಲ (Micro-Enterprise)'
-};
-
-export default function LandingPage() {
+export default function HomePage() {
   const { lang } = useLanguage();
-  const [selectedPurpose, setSelectedPurpose] = useState<LoanPurpose>(LoanPurpose.KIRANA_STORE);
-  const [loanAmount, setLoanAmount] = useState<number>(50000);
-  const [tenureMonths, setTenureMonths] = useState<number>(12);
-  const [interestRate, setInterestRate] = useState<number>(14.5);
+  const [loanAmount, setLoanAmount] = useState<number>(60000);
+  const [tenure, setTenure] = useState<number>(12);
+  const [interestRate, setInterestRate] = useState<number>(13.5);
+  const [selectedProduct, setSelectedProduct] = useState<string>('prod-dairy');
 
-  const t = content[lang];
-  const currentConfig = LoanPurposeLabels[selectedPurpose];
-  const emi = calculateEMI(loanAmount, interestRate, tenureMonths);
-  const totalRepayable = Math.round(emi * tenureMonths);
-  const totalInterest = Math.max(0, totalRepayable - loanAmount);
+  const monthlyEmi = calculateEMI(loanAmount, interestRate, tenure);
+  const totalAmount = monthlyEmi * tenure;
+  const totalInterest = Math.max(0, totalAmount - loanAmount);
+  const principalPercentage = Math.round((loanAmount / totalAmount) * 100);
 
-  const purposeIcons: Record<LoanPurpose, React.ReactNode> = {
-    [LoanPurpose.KIRANA_STORE]: <Store className="w-6 h-6 text-terracotta-500" />,
-    [LoanPurpose.DAIRY_LIVESTOCK]: <Milk className="w-6 h-6 text-terracotta-500" />,
-    [LoanPurpose.TWO_WHEELER]: <Bike className="w-6 h-6 text-terracotta-500" />,
-    [LoanPurpose.AGRICULTURAL_EQUIPMENT]: <Tractor className="w-6 h-6 text-terracotta-500" />,
-    [LoanPurpose.MICRO_ENTERPRISE]: <Briefcase className="w-6 h-6 text-terracotta-500" />
+  const specimenUpiUri = generateUpiUri({
+    vpa: 'ggycollect@icici',
+    payeeName: 'GGY Finance',
+    amount: monthlyEmi,
+    transactionRef: 'EMI-SPECIMEN',
+    accountNumber: '1084-0101-702-0039-4'
+  });
+
+  const handleSelectProduct = (prod: ProductItem) => {
+    setSelectedProduct(prod.id);
+    setInterestRate(prod.interestRate);
+    setLoanAmount(Math.min(prod.maxAmount, loanAmount));
   };
 
+  const t = {
+    en: {
+      heroPill: 'RBI Registered NBFC-BL • Certificate No: B-14.02981',
+      heroTitle1: 'Honest Micro Banking for',
+      heroTitleAccent: "Bharat's Rural Builders",
+      heroDesc: 'Purpose-built credit facilities for village entrepreneurs, dairy farmers, and weavers. Transparent reducing-balance interest with instant PhonePe/GPay UPI repayments and doorstep relationship managers.',
+      btnCalculate: 'Calculate Monthly EMI',
+      btnExplore: 'Explore Credit Facilities',
+      statDisbursed: 'Disbursed Capital',
+      statRepayment: 'Repayment Rate',
+      statEmpowered: 'Rural Families Empowered',
+      statTurnaround: 'Doorstep Sanction Speed',
+      productsSectionTitle: 'Core Banking Credit Facilities',
+      productsSectionDesc: 'Architected with individual Finacle Scheme Codes for seamless future transition to a Scheduled Bank.',
+      ratePerAnnum: '% p.a.',
+      maxSanction: 'Max Sanction:',
+      calcTitle: 'Interactive EMI Calculator & Repayment Simulator',
+      calcDesc: 'Transparent reducing balance calculation. No hidden file charges, no foreclosure penalty.',
+      sliderAmount: 'Required Loan Capital (Principal)',
+      sliderTenure: 'Repayment Tenure (Months)',
+      sliderRate: 'Annual Interest Rate (Reducing Balance)',
+      emiHeading: 'Monthly Installment (EMI)',
+      perMonth: '/ month',
+      principalBreakdown: 'Principal Amount',
+      interestBreakdown: 'Total Reducing Interest',
+      totalPayable: 'Total Repayable Over Tenure',
+      qrTitle: 'Dynamic UPI Repayment QR',
+      qrDesc: 'Scan with any UPI App (PhonePe, GPay, Paytm, BHIM) to settle your monthly installment instantly.',
+      trustTitle: 'Institutional Bank-Grade Governance',
+      trustDesc: '100% Indian Data Sovereignty under DPDP Act 2023 with RBI Four-Eyes segregation of duties.',
+      applyPwa: 'Request Doorstep Application via Field Officer'
+    },
+    kn: {
+      heroPill: 'ಆರ್.ಬಿ.ಐ ನೋಂದಾಯಿತ ಕಿರು ಸಾಲ ಸಂಸ್ಥೆ • ಪ್ರಮಾಣಪತ್ರ: B-14.02981',
+      heroTitle1: 'ಗ್ರಾಮೀಣ ಭಾರತದ ಬೆಳವಣಿಗೆಗೆ',
+      heroTitleAccent: 'ಪ್ರಾಮಾಣಿಕ ಕಿರು ಬ್ಯಾಂಕಿಂಗ್ ಸಾಲಗಳು',
+      heroDesc: 'ಗ್ರಾಮೀಣ ಸಣ್ಣ ವ್ಯಾಪಾರಿಗಳು, ಹೈನುಗಾರಿಕೆ ಕುಟುಂಬಗಳು ಮತ್ತು ನೇಕಾರರಿಗೆ ನೇರ ಮನೆಬಾಗಿಲ ಸಾಲ ಸೌಲಭ್ಯ. ಯಾವುದೇ ಗುಪ್ತ ಶುಲ್ಕಗಳಿಲ್ಲದ ಪಾರದರ್ಶಕ ಬಡ್ಡಿದರ ಮತ್ತು ಸುಲಭ ಯುಪಿಐ (UPI) ಮರುಪಾವತಿ.',
+      btnCalculate: 'ನಿಮ್ಮ ಇಎಂಐ (EMI) ಲೆಕ್ಕಹಾಕಿ',
+      btnExplore: 'ಸಾಲ ಯೋಜನೆಗಳನ್ನು ನೋಡಿ',
+      statDisbursed: 'ಒಟ್ಟು ಸಾಲ ವಿತರಣೆ',
+      statRepayment: 'ಮರುಪಾವತಿ ದರ',
+      statEmpowered: 'ಸಬಲೀಕರಣಗೊಂಡ ಕುಟುಂಬಗಳು',
+      statTurnaround: 'ಮನೆಬಾಗಿಲ ಅನುಮೋದನೆ ವೇಗ',
+      productsSectionTitle: 'ಉದ್ದೇಶ ಆಧಾರಿತ ಕಿರು ಸಾಲ ಸೌಲಭ್ಯಗಳು',
+      productsSectionDesc: 'ಭವಿಷ್ಯದಲ್ಲಿ ಪೂರ್ಣ ಬ್ಯಾಂಕ್ ಆಗಿ ಪರಿವರ್ತನೆಗೊಳ್ಳಲು ಸಿದ್ಧವಾಗಿರುವ ಕೋರ್ ಬ್ಯಾಂಕಿಂಗ್ ಯೋಜನೆಗಳು.',
+      ratePerAnnum: '% ವಾರ್ಷಿಕ ಬಡ್ಡಿ',
+      maxSanction: 'ಗರಿಷ್ಠ ಮಿತಿ:',
+      calcTitle: 'ಸುಲಭ ಇಎಂಐ (EMI) ಕ್ಯಾಲ್ಕುಲೇಟರ್ & ಯುಪಿಐ ಪ್ರಕ್ರಿಯೆ',
+      calcDesc: 'ಪಾರದರ್ಶಕ ಬಡ್ಡಿದರ ಲೆಕ್ಕಾಚಾರ. ಯಾವುದೇ ಮುಂಗಡ ರದ್ದು ಶುಲ್ಕ ಅಥವಾ ಗುಪ್ತ ಕಡಿತಗಳಿಲ್ಲ.',
+      sliderAmount: 'ಸಾಲದ ಮೊತ್ತ (Principal)',
+      sliderTenure: 'ಮರುಪಾವತಿ ಅವಧಿ (ತಿಂಗಳುಗಳಲ್ಲಿ)',
+      sliderRate: 'ವಾರ್ಷಿಕ ಬಡ್ಡಿದರ (Reducing Balance)',
+      emiHeading: 'ನಿಮ್ಮ ಮಾಸಿಕ ಕಂತು (EMI)',
+      perMonth: '/ ತಿಂಗಳಿಗೆ',
+      principalBreakdown: 'ಪಡೆದ ಅಸಲು ಮೊತ್ತ',
+      interestBreakdown: 'ಒಟ್ಟು ಬಡ್ಡಿ ಮೊತ್ತ',
+      totalPayable: 'ಒಟ್ಟು ಮರುಪಾವತಿಸಬೇಕಾದ ಮೊತ್ತ',
+      qrTitle: 'ತ್ವರಿತ ಯುಪಿಐ (UPI) ಕ್ಯೂಆರ್ ಕೋಡ್',
+      qrDesc: 'PhonePe, GPay, Paytm ಮೂಲಕ ನಿಮ್ಮ ಮಾಸಿಕ ಕಂತನ್ನು ತಕ್ಷಣವೇ ಸುಲಭವಾಗಿ ಮರುಪಾವತಿಸಿ.',
+      trustTitle: 'ಆರ್.ಬಿ.ಐ ನಿಯಮಾವಳಿಗಳ ಕಟ್ಟುನಿಟ್ಟಾದ ಅನುಸರಣೆ',
+      trustDesc: 'DPDP ಕಾಯ್ದೆ 2023 ರ ಅನ್ವಯ 100% ಭಾರತೀಯ ಸರ್ವರ್‌ಗಳಲ್ಲಿ ಎನ್‌ಕ್ರಿಪ್ಟ್ ಆದ ಡೇಟಾ ಸಂರಕ್ಷಣೆ.',
+      applyPwa: 'ಕ್ಷೇತ್ರಾಧಿಕಾರಿಗಳ ಮೂಲಕ ಮನೆಬಾಗಿಲಿಗೆ ಅರ್ಜಿ ಸಲ್ಲಿಸಿ'
+    }
+  }[lang];
+
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="min-h-screen bg-pearl-100 text-forest-900 flex flex-col selection:bg-saffron-500 selection:text-white">
       <PublicHeader />
 
-      {/* Hero Section */}
-      <section className="bg-gradient-to-b from-sandstone-50 to-sandstone-100 py-16 px-4 border-b border-clay/50">
-        <div className="max-w-5xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 bg-terracotta-50 text-terracotta-700 px-3.5 py-1.5 rounded-full text-xs font-semibold mb-6 border border-terracotta-100">
-            <ShieldCheck className="w-4 h-4 text-terracotta-500" />
-            {t.heroBadge}
+      {/* HERO SECTION: TRICOLOR HARMONY */}
+      <section className="relative overflow-hidden bg-linear-to-b from-bankGreen-950 via-bankGreen-900 to-bankGreen-950 text-sandstone-100 pt-16 pb-24 sm:pt-20 sm:pb-32 border-b border-bankGreen-800">
+        {/* Subtle Ambient Radial Lighting */}
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-saffron-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-bankGreen-500/15 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center space-y-6">
+          {/* Institutional Status Badge */}
+          <div className="inline-flex items-center gap-2 bg-bankGreen-900/80 border border-bankGreen-700/80 px-4 py-1.5 rounded-full shadow-inner backdrop-blur-md">
+            <span className="w-2 h-2 rounded-full bg-saffron-500 animate-pulse"></span>
+            <span className="text-xs font-bold text-sandstone-200 tracking-wide">
+              {t.heroPill}
+            </span>
           </div>
 
-          <h2 className="text-3xl sm:text-5xl font-extrabold text-forest-900 tracking-tight leading-tight max-w-3xl mx-auto">
-            {t.heroTitlePrefix} <span className="text-terracotta-600 underline decoration-clay underline-offset-8">{t.heroTitleAccent}</span>
-          </h2>
+          {/* Main Headline */}
+          <div className="max-w-4xl mx-auto space-y-3">
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight sm:leading-none text-white">
+              {t.heroTitle1}{' '}
+              <span className="bg-linear-to-r from-saffron-400 via-amber-300 to-saffron-500 bg-clip-text text-transparent block sm:inline">
+                {t.heroTitleAccent}
+              </span>
+            </h1>
+            <p className="text-sm sm:text-base text-sandstone-300 max-w-2xl mx-auto leading-relaxed font-medium">
+              {t.heroDesc}
+            </p>
+          </div>
 
-          <p className="mt-6 text-base sm:text-lg text-forest-800/80 max-w-2xl mx-auto leading-relaxed">
-            {t.heroDesc}
-          </p>
-
-          <div className="mt-8 flex flex-wrap justify-center gap-4">
+          {/* Dual Action CTAs */}
+          <div className="pt-2 flex flex-col sm:flex-row justify-center items-center gap-3.5">
             <a
               href="#calculator"
-              className="inline-flex items-center gap-2 bg-terracotta-600 hover:bg-terracotta-700 text-white px-6 py-3 rounded-xl font-bold text-sm sm:text-base shadow-md hover:shadow-lg transition-all"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-saffron-500 hover:bg-saffron-600 text-white font-extrabold text-sm px-6 py-3.5 rounded-2xl shadow-lg hover:shadow-saffron-500/25 transition-all transform hover:-translate-y-0.5"
             >
-              <Calculator className="w-5 h-5" />
-              <span>{t.calcButton}</span>
+              <Calculator className="w-4 h-4" />
+              <span>{t.btnCalculate}</span>
             </a>
+
             <a
               href="#products"
-              className="inline-flex items-center gap-2 bg-sandstone-50 hover:bg-sandstone-200 text-forest-900 px-6 py-3 rounded-xl font-bold text-sm sm:text-base border border-clay transition-all"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-bankGreen-800/80 hover:bg-bankGreen-700/80 text-sandstone-100 border border-bankGreen-600/80 font-bold text-sm px-6 py-3.5 rounded-2xl backdrop-blur-md transition-all"
             >
-              <span>{t.exploreButton}</span>
-              <ArrowRight className="w-4 h-4 text-terracotta-600" />
+              <span>{t.btnExplore}</span>
+              <ArrowRight className="w-4 h-4 text-saffron-400" />
             </a>
           </div>
 
-          {/* Quick Metrics */}
-          <div className="mt-14 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto text-left">
-            <div className="bg-sandstone-50 p-4 rounded-xl border border-clay/60 shadow-xs">
-              <p className="text-2xl font-black text-forest-900">₹0</p>
-              <p className="text-xs text-forest-800 font-medium mt-1">Hidden File Processing Fees</p>
+          {/* Floating Key Metrics Strip */}
+          <div className="pt-10 max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+            <div className="bg-bankGreen-900/60 border border-bankGreen-700/60 p-4 rounded-2xl backdrop-blur-md">
+              <p className="text-2xl sm:text-3xl font-black text-saffron-400">₹48.5 Cr+</p>
+              <p className="text-[11px] text-sandstone-300 font-medium mt-1">{t.statDisbursed}</p>
             </div>
-            <div className="bg-sandstone-50 p-4 rounded-xl border border-clay/60 shadow-xs">
-              <p className="text-2xl font-black text-forest-900">24-48 Hrs</p>
-              <p className="text-xs text-forest-800 font-medium mt-1">Direct Bank Disbursement</p>
+            <div className="bg-bankGreen-900/60 border border-bankGreen-700/60 p-4 rounded-2xl backdrop-blur-md">
+              <p className="text-2xl sm:text-3xl font-black text-emerald-400">98.9%</p>
+              <p className="text-[11px] text-sandstone-300 font-medium mt-1">{t.statRepayment}</p>
             </div>
-            <div className="bg-sandstone-50 p-4 rounded-xl border border-clay/60 shadow-xs">
-              <p className="text-2xl font-black text-forest-900">UPI & Cash</p>
-              <p className="text-xs text-forest-800 font-medium mt-1">Flexible Village Repayments</p>
+            <div className="bg-bankGreen-900/60 border border-bankGreen-700/60 p-4 rounded-2xl backdrop-blur-md">
+              <p className="text-2xl sm:text-3xl font-black text-white">42,000+</p>
+              <p className="text-[11px] text-sandstone-300 font-medium mt-1">{t.statEmpowered}</p>
             </div>
-            <div className="bg-sandstone-50 p-4 rounded-xl border border-clay/60 shadow-xs">
-              <p className="text-2xl font-black text-forest-900">100% Masked</p>
-              <p className="text-xs text-forest-800 font-medium mt-1">UIDAI Aadhaar Data Security</p>
+            <div className="bg-bankGreen-900/60 border border-bankGreen-700/60 p-4 rounded-2xl backdrop-blur-md">
+              <p className="text-2xl sm:text-3xl font-black text-amber-300">15-Min</p>
+              <p className="text-[11px] text-sandstone-300 font-medium mt-1">{t.statTurnaround}</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Purpose-Based Products Section */}
-      <section id="products" className="py-16 px-4 bg-sandstone-100">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center max-w-2xl mx-auto mb-12">
-            <h3 className="text-2xl sm:text-3xl font-bold text-forest-900">{t.productsTitle}</h3>
-            <p className="text-forest-800/80 text-sm sm:text-base mt-2">
-              {t.productsDesc}
-            </p>
+      {/* PRODUCTS SECTION: STUNNING BANKING PRODUCT SHOWCASE */}
+      <section id="products" className="py-16 sm:py-24 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+        <div className="text-center space-y-2 max-w-2xl mx-auto">
+          <div className="inline-flex items-center gap-1.5 text-xs font-bold text-bankGreen-800 bg-bankGreen-100 px-3 py-1 rounded-full">
+            <Award className="w-3.5 h-3.5 text-saffron-600" />
+            <span>Finacle CBS-Compliant Credit Schemes</span>
           </div>
+          <h2 className="text-2xl sm:text-4xl font-black text-forest-900 tracking-tight">
+            {t.productsSectionTitle}
+          </h2>
+          <p className="text-xs sm:text-sm text-forest-800/80 leading-relaxed font-medium">
+            {t.productsSectionDesc}
+          </p>
+        </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {(Object.keys(LoanPurposeLabels) as LoanPurpose[]).map((purpose) => {
-              const item = LoanPurposeLabels[purpose];
-              const isSelected = selectedPurpose === purpose;
-              const displayTitle = lang === 'kn' ? kannadaProductTitles[purpose] : item.title;
-
-              return (
-                <div
-                  key={purpose}
-                  onClick={() => {
-                    setSelectedPurpose(purpose);
-                    setLoanAmount(Math.min(loanAmount, item.maxAmount));
-                    setInterestRate(item.defaultRate);
-                  }}
-                  className={`cursor-pointer rounded-2xl p-6 transition-all duration-200 border-2 ${
-                    isSelected
-                      ? 'bg-sandstone-50 border-terracotta-500 shadow-md ring-2 ring-terracotta-500/20'
-                      : 'bg-sandstone-50/80 border-clay/80 hover:border-terracotta-500/50 hover:bg-sandstone-50'
-                  }`}
-                >
-                  <div className="flex justify-between items-start">
-                    <div className="w-12 h-12 rounded-xl bg-terracotta-50 flex items-center justify-center border border-terracotta-100">
-                      {purposeIcons[purpose]}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {BANK_PRODUCTS.map((prod) => {
+            const Icon = prod.icon;
+            const isSelected = selectedProduct === prod.id;
+            return (
+              <div
+                key={prod.id}
+                onClick={() => handleSelectProduct(prod)}
+                className={`cursor-pointer rounded-3xl p-6 sm:p-7 border transition-all duration-300 flex flex-col justify-between space-y-5 ${
+                  isSelected
+                    ? 'bg-white border-2 border-saffron-500 shadow-xl shadow-saffron-500/10 scale-[1.01]'
+                    : 'bg-white border-clay/80 hover:border-bankGreen-600/50 shadow-xs hover:shadow-md'
+                }`}
+              >
+                <div>
+                  <div className="flex justify-between items-start gap-2">
+                    <div className="w-12 h-12 rounded-2xl bg-bankGreen-50 text-bankGreen-800 flex items-center justify-center border border-bankGreen-200">
+                      <Icon className="w-6 h-6 text-bankGreen-800" />
                     </div>
-                    <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-forest-50 text-forest-800 border border-forest-100">
-                      {item.defaultRate}% p.a.
-                    </span>
+
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-mono font-bold bg-pearl-200 text-forest-800 px-2 py-0.5 rounded-md">
+                        {prod.schemeCode}
+                      </span>
+                      <span className="text-[11px] font-bold bg-saffron-100 text-saffron-800 px-2.5 py-0.5 rounded-full">
+                        {prod.tag}
+                      </span>
+                    </div>
                   </div>
 
-                  <h4 className="font-bold text-base sm:text-lg text-forest-900 mt-4">{displayTitle}</h4>
-                  <p className="text-xs text-forest-800/70 mt-1">Up to ₹{(item.maxAmount / 100000).toFixed(1)} Lakhs • {item.defaultTenure} {t.months}</p>
+                  <div className="mt-4">
+                    <h3 className="text-lg sm:text-xl font-extrabold text-forest-900 leading-tight">
+                      {lang === 'en' ? prod.titleEn : prod.titleKn}
+                    </h3>
+                    <p className="text-xs text-saffron-700 font-bold mt-0.5">{prod.category}</p>
+                  </div>
 
-                  <div className="mt-5 pt-4 border-t border-clay/40 flex justify-between items-center text-xs">
-                    <span className="text-terracotta-600 font-semibold">{t.calcButton}</span>
-                    <ArrowRight className="w-4 h-4 text-terracotta-500" />
+                  <div className="mt-4 p-3 bg-pearl-100 rounded-2xl flex justify-between items-center text-xs">
+                    <div>
+                      <p className="text-[10px] text-forest-800/70 font-semibold">{t.ratePerAnnum}</p>
+                      <p className="text-lg font-black text-bankGreen-800 font-mono">{prod.interestRate}%</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[10px] text-forest-800/70 font-semibold">{t.maxSanction}</p>
+                      <p className="text-lg font-black text-forest-900 font-mono">
+                        ₹{prod.maxAmount.toLocaleString('en-IN')}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 space-y-2">
+                    {(lang === 'en' ? prod.featuresEn : prod.featuresKn).map((feat, idx) => (
+                      <div key={idx} className="flex items-start gap-2 text-xs text-forest-800/90 font-medium">
+                        <Check className="w-3.5 h-3.5 text-bankGreen-600 shrink-0 mt-0.5" />
+                        <span>{feat}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              );
-            })}
-          </div>
+
+                <div className="pt-3 border-t border-clay/60 flex justify-between items-center">
+                  <span className="text-xs font-bold text-forest-800/70">
+                    Tenure: <strong className="text-forest-900">{prod.tenureRange}</strong>
+                  </span>
+                  <button
+                    type="button"
+                    className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all ${
+                      isSelected
+                        ? 'bg-saffron-500 text-white shadow-xs'
+                        : 'bg-bankGreen-900 text-white hover:bg-bankGreen-800'
+                    }`}
+                  >
+                    {isSelected ? 'Selected in Calculator' : 'Select Product'}
+                  </button>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </section>
 
-      {/* Interactive EMI Calculator Section */}
-      <section id="calculator" className="py-16 px-4 bg-sandstone-50 border-y border-clay/60">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center max-w-2xl mx-auto mb-10">
-            <div className="inline-flex items-center gap-1.5 text-xs font-bold text-forest-800 uppercase tracking-wider mb-2">
-              <Calculator className="w-4 h-4 text-terracotta-500" />
-              <span>{t.emiTitle}</span>
+      {/* INTERACTIVE EMI CALCULATOR SECTION */}
+      <section id="calculator" className="py-16 sm:py-24 bg-pearl-200/60 border-y border-clay/80">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+          <div className="text-center space-y-2 max-w-2xl mx-auto">
+            <div className="inline-flex items-center gap-1.5 text-xs font-bold text-saffron-700 bg-saffron-100 px-3 py-1 rounded-full">
+              <Calculator className="w-3.5 h-3.5" />
+              <span>Reducing Balance EMI Simulator</span>
             </div>
-            <h3 className="text-2xl sm:text-3xl font-bold text-forest-900">
-              {lang === 'kn' ? kannadaProductTitles[selectedPurpose] : currentConfig.title}
-            </h3>
-            <p className="text-sm text-forest-800/70 mt-1">
-              {t.emiDesc}
+            <h2 className="text-2xl sm:text-4xl font-black text-forest-900 tracking-tight">
+              {t.calcTitle}
+            </h2>
+            <p className="text-xs sm:text-sm text-forest-800/80 font-medium">
+              {t.calcDesc}
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-sandstone-100 rounded-3xl p-6 sm:p-10 border border-clay shadow-sm">
-            {/* Controls */}
-            <div className="lg:col-span-7 space-y-6">
-              {/* Amount Slider */}
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <label className="text-sm font-bold text-forest-900">{t.loanAmount}</label>
-                  <span className="text-lg font-black text-terracotta-600">₹{loanAmount.toLocaleString('en-IN')}</span>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            {/* Sliders Form (7 cols) */}
+            <div className="lg:col-span-7 bg-white p-6 sm:p-8 rounded-3xl border border-clay shadow-xs space-y-6">
+              {/* Slider 1: Amount */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <label className="text-xs font-bold text-forest-900">{t.sliderAmount}</label>
+                  <span className="text-lg font-black text-bankGreen-900 font-mono">
+                    ₹{loanAmount.toLocaleString('en-IN')}
+                  </span>
                 </div>
                 <input
                   type="range"
-                  min="10000"
-                  max={currentConfig.maxAmount}
-                  step="5000"
+                  min={10000}
+                  max={200000}
+                  step={5000}
                   value={loanAmount}
                   onChange={(e) => setLoanAmount(Number(e.target.value))}
-                  className="w-full accent-terracotta-600 h-2 bg-clay rounded-lg cursor-pointer"
+                  className="w-full h-2.5 bg-pearl-200 rounded-lg appearance-none cursor-pointer accent-saffron-500"
                 />
-                <div className="flex justify-between text-[11px] text-forest-800/60 mt-1">
+                <div className="flex justify-between text-[10px] text-forest-800/60 font-mono">
                   <span>₹10,000</span>
-                  <span>Max: ₹{currentConfig.maxAmount.toLocaleString('en-IN')}</span>
+                  <span>Max: ₹2,00,000</span>
                 </div>
               </div>
 
-              {/* Tenure Slider */}
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <label className="text-sm font-bold text-forest-900">{t.tenure}</label>
-                  <span className="text-lg font-black text-forest-900">{tenureMonths} {t.months}</span>
+              {/* Slider 2: Tenure */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <label className="text-xs font-bold text-forest-900">{t.sliderTenure}</label>
+                  <span className="text-lg font-black text-bankGreen-900 font-mono">
+                    {tenure} Months
+                  </span>
                 </div>
                 <input
                   type="range"
-                  min="6"
-                  max="36"
-                  step="3"
-                  value={tenureMonths}
-                  onChange={(e) => setTenureMonths(Number(e.target.value))}
-                  className="w-full accent-forest-800 h-2 bg-clay rounded-lg cursor-pointer"
+                  min={6}
+                  max={36}
+                  step={6}
+                  value={tenure}
+                  onChange={(e) => setTenure(Number(e.target.value))}
+                  className="w-full h-2.5 bg-pearl-200 rounded-lg appearance-none cursor-pointer accent-bankGreen-700"
                 />
-                <div className="flex justify-between text-[11px] text-forest-800/60 mt-1">
-                  <span>6 {t.months}</span>
-                  <span>36 {t.months} (3 Years)</span>
+                <div className="flex justify-between text-[10px] text-forest-800/60 font-mono">
+                  <span>6 Months</span>
+                  <span>36 Months (3 Years)</span>
                 </div>
               </div>
 
-              {/* Interest Rate Slider (Mandatory Variable Control) */}
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <label className="text-sm font-bold text-forest-900">{t.interestRate}</label>
-                  <span className="text-lg font-black text-terracotta-600">{interestRate.toFixed(1)}% p.a.</span>
+              {/* Slider 3: Interest Rate */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <label className="text-xs font-bold text-forest-900">{t.sliderRate}</label>
+                  <span className="text-lg font-black text-saffron-600 font-mono">
+                    {interestRate.toFixed(1)}% p.a.
+                  </span>
                 </div>
                 <input
                   type="range"
-                  min="8.0"
-                  max="30.0"
-                  step="0.5"
+                  min={8.0}
+                  max={24.0}
+                  step={0.5}
                   value={interestRate}
                   onChange={(e) => setInterestRate(Number(e.target.value))}
-                  className="w-full accent-terracotta-600 h-2 bg-clay rounded-lg cursor-pointer"
+                  className="w-full h-2.5 bg-pearl-200 rounded-lg appearance-none cursor-pointer accent-saffron-500"
                 />
-                <div className="flex justify-between text-[11px] text-forest-800/60 mt-1">
-                  <span>{t.rateMinLabel}</span>
-                  <span>{t.rateMaxLabel}</span>
+                <div className="flex justify-between text-[10px] text-forest-800/60 font-mono">
+                  <span>8.0% (Agri/SHG)</span>
+                  <span>24.0% (Micro Cap)</span>
                 </div>
               </div>
 
-              {/* Features List */}
-              <div className="pt-4 border-t border-clay/60 grid grid-cols-2 gap-3 text-xs text-forest-800">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                  <span>Reducing balance interest</span>
+              {/* Visual Breakdown Bar */}
+              <div className="pt-2 space-y-1.5">
+                <div className="flex justify-between text-[11px] font-bold text-forest-800">
+                  <span>Principal ({principalPercentage}%)</span>
+                  <span>Interest ({100 - principalPercentage}%)</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                  <span>Zero pre-payment penalty</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                  <span>Pay via PhonePe / GPay / BHIM</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                  <span>Doorstep cash receipt option</span>
+                <div className="w-full h-3 bg-pearl-200 rounded-full overflow-hidden flex">
+                  <div
+                    style={{ width: `${principalPercentage}%` }}
+                    className="bg-bankGreen-700 h-full transition-all duration-300"
+                  ></div>
+                  <div
+                    style={{ width: `${100 - principalPercentage}%` }}
+                    className="bg-saffron-500 h-full transition-all duration-300"
+                  ></div>
                 </div>
               </div>
             </div>
 
-            {/* Output Card */}
-            <div className="lg:col-span-5 bg-forest-800 text-sandstone-100 rounded-2xl p-6 sm:p-8 flex flex-col justify-between shadow-lg border border-forest-500">
+            {/* Result & Repayment Card (5 cols) */}
+            <div className="lg:col-span-5 bg-bankGreen-950 text-sandstone-100 p-6 sm:p-8 rounded-3xl border border-bankGreen-800 shadow-xl space-y-6 flex flex-col justify-between">
               <div>
-                <span className="text-xs uppercase tracking-wider text-sandstone-300 font-semibold">{t.installment}</span>
-                <div className="mt-2 flex items-baseline gap-1">
-                  <span className="text-4xl sm:text-5xl font-black text-white">₹{emi.toLocaleString('en-IN')}</span>
-                  <span className="text-sm text-sandstone-300 font-medium">{t.monthShort}</span>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-saffron-400">
+                  {t.emiHeading}
+                </p>
+                <div className="flex items-baseline gap-2 mt-1">
+                  <span className="text-3xl sm:text-4xl font-black text-white font-mono">
+                    ₹{monthlyEmi.toLocaleString('en-IN')}
+                  </span>
+                  <span className="text-xs text-sandstone-300 font-semibold">{t.perMonth}</span>
                 </div>
-                <p className="text-xs text-sandstone-300/80 mt-2">
-                  Calculated at {interestRate.toFixed(1)}% annual reducing balance rate.
+                <p className="text-[11px] text-sandstone-400 mt-1">
+                  Calculated at {interestRate}% annual reducing balance rate.
+                </p>
+
+                <div className="divide-y divide-bankGreen-800/80 text-xs mt-6">
+                  <div className="py-2.5 flex justify-between">
+                    <span className="text-sandstone-300">{t.principalBreakdown}:</span>
+                    <span className="font-mono font-bold text-white">₹{loanAmount.toLocaleString('en-IN')}</span>
+                  </div>
+                  <div className="py-2.5 flex justify-between">
+                    <span className="text-sandstone-300">{t.interestBreakdown}:</span>
+                    <span className="font-mono font-bold text-saffron-300">₹{totalInterest.toLocaleString('en-IN')}</span>
+                  </div>
+                  <div className="py-2.5 flex justify-between text-sm font-bold">
+                    <span className="text-white">{t.totalPayable}:</span>
+                    <span className="font-mono font-black text-emerald-400">₹{totalAmount.toLocaleString('en-IN')}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Dynamic Repayment QR Specimen */}
+              <div className="bg-bankGreen-900 p-4 rounded-2xl border border-bankGreen-800 space-y-2">
+                <div className="flex items-center gap-2 text-xs font-bold text-saffron-300">
+                  <QrCode className="w-4 h-4" />
+                  <span>{t.qrTitle}</span>
+                </div>
+                <p className="text-[11px] text-sandstone-300 leading-relaxed font-medium">
+                  {t.qrDesc}
                 </p>
               </div>
 
-              <div className="my-6 py-4 border-y border-forest-700 space-y-2 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-sandstone-300">{t.principalBorrowed}</span>
-                  <span className="font-bold text-white">₹{loanAmount.toLocaleString('en-IN')}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sandstone-300">{t.interestRateLabel}</span>
-                  <span className="font-bold text-sandstone-200">{interestRate.toFixed(1)}% p.a.</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sandstone-300">{t.totalInterest}</span>
-                  <span className="font-bold text-terracotta-400">₹{totalInterest.toLocaleString('en-IN')}</span>
-                </div>
-                <div className="flex justify-between pt-1 border-t border-forest-700/60 font-semibold">
-                  <span className="text-sandstone-200">{t.totalPayable}</span>
-                  <span className="text-white text-sm">₹{totalRepayable.toLocaleString('en-IN')}</span>
-                </div>
-              </div>
-
-              <div className="bg-forest-900/60 p-3 rounded-xl border border-forest-700 text-xs text-sandstone-300 flex items-center gap-2.5">
-                <QrCode className="w-5 h-5 text-terracotta-400 shrink-0" />
-                <span>Instant dynamic UPI repayment QR will be generated for every monthly installment.</span>
-              </div>
+              <Link
+                href="/login"
+                className="w-full py-3 bg-saffron-500 hover:bg-saffron-600 text-white font-extrabold text-xs rounded-xl shadow-md transition-all text-center block"
+              >
+                {t.applyPwa} &rarr;
+              </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="py-16 px-4 bg-sandstone-100">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center max-w-xl mx-auto mb-12">
-            <h3 className="text-2xl sm:text-3xl font-bold text-forest-900">{t.howItWorks}</h3>
-            <p className="text-sm text-forest-800/80 mt-1">{t.howItWorksDesc}</p>
+      {/* GOVERNANCE & TRUST WALL */}
+      <section className="py-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-white rounded-3xl border border-clay p-8 sm:p-10 shadow-xs space-y-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-clay pb-6">
+            <div>
+              <span className="text-xs uppercase font-extrabold tracking-wider text-saffron-700">
+                Reserve Bank of India Guidelines
+              </span>
+              <h3 className="text-xl sm:text-2xl font-black text-forest-900 mt-1">
+                {t.trustTitle}
+              </h3>
+            </div>
+            <div className="flex items-center gap-2 bg-bankGreen-50 text-bankGreen-900 px-3.5 py-1.5 rounded-full border border-bankGreen-200 text-xs font-bold">
+              <BadgeCheck className="w-4 h-4 text-bankGreen-700" />
+              <span>Audited Base Layer NBFC</span>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-sandstone-50 p-6 rounded-2xl border border-clay relative">
-              <span className="w-8 h-8 rounded-full bg-forest-800 text-white font-bold text-sm flex items-center justify-center mb-4">1</span>
-              <h4 className="font-bold text-forest-900 text-base">{t.step1Title}</h4>
-              <p className="text-xs text-forest-800/70 mt-2 leading-relaxed">
-                {t.step1Desc}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs text-forest-800/90 leading-relaxed">
+            <div className="space-y-1.5">
+              <p className="font-extrabold text-sm text-forest-900 flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-bankGreen-700" />
+                <span>Four-Eyes Segregation</span>
               </p>
+              <p>Every credit request is originated by a Field Maker and independently verified by a Checker Authorizer. Zero single-point credit approval fraud.</p>
             </div>
 
-            <div className="bg-sandstone-50 p-6 rounded-2xl border border-clay relative">
-              <span className="w-8 h-8 rounded-full bg-terracotta-600 text-white font-bold text-sm flex items-center justify-center mb-4">2</span>
-              <h4 className="font-bold text-forest-900 text-base">{t.step2Title}</h4>
-              <p className="text-xs text-forest-800/70 mt-2 leading-relaxed">
-                {t.step2Desc}
+            <div className="space-y-1.5">
+              <p className="font-extrabold text-sm text-forest-900 flex items-center gap-1.5">
+                <Lock className="w-4 h-4 text-bankGreen-700" />
+                <span>UIDAI Masked Aadhaar Vault</span>
               </p>
+              <p>Only masked Aadhaar numbers (XXXX-XXXX-1234) are accepted. All documents are AES-256-GCM envelope encrypted with 60-second ephemeral tokens.</p>
             </div>
 
-            <div className="bg-sandstone-50 p-6 rounded-2xl border border-clay relative">
-              <span className="w-8 h-8 rounded-full bg-emerald-700 text-white font-bold text-sm flex items-center justify-center mb-4">3</span>
-              <h4 className="font-bold text-forest-900 text-base">{t.step3Title}</h4>
-              <p className="text-xs text-forest-800/70 mt-2 leading-relaxed">
-                {t.step3Desc}
+            <div className="space-y-1.5">
+              <p className="font-extrabold text-sm text-forest-900 flex items-center gap-1.5">
+                <Building2 className="w-4 h-4 text-bankGreen-700" />
+                <span>Karnataka Branch Network</span>
               </p>
+              <p>Physical banking service outlets across Bengaluru, Ramanagara, Mandya, Tumakuru, and Mysuru with dedicated Nodal Grievance Redressal.</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Public Footer */}
       <PublicFooter />
     </div>
   );
