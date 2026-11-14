@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { GGYBrandMark } from './brand-mark';
 import { useLanguage } from './language-context';
-import { Lock, User, Menu, X, TrendingUp, PhoneCall, MessageCircle } from 'lucide-react';
+import { Menu, X, MessageCircle } from 'lucide-react';
 
 export function PublicHeader() {
   const { lang, setLang } = useLanguage();
@@ -18,11 +18,9 @@ export function PublicHeader() {
       brandName: 'GGY Finance',
       tagline: 'Micro Money Lending Platform',
       home: 'Home',
-      investments: 'Investments (MF & FD)',
       about: 'About Us',
+      investments: 'Investments',
       contact: 'Contact Us',
-      borrowerPortal: 'Borrower Portal',
-      staffPortal: 'Staff Portal',
       tollFree: 'Toll-Free: 1800-209-4321',
       dpdp: 'DPDP Act 2023 Compliant',
       whatsappQuick: 'WhatsApp Advisory'
@@ -32,11 +30,9 @@ export function PublicHeader() {
       brandName: 'ಜಿಜಿವೈ ಫೈನಾನ್ಸ್ (GGY Finance)',
       tagline: 'ಕಿರು ಹಣಕಾಸು ಸಾಲ ವೇದಿಕೆ (Micro Money Lending Platform)',
       home: 'ಮುಖಪುಟ',
-      investments: 'ಹೂಡಿಕೆಗಳು (ಮ್ಯೂಚುಯಲ್ ಫಂಡ್ & ಎಫ್‌ಡಿ)',
       about: 'ನಮ್ಮ ಬಗ್ಗೆ',
+      investments: 'ಹೂಡಿಕೆಗಳು',
       contact: 'ಸಂಪರ್ಕಿಸಿ',
-      borrowerPortal: 'ಗ್ರಾಹಕರ ಪೋರ್ಟಲ್',
-      staffPortal: 'ಸಿಬ್ಬಂದಿ ಪೋರ್ಟಲ್',
       tollFree: 'ಉಚಿತ ಕರೆ: 1800-209-4321',
       dpdp: 'DPDP ಕಾಯ್ದೆ 2023 ಅನುಸರಣೆ',
       whatsappQuick: 'ವಾಟ್ಸಾಪ್ ಸಹಾಯ'
@@ -94,7 +90,7 @@ export function PublicHeader() {
             <div className="flex items-center gap-1 bg-pearl-200/80 p-1 rounded-xl border border-pearl-300">
               <Link
                 href="/"
-                className={`px-3 py-1.5 rounded-lg transition-all ${
+                className={`px-3.5 py-1.5 rounded-lg transition-all ${
                   pathname === '/'
                     ? 'bg-bankGreen-900 text-white shadow-xs font-extrabold'
                     : 'text-bankGreen-900 hover:text-saffron-600 hover:bg-white'
@@ -103,8 +99,18 @@ export function PublicHeader() {
                 {t.home}
               </Link>
               <Link
+                href="/about"
+                className={`px-3.5 py-1.5 rounded-lg transition-all ${
+                  pathname === '/about'
+                    ? 'bg-bankGreen-900 text-white shadow-xs font-extrabold'
+                    : 'text-bankGreen-900 hover:text-saffron-600 hover:bg-white'
+                }`}
+              >
+                {t.about}
+              </Link>
+              <Link
                 href="/investments"
-                className={`px-3 py-1.5 rounded-lg transition-all ${
+                className={`px-3.5 py-1.5 rounded-lg transition-all ${
                   pathname === '/investments'
                     ? 'bg-bankGreen-900 text-white shadow-xs font-extrabold'
                     : 'text-bankGreen-900 hover:text-saffron-600 hover:bg-white'
@@ -114,23 +120,13 @@ export function PublicHeader() {
               </Link>
               <Link
                 href="/contact"
-                className={`px-3 py-1.5 rounded-lg transition-all ${
+                className={`px-3.5 py-1.5 rounded-lg transition-all ${
                   pathname === '/contact'
                     ? 'bg-bankGreen-900 text-white shadow-xs font-extrabold'
                     : 'text-bankGreen-900 hover:text-saffron-600 hover:bg-white'
                 }`}
               >
                 {t.contact}
-              </Link>
-              <Link
-                href="/about"
-                className={`px-3 py-1.5 rounded-lg transition-all ${
-                  pathname === '/about'
-                    ? 'bg-bankGreen-900 text-white shadow-xs font-extrabold'
-                    : 'text-bankGreen-900 hover:text-saffron-600 hover:bg-white'
-                }`}
-              >
-                {t.about}
               </Link>
             </div>
 
@@ -159,24 +155,6 @@ export function PublicHeader() {
                 ಕನ್ನಡ
               </button>
             </div>
-
-            {/* Borrower Portal Login */}
-            <Link
-              href="/portal"
-              className="inline-flex items-center gap-1.5 bg-bankGreen-50 hover:bg-bankGreen-100 text-bankGreen-900 px-3.5 py-2 rounded-xl font-bold transition-all border border-bankGreen-200"
-            >
-              <User className="w-3.5 h-3.5 text-bankGreen-700" />
-              <span>{t.borrowerPortal}</span>
-            </Link>
-
-            {/* Bank Staff Portal Login */}
-            <Link
-              href="/login"
-              className="inline-flex items-center gap-2 bg-saffron-500 hover:bg-saffron-600 text-white px-4 py-2 rounded-xl font-extrabold transition-all shadow-md hover:shadow-lg shadow-saffron-500/20"
-            >
-              <Lock className="w-3.5 h-3.5 text-white" />
-              <span>{t.staffPortal}</span>
-            </Link>
           </nav>
 
           {/* Mobile Right Controls: Language + Hamburger */}
@@ -223,6 +201,15 @@ export function PublicHeader() {
                 {t.home}
               </Link>
               <Link
+                href="/about"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`p-3 rounded-xl border text-center transition-all ${
+                  pathname === '/about' ? 'bg-bankGreen-900 text-white' : 'bg-pearl-100 text-slate-800'
+                }`}
+              >
+                {t.about}
+              </Link>
+              <Link
                 href="/investments"
                 onClick={() => setIsMobileMenuOpen(false)}
                 className={`p-3 rounded-xl border text-center transition-all ${
@@ -240,35 +227,6 @@ export function PublicHeader() {
               >
                 {t.contact}
               </Link>
-              <Link
-                href="/about"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={`p-3 rounded-xl border text-center transition-all ${
-                  pathname === '/about' ? 'bg-bankGreen-900 text-white' : 'bg-pearl-100 text-slate-800'
-                }`}
-              >
-                {t.about}
-              </Link>
-            </div>
-
-            <div className="pt-2 border-t border-pearl-200 grid grid-cols-2 gap-2 text-xs font-bold">
-              <Link
-                href="/portal"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="p-3 bg-bankGreen-50 text-bankGreen-900 border border-bankGreen-200 rounded-xl text-center flex items-center justify-center gap-1.5"
-              >
-                <User className="w-4 h-4 text-bankGreen-700" />
-                <span>{t.borrowerPortal}</span>
-              </Link>
-
-              <Link
-                href="/login"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="p-3 bg-saffron-500 text-white rounded-xl text-center font-extrabold flex items-center justify-center gap-1.5 shadow-sm"
-              >
-                <Lock className="w-4 h-4 text-white" />
-                <span>{t.staffPortal}</span>
-              </Link>
             </div>
 
             <div className="pt-2 border-t border-pearl-200 text-center">
@@ -276,7 +234,7 @@ export function PublicHeader() {
                 href="https://wa.me/919845123450?text=Namaskara%20GGY%20Finance,%20I%20want%20information%20about%20Rural%20Loans%20and%20Mutual%20Fund%20Investments."
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-xs font-extrabold text-emerald-800 bg-emerald-50 px-4 py-2 rounded-xl border border-emerald-200 w-full justify-center"
+                className="inline-flex items-center gap-2 text-xs font-extrabold text-emerald-800 bg-emerald-50 px-4 py-2.5 rounded-xl border border-emerald-200 w-full justify-center"
               >
                 <MessageCircle className="w-4 h-4 text-emerald-600" />
                 <span>Chat with Advisor on WhatsApp</span>

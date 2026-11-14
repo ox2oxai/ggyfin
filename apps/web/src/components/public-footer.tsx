@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { GGYBrandMark } from './brand-mark';
 import { useLanguage } from './language-context';
-import { Building2, Shield, HeartHandshake, FileText, Lock, PhoneCall, Mail } from 'lucide-react';
+import { Building2, Shield, HeartHandshake, FileText, Lock, PhoneCall, Mail, User } from 'lucide-react';
 
 export function PublicFooter() {
   const { lang } = useLanguage();
@@ -30,7 +30,9 @@ export function PublicFooter() {
       tollFree: 'Toll-Free: 1800-209-4321 (9 AM - 6 PM)',
       email: 'nodal@ggyfinance.in',
       escalation: 'Escalation: RBI Ombudsman CMS Portal (cms.rbi.org.in)',
-      staffLogin: 'Staff Login Portal',
+      portalAccess: 'Secure Portal Access',
+      borrowerLogin: 'Borrower Portal',
+      staffLogin: 'Staff Portal',
       privacy: 'DPDP Privacy Notice',
       terms: 'Terms & Conditions',
       fairPractices: 'Fair Practices Code',
@@ -57,7 +59,9 @@ export function PublicFooter() {
       tollFree: 'ಉಚಿತ ಕರೆ: 1800-209-4321 (ಬೆಳಿಗ್ಗೆ 9 - ಸಂಜೆ 6)',
       email: 'nodal@ggyfinance.in',
       escalation: 'ಮೇಲ್ಮನವಿ: ಆರ್.ಬಿ.ಐ ಸಿ.ಎಂ.ಎಸ್ ಪೋರ್ಟಲ್',
-      staffLogin: 'ಸಿಬ್ಬಂದಿ ಲಾಗಿನ್ ಪೋರ್ಟಲ್',
+      portalAccess: 'ಆಂತರಿಕ ಪೋರ್ಟಲ್ ಪ್ರವೇಶ',
+      borrowerLogin: 'ಗ್ರಾಹಕರ ಪೋರ್ಟಲ್',
+      staffLogin: 'ಸಿಬ್ಬಂದಿ ಪೋರ್ಟಲ್',
       privacy: 'ಗೌಪ್ಯತಾ ನೀತಿ (DPDP 2023)',
       terms: 'ನಿಯಮಗಳು & ಷರತ್ತುಗಳು',
       fairPractices: 'ಆರ್.ಬಿ.ಐ ಪ್ರಾಮಾಣಿಕ ಸಾಲ ನೀತಿ',
@@ -159,14 +163,26 @@ export function PublicFooter() {
           <p className="text-[11px] text-amber-300 font-semibold pt-1">
             {t.escalation}
           </p>
-          <div className="pt-2">
-            <Link
-              href="/login"
-              className="inline-flex items-center gap-1.5 bg-emerald-900/90 hover:bg-emerald-800 text-emerald-100 px-3 py-1.5 rounded-lg border border-emerald-700/80 text-xs font-bold transition-all"
-            >
-              <Lock className="w-3.5 h-3.5 text-amber-300" />
-              <span>{t.staffLogin}</span>
-            </Link>
+          <div className="pt-2 space-y-1.5">
+            <p className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-300/80">
+              {t.portalAccess}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Link
+                href="/portal"
+                className="inline-flex items-center gap-1.5 bg-emerald-950/90 hover:bg-emerald-800 text-emerald-100 px-3 py-1.5 rounded-lg border border-emerald-700/80 text-xs font-bold transition-all"
+              >
+                <User className="w-3.5 h-3.5 text-amber-300" />
+                <span>{t.borrowerLogin}</span>
+              </Link>
+              <Link
+                href="/login"
+                className="inline-flex items-center gap-1.5 bg-emerald-900/90 hover:bg-emerald-800 text-emerald-100 px-3 py-1.5 rounded-lg border border-emerald-700/80 text-xs font-bold transition-all"
+              >
+                <Lock className="w-3.5 h-3.5 text-amber-300" />
+                <span>{t.staffLogin}</span>
+              </Link>
+            </div>
           </div>
         </div>
       </div>

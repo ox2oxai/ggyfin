@@ -278,19 +278,19 @@ export default function HomePage() {
     en: {
       heroPill: 'RBI Registered NBFC-BL • Certificate No: B-14.02981',
       heroTitle1: 'Honest Micro Banking for',
-      heroTitleAccent: "Bharat's Rural Builders",
-      heroDesc: 'Purpose-built credit facilities for village entrepreneurs, dairy farmers, and weavers. Transparent reducing-balance interest with instant PhonePe/GPay UPI repayments and doorstep relationship managers.',
+      heroTitleAccent: 'Rural Bharat',
+      heroDesc: 'Transparent reducing-balance micro-loans and accessible wealth creation for Karnataka’s village entrepreneurs, dairy farmers, and weavers.',
       btnCalculate: 'Calculate Monthly EMI',
-      btnExplore: 'Explore 4 Credit Schemes',
+      btnExplore: 'Explore Credit Facilities',
       statDisbursed: 'Disbursed Capital',
       statRepayment: 'Repayment Rate',
       statEmpowered: 'Families Served',
-      statTurnaround: 'Doorstep Sanction Speed',
-      productsSectionTitle: 'Purpose-Built Credit Facilities',
-      productsSectionDesc: 'Architected with individual Finacle Scheme Codes for seamless future transition to a Scheduled Bank.',
+      statTurnaround: 'Doorstep Turnaround',
+      productsSectionTitle: 'Regulated Credit Facilities',
+      productsSectionDesc: 'Standardized regulatory credit schemes designed for transparent, door-to-door rural financial inclusion.',
       ratePerAnnum: '% p.a.',
       maxSanction: 'Max Sanction:',
-      calcTitle: 'Interactive EMI Calculator & Repayment Simulator',
+      calcTitle: 'EMI Calculator & Repayment Simulator',
       calcDesc: 'Transparent reducing balance calculation. No hidden file charges, no foreclosure penalty.',
       sliderAmount: 'Required Loan Capital (Principal)',
       sliderTenure: 'Repayment Tenure (Months)',
@@ -305,17 +305,17 @@ export default function HomePage() {
       trustTitle: 'Institutional Bank-Grade Governance',
       trustDesc: '100% Indian Data Sovereignty under DPDP Act 2023 with RBI Four-Eyes segregation of duties.',
       applyPwa: 'Request Doorstep Application via Field Officer',
-      videoSectionBadge: 'Real Stories of Rural Transformation',
-      videoSectionTitle: 'Voices from the Field: Karnataka Borrowers',
-      videoSectionDesc: 'Watch how village entrepreneurs, dairy farmers, and weavers unlocked economic freedom through honest, doorstep credit.',
-      watchVideo: 'Watch Video Story',
+      videoSectionBadge: 'Customer Stories',
+      videoSectionTitle: 'Voices from the Field',
+      videoSectionDesc: 'Real experiences from Karnataka borrowers who expanded their livelihood through honest, doorstep credit.',
+      watchVideo: 'Watch Story',
       playingPreview: 'Video Case Study Simulator',
       verifiedBorrower: 'Verified Borrower',
       loanSanctioned: 'Loan Sanctioned:',
       impactMetric: 'Key Transformation:',
       videoTranscript: 'Story Summary & Field Officer Notes',
       closeVideo: 'Close Video',
-      investmentBannerBadge: 'New Rural Wealth Creation Initiative',
+      investmentBannerBadge: 'Rural Wealth Initiative',
       investmentBannerTitle: 'From Disciplined Borrowers to Confident Wealth Creators',
       investmentBannerDesc: 'Did you know? Even ₹250 or ₹500 a month in a SEBI-regulated Mutual Fund works like your Village Milk Cooperative to build lasting family wealth.',
       btnExploreInvestments: 'Explore Mutual Funds & FDs',
@@ -327,19 +327,19 @@ export default function HomePage() {
     kn: {
       heroPill: 'ಆರ್.ಬಿ.ಐ ನೋಂದಾಯಿತ ಕಿರು ಸಾಲ ಸಂಸ್ಥೆ • ಪ್ರಮಾಣಪತ್ರ: B-14.02981',
       heroTitle1: 'ಗ್ರಾಮೀಣ ಭಾರತದ ಬೆಳವಣಿಗೆಗೆ',
-      heroTitleAccent: 'ಪ್ರಾಮಾಣಿಕ ಕಿರು ಬ್ಯಾಂಕಿಂಗ್ ಸಾಲಗಳು',
-      heroDesc: 'ಗ್ರಾಮೀಣ ಸಣ್ಣ ವ್ಯಾಪಾರಿಗಳು, ಹೈನುಗಾರಿಕೆ ಕುಟುಂಬಗಳು ಮತ್ತು ನೇಕಾರರಿಗೆ ನೇರ ಮನೆಬಾಗಿಲ ಸಾಲ ಸೌಲಭ್ಯ. ಯಾವುದೇ ಗುಪ್ತ ಶುಲ್ಕಗಳಿಲ್ಲದ ಪಾರದರ್ಶಕ ಬಡ್ಡಿದರ ಮತ್ತು ಸುಲಭ ಯುಪಿಐ (UPI) ಮರುಪಾವತಿ.',
+      heroTitleAccent: 'ಪ್ರಾಮಾಣಿಕ ಕಿರು ಬ್ಯಾಂಕಿಂಗ್',
+      heroDesc: 'ಗ್ರಾಮೀಣ ಸಣ್ಣ ವ್ಯಾಪಾರಿಗಳು, ಹೈನುಗಾರಿಕೆ ಕುಟುಂಬಗಳು ಮತ್ತು ನೇಕಾರರಿಗೆ ನೇರ ಮನೆಬಾಗಿಲ ಸಾಲ ಸೌಲಭ್ಯ ಹಾಗೂ ಸುಲಭ ಸಂಪತ್ತು ಸೃಷ್ಟಿ.',
       btnCalculate: 'ನಿಮ್ಮ ಇಎಂಐ (EMI) ಲೆಕ್ಕಹಾಕಿ',
-      btnExplore: '೪ ಸಾಲ ಯೋಜನೆಗಳನ್ನು ನೋಡಿ',
+      btnExplore: 'ಸಾಲ ಯೋಜನೆಗಳನ್ನು ನೋಡಿ',
       statDisbursed: 'ಒಟ್ಟು ಸಾಲ ವಿತರಣೆ',
       statRepayment: 'ಮರುಪಾವತಿ ದರ',
       statEmpowered: 'ಸಬಲೀಕರಣಗೊಂಡ ಕುಟುಂಬಗಳು',
-      statTurnaround: 'ಮನೆಬಾಗಿಲ ಅನುಮೋದನೆ ವೇಗ',
-      productsSectionTitle: 'ಉದ್ದೇಶ ಆಧಾರಿತ ಕಿರು ಸಾಲ ಸೌಲಭ್ಯಗಳು',
-      productsSectionDesc: 'ಭವಿಷ್ಯದಲ್ಲಿ ಪೂರ್ಣ ಬ್ಯಾಂಕ್ ಆಗಿ ಪರಿವರ್ತನೆಗೊಳ್ಳಲು ಸಿದ್ಧವಾಗಿರುವ ಕೋರ್ ಬ್ಯಾಂಕಿಂಗ್ ಯೋಜನೆಗಳು.',
+      statTurnaround: 'ಮನೆಬಾಗಿಲ ಪರಿಶೀಲನೆ ವೇಗ',
+      productsSectionTitle: 'ಆರ್.ಬಿ.ಐ ನಿಯಂತ್ರಿತ ಸಾಲ ಸೌಲಭ್ಯಗಳು',
+      productsSectionDesc: 'ಗ್ರಾಮೀಣ ಸಬಲೀಕರಣ ಮತ್ತು ಪಾರದರ್ಶಕ ಸಾಲ ವಿತರಣೆಗೆ ರೂಪಿಸಲಾದ ಆರ್.ಬಿ.ಐ ನಿಯಂತ್ರಿತ ಕಿರು ಸಾಲ ಯೋಜನೆಗಳು.',
       ratePerAnnum: '% ವಾರ್ಷಿಕ ಬಡ್ಡಿ',
       maxSanction: 'ಗರಿಷ್ಠ ಮಿತಿ:',
-      calcTitle: 'ಸುಲಭ ಇಎಂಐ (EMI) ಕ್ಯಾಲ್ಕುಲೇಟರ್ & ಯುಪಿಐ ಪ್ರಕ್ರಿಯೆ',
+      calcTitle: 'ಇಎಂಐ (EMI) ಕ್ಯಾಲ್ಕುಲೇಟರ್ & ಯುಪಿಐ ಪ್ರಕ್ರಿಯೆ',
       calcDesc: 'ಪಾರದರ್ಶಕ ಬಡ್ಡಿದರ ಲೆಕ್ಕಾಚಾರ. ಯಾವುದೇ ಮುಂಗಡ ರದ್ದು ಶುಲ್ಕ ಅಥವಾ ಗುಪ್ತ ಕಡಿತಗಳಿಲ್ಲ.',
       sliderAmount: 'ಸಾಲದ ಮೊತ್ತ (Principal)',
       sliderTenure: 'ಮರುಪಾವತಿ ಅವಧಿ (ತಿಂಗಳುಗಳಲ್ಲಿ)',
@@ -354,9 +354,9 @@ export default function HomePage() {
       trustTitle: 'ಆರ್.ಬಿ.ಐ ನಿಯಮಾವಳಿಗಳ ಕಟ್ಟುನಿಟ್ಟಾದ ಅನುಸರಣೆ',
       trustDesc: 'DPDP ಕಾಯ್ದೆ 2023 ರ ಅನ್ವಯ 100% ಭಾರತೀಯ ಸರ್ವರ್‌ಗಳಲ್ಲಿ ಎನ್‌ಕ್ರಿಪ್ಟ್ ಆದ ಡೇಟಾ ಸಂರಕ್ಷಣೆ.',
       applyPwa: 'ಕ್ಷೇತ್ರಾಧಿಕಾರಿಗಳ ಮೂಲಕ ಮನೆಬಾಗಿಲಿಗೆ ಅರ್ಜಿ ಸಲ್ಲಿಸಿ',
-      videoSectionBadge: 'ನೈಜ ಗ್ರಾಮೀಣ ಪ್ರಗತಿ ಕಥೆಗಳು',
-      videoSectionTitle: 'ಕರ್ನಾಟಕದ ರೈತರು & ವ್ಯಾಪಾರಿಗಳ ಯಶೋಗಾಥೆಗಳು',
-      videoSectionDesc: 'ಪ್ರಾಮಾಣಿಕ ಮನೆಬಾಗಿಲ ಸಾಲ ಸೌಲಭ್ಯದಿಂದ ಗ್ರಾಮೀಣ ಸಣ್ಣ ವ್ಯಾಪಾರಿಗಳು ಮತ್ತು ಹೈನುಗಾರಿಕೆ ಕುಟುಂಬಗಳು ಆರ್ಥಿಕ ಸ್ವಾತಂತ್ರ್ಯ ಪಡೆದ ನೈಜ ವೀಡಿಯೊಗಳು.',
+      videoSectionBadge: 'ನೈಜ ಪ್ರಗತಿ ಕಥೆಗಳು',
+      videoSectionTitle: 'ಕ್ಷೇತ್ರದ ಅನುಭವಗಳು & ಯಶೋಗಾಥೆಗಳು',
+      videoSectionDesc: 'ಪ್ರಾಮಾಣಿಕ ಮನೆಬಾಗಿಲ ಸಾಲ ಸೌಲಭ್ಯದಿಂದ ಆರ್ಥಿಕ ಪ್ರಗತಿ ಸಾಧಿಸಿದ ಕರ್ನಾಟಕದ ಗ್ರಾಹಕರ ಅನುಭವಗಳು.',
       watchVideo: 'ವಿಡಿಯೋ ವೀಕ್ಷಿಸಿ',
       playingPreview: 'ವೀಡಿಯೊ ಕೇಸ್ ಸ್ಟಡಿ ಸಿಮ್ಯುಲೇಟರ್',
       verifiedBorrower: 'ದೃಢೀಕೃತ ಗ್ರಾಹಕರು',
@@ -379,37 +379,37 @@ export default function HomePage() {
     <div className="min-h-screen bg-[#F8FAF8] text-slate-900 flex flex-col selection:bg-orange-500 selection:text-white">
       <PublicHeader />
 
-      {/* 3. HERO SECTION: OPTION B ROYAL SAFFRON SUNBURST */}
+      {/* 3. HERO SECTION: SLEEK, CONTEMPORARY ROYAL SAFFRON */}
       <section className="relative bg-gradient-to-br from-orange-600 via-amber-600 to-orange-700 text-white pt-16 pb-20 px-4 sm:px-10 text-center border-b border-orange-800 shadow-inner overflow-hidden">
-        {/* Ambient Glow & Subtle Depth */}
-        <div className="absolute -top-24 left-1/4 w-[500px] h-[350px] bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div className="absolute bottom-0 right-1/4 w-[500px] h-[350px] bg-amber-300/15 rounded-full blur-3xl pointer-events-none"></div>
+        {/* Subtle Ambient Radial Lighting */}
+        <div className="absolute -top-32 left-1/3 w-[600px] h-[400px] bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute -bottom-24 right-1/4 w-[500px] h-[350px] bg-amber-300/15 rounded-full blur-3xl pointer-events-none"></div>
 
         <div className="max-w-4xl mx-auto relative z-10 space-y-6">
           {/* Institutional Status Pill */}
-          <div className="inline-flex items-center gap-2 bg-white/20 border border-white/30 backdrop-blur-md px-4 py-1.5 rounded-full text-xs font-black text-white shadow-sm">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-300 animate-pulse"></span>
+          <div className="inline-flex items-center gap-2 bg-white/15 border border-white/25 backdrop-blur-md px-4 py-1 rounded-full text-xs font-semibold text-white shadow-sm">
+            <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse"></span>
             <span>{t.heroPill}</span>
           </div>
 
-          {/* Main Headline: Diamond White with Warm Amber Underline Accent */}
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight sm:leading-tight drop-shadow-md">
+          {/* Main Headline: Confident, Editorial-Grade Typography */}
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight sm:leading-tight drop-shadow-sm">
             {t.heroTitle1}{' '}
-            <span className="text-amber-100 underline decoration-white/40 decoration-4 block sm:inline">
+            <span className="text-amber-200">
               {t.heroTitleAccent}
             </span>
           </h1>
 
-          {/* Subtitle: Crisp Amber-50 with Maximum Contrast */}
-          <p className="text-amber-50 max-w-2xl mx-auto text-sm sm:text-base leading-relaxed font-medium drop-shadow-xs">
+          {/* Subtitle: High-Contrast, Calm Institutional Prose */}
+          <p className="text-amber-100/90 max-w-2xl mx-auto text-sm sm:text-base leading-relaxed font-normal">
             {t.heroDesc}
           </p>
 
-          {/* CTAs: Pure White Primary Button + Forest Green Secondary Button */}
-          <div className="pt-2 flex flex-col sm:flex-row justify-center items-center gap-3.5">
+          {/* Modern Action Group: Minimalist Action Capsule + Inline Explorer Link */}
+          <div className="pt-2 flex flex-col sm:flex-row justify-center items-center gap-4">
             <a
               href="#calculator"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-3.5 bg-white hover:bg-amber-50 active:scale-[0.98] text-orange-700 font-black text-sm rounded-xl shadow-xl transition-all transform hover:-translate-y-0.5 border border-white"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-3.5 bg-white hover:bg-amber-50 active:scale-[0.98] text-orange-700 font-extrabold text-sm rounded-full shadow-lg shadow-black/10 hover:shadow-xl transition-all transform hover:-translate-y-0.5"
             >
               <Calculator className="w-4 h-4 text-orange-700" />
               <span>{t.btnCalculate}</span>
@@ -417,37 +417,35 @@ export default function HomePage() {
 
             <a
               href="#products"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 bg-[#064e3b] hover:bg-[#043e2f] active:scale-[0.98] text-white border border-emerald-500/50 font-extrabold text-sm rounded-xl shadow-lg transition-all"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-6 py-3.5 text-white/90 hover:text-white font-bold text-sm transition-colors group"
             >
               <span>{t.btnExplore}</span>
-              <ArrowRight className="w-4 h-4 text-emerald-300" />
+              <ArrowRight className="w-4 h-4 text-amber-200 group-hover:translate-x-1 transition-transform" />
             </a>
           </div>
 
-          {/* 4 Floating Key Metrics Strip: Floating Porcelain White Tiles */}
-          <div className="pt-10 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-            <div className="bg-white p-4 sm:p-5 rounded-2xl border border-white/60 shadow-xl text-center transform hover:-translate-y-1 transition-transform">
-              <p className="text-2xl sm:text-3xl font-black text-orange-600 font-mono tracking-tight">₹48.5 Cr+</p>
-              <p className="text-xs text-slate-500 font-bold mt-1 uppercase tracking-wider">{t.statDisbursed}</p>
-              <span className="inline-block mt-1 text-[10px] font-extrabold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">100% Karnataka</span>
-            </div>
+          {/* Unified Frosted Glass Metrics Bar */}
+          <div className="pt-8 max-w-4xl mx-auto">
+            <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 sm:p-7 shadow-2xl grid grid-cols-2 md:grid-cols-4 gap-6 divide-y sm:divide-y-0 sm:divide-x divide-white/15 text-center">
+              <div className="space-y-1">
+                <p className="text-2xl sm:text-3xl font-black text-white font-mono tracking-tight">₹48.5 Cr+</p>
+                <p className="text-xs text-amber-100/80 font-medium uppercase tracking-wider">{t.statDisbursed}</p>
+              </div>
 
-            <div className="bg-white p-4 sm:p-5 rounded-2xl border border-white/60 shadow-xl text-center transform hover:-translate-y-1 transition-transform">
-              <p className="text-2xl sm:text-3xl font-black text-emerald-600 font-mono tracking-tight">98.9%</p>
-              <p className="text-xs text-slate-500 font-bold mt-1 uppercase tracking-wider">{t.statRepayment}</p>
-              <span className="inline-block mt-1 text-[10px] font-extrabold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">Zero Foreclosure Fee</span>
-            </div>
+              <div className="space-y-1 pt-4 sm:pt-0">
+                <p className="text-2xl sm:text-3xl font-black text-white font-mono tracking-tight">98.9%</p>
+                <p className="text-xs text-amber-100/80 font-medium uppercase tracking-wider">{t.statRepayment}</p>
+              </div>
 
-            <div className="bg-white p-4 sm:p-5 rounded-2xl border border-white/60 shadow-xl text-center transform hover:-translate-y-1 transition-transform">
-              <p className="text-2xl sm:text-3xl font-black text-orange-600 font-mono tracking-tight">42,000+</p>
-              <p className="text-xs text-slate-500 font-bold mt-1 uppercase tracking-wider">{t.statEmpowered}</p>
-              <span className="inline-block mt-1 text-[10px] font-extrabold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">76% Women Borrowers</span>
-            </div>
+              <div className="space-y-1 pt-4 sm:pt-0">
+                <p className="text-2xl sm:text-3xl font-black text-white font-mono tracking-tight">42,000+</p>
+                <p className="text-xs text-amber-100/80 font-medium uppercase tracking-wider">{t.statEmpowered}</p>
+              </div>
 
-            <div className="bg-white p-4 sm:p-5 rounded-2xl border border-white/60 shadow-xl text-center transform hover:-translate-y-1 transition-transform">
-              <p className="text-2xl sm:text-3xl font-black text-orange-600 font-mono tracking-tight">15-Min</p>
-              <p className="text-xs text-slate-500 font-bold mt-1 uppercase tracking-wider">{t.statTurnaround}</p>
-              <span className="inline-block mt-1 text-[10px] font-extrabold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">RBI 4-Eyes Check</span>
+              <div className="space-y-1 pt-4 sm:pt-0">
+                <p className="text-2xl sm:text-3xl font-black text-white font-mono tracking-tight">15-Min</p>
+                <p className="text-xs text-amber-100/80 font-medium uppercase tracking-wider">{t.statTurnaround}</p>
+              </div>
             </div>
           </div>
         </div>
@@ -458,7 +456,7 @@ export default function HomePage() {
         <div className="text-center space-y-2 max-w-2xl mx-auto">
           <div className="inline-flex items-center gap-1.5 text-xs font-extrabold text-orange-700 bg-orange-50 border border-orange-200 px-3.5 py-1 rounded-full shadow-2xs">
             <Award className="w-3.5 h-3.5 text-orange-600" />
-            <span>Core Banking Scheme Codes (Finacle / BaNCS)</span>
+            <span>RBI Regulated Micro-Credit Schemes</span>
           </div>
           <h2 className="text-2xl sm:text-4xl font-black text-slate-950 tracking-tight">
             {t.productsSectionTitle}
