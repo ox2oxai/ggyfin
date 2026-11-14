@@ -183,6 +183,13 @@ export default function AccountsPage() {
     return matchesSearch && matchesStatus;
   });
 
+  const persistAccounts = (updated: AccountRecord[]) => {
+    setAccounts(updated);
+    try {
+      localStorage.setItem('nbfc_live_accounts', JSON.stringify(updated));
+    } catch {}
+  };
+
   const handleCreateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const newSeq = accounts.length + 1;
@@ -196,6 +203,15 @@ export default function AccountsPage() {
       ? '703'
       : '704';
     const newAccNum = generateCBSAccountNumber('1084', '0101', schemeCode, newSeq + 42, true);
+
+    let activeMaker = 'staff_officer';
+    try {
+      const rawSession = localStorage.getItem('nbfc_staff_session');
+      if (rawSession) {
+        const s = JSON.parse(rawSession);
+        if (s.username) activeMaker = s.username;
+      }
+    } catch {}
 
     const record: AccountRecord = {
       id: newId,
@@ -211,10 +227,10 @@ export default function AccountsPage() {
       interestRate: Number(newBorrower.interestRate),
       tenureMonths: Number(newBorrower.tenureMonths),
       status: 'PENDING_APPROVAL',
-      makerId: 'field_officer_ramesh'
+      makerId: activeMaker
     };
 
-    setAccounts([record, ...accounts]);
+    persistAccounts([record, ...accounts]);
     setShowCreateModal(false);
     setSuccessToast(`Application for ${record.borrowerName} submitted into Checker Approval Queue! Assigned CIF: ${newCif}, CBS A/C: ${newAccNum}`);
     setTimeout(() => setSuccessToast(''), 4000);
@@ -222,24 +238,22 @@ export default function AccountsPage() {
 
   const handleSuspendConfirm = () => {
     if (!selectedAccount) return;
-    setAccounts(
-      accounts.map((a) =>
-        a.id === selectedAccount.id
-          ? { ...a, status: 'SUSPENDED', suspensionReason: suspensionReason || 'Manager audit flag' }
-          : a
-      )
+    const updated = accounts.map((a) =>
+      a.id === selectedAccount.id
+        ? { ...a, status: 'SUSPENDED' as const, suspensionReason: suspensionReason || 'Manager audit flag' }
+        : a
     );
+    persistAccounts(updated);
     setShowSuspendModal(false);
     setSuccessToast(`Account ${selectedAccount.accountNumber} has been SUSPENDED.`);
     setTimeout(() => setSuccessToast(''), 4000);
   };
 
   const handleReactivate = (acc: AccountRecord) => {
-    setAccounts(
-      accounts.map((a) =>
-        a.id === acc.id ? { ...a, status: 'ACTIVE', suspensionReason: undefined } : a
-      )
+    const updated = accounts.map((a) =>
+      a.id === acc.id ? { ...a, status: 'ACTIVE' as const, suspensionReason: undefined } : a
     );
+    persistAccounts(updated);
     setSuccessToast(`Account ${acc.accountNumber} has been REACTIVATED to Active status.`);
     setTimeout(() => setSuccessToast(''), 4000);
   };
@@ -259,13 +273,12 @@ export default function AccountsPage() {
 
   const handleConfirmClose = () => {
     if (!selectedAccount || selectedAccount.balance > 0) return;
-    setAccounts(
-      accounts.map((a) =>
-        a.id === selectedAccount.id
-          ? { ...a, status: 'CLOSED', closedAt: new Date().toISOString().slice(0, 10) }
-          : a
-      )
+    const updated = accounts.map((a) =>
+      a.id === selectedAccount.id
+        ? { ...a, status: 'CLOSED' as const, closedAt: new Date().toISOString().slice(0, 10) }
+        : a
     );
+    persistAccounts(updated);
     setShowCloseModal(false);
     setShowNocModal(true);
   };

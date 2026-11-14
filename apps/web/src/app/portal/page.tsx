@@ -32,40 +32,21 @@ interface BorrowerAccountSummary {
   status: 'ACTIVE' | 'CLOSED';
 }
 
-const DEMO_BORROWER_DATA = {
-  customerId: '1084000039',
-  fullName: 'Smt. Lakshmi Gowda',
-  maskedAadhaar: 'XXXX-XXXX-8421',
-  phone: '9845123450',
-  taluk: 'Channapatna, Ramanagara',
-  dpdpConsentDate: '2026-04-10',
-  accounts: [
-    {
-      accountNumber: '1084-0101-702-0039-4',
-      product: 'Dairy Development Term Loan',
-      sanctionAmount: 60000,
-      balance: 24500,
-      monthlyEmi: 4500,
-      nextDueDate: '2026-12-05',
-      status: 'ACTIVE'
-    },
-    {
-      accountNumber: '1084-0101-701-0012-7',
-      product: 'Petty Shop Working Capital',
-      sanctionAmount: 30000,
-      balance: 0,
-      monthlyEmi: 0,
-      nextDueDate: 'Completed',
-      status: 'CLOSED'
-    }
-  ] as BorrowerAccountSummary[]
-};
-
 export default function BorrowerPortalPage() {
   const { lang } = useLanguage();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [customerId, setCustomerId] = useState('1084000039');
-  const [password, setPassword] = useState('Borrower@123');
+  const [customerId, setCustomerId] = useState('');
+  const [password, setPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [borrowerData, setBorrowerData] = useState<{
+    customerId: string;
+    fullName: string;
+    maskedAadhaar: string;
+    phone: string;
+    taluk: string;
+    dpdpConsentDate: string;
+    accounts: BorrowerAccountSummary[];
+  } | null>(null);
   const [selectedAcc, setSelectedAcc] = useState<BorrowerAccountSummary | null>(null);
   const [showQrModal, setShowQrModal] = useState(false);
   const [showNocModal, setShowNocModal] = useState(false);
@@ -74,11 +55,10 @@ export default function BorrowerPortalPage() {
     en: {
       portalTitle: 'Borrower Self-Service Portal',
       portalSubtitle: 'Secure digital access for micro-enterprise, dairy, and rural borrowers using your Customer ID (CIF).',
-      cifLabel: 'Customer ID (CIF)',
-      cifHelp: 'Your 10-digit permanent Customer ID issued during onboarding (e.g. 1084000039).',
+      cifLabel: 'Customer ID (CIF) or Account Number',
+      cifHelp: 'Enter your 10-digit Customer ID (CIF) or 16-digit CBS Account Number.',
       passwordLabel: 'Password / MPIN',
-      signInBtn: 'Sign In with Customer ID',
-      quickDemo: 'Quick Demo: Sign In as Smt. Lakshmi Gowda',
+      signInBtn: 'Sign In to Borrower Portal',
       welcome: 'Welcome,',
       profileTitle: 'Customer Identity & DPDP Rights Profile',
       aadhaar: 'Masked Aadhaar',
@@ -101,11 +81,10 @@ export default function BorrowerPortalPage() {
     kn: {
       portalTitle: 'ಗ್ರಾಹಕರ ಸ್ವಯಂ-ಸೇವಾ ಪೋರ್ಟಲ್ (Borrower Portal)',
       portalSubtitle: 'ನಿಮ್ಮ ಗ್ರಾಹಕ ಸಂಖ್ಯೆ (Customer ID / CIF) ಬಳಸಿ ನಿಮ್ಮ ಸಾಲದ ವಿವರಗಳನ್ನು ಪರಿಶೀಲಿಸಿ.',
-      cifLabel: 'ಗ್ರಾಹಕ ಸಂಖ್ಯೆ (Customer ID / CIF)',
-      cifHelp: 'ನಿಮ್ಮ 10-ಅಂಕಿಯ ಶಾಶ್ವತ ಗ್ರಾಹಕ ಸಂಖ್ಯೆ (ಉದಾ: 1084000039).',
+      cifLabel: 'ಗ್ರಾಹಕ ಸಂಖ್ಯೆ (Customer ID / CIF) ಅಥವಾ ಖಾತೆ ಸಂಖ್ಯೆ',
+      cifHelp: 'ನಿಮ್ಮ 10-ಅಂಕಿಯ ಗ್ರಾಹಕ ಸಂಖ್ಯೆ ಅಥವಾ 16-ಅಂಕಿಯ ಖಾತೆ ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ.',
       passwordLabel: 'ಪಾಸ್‌ವರ್ಡ್ / ಎಂ-ಪಿನ್ (MPIN)',
-      signInBtn: 'ಗ್ರಾಹಕ ಸಂಖ್ಯೆಯೊಂದಿಗೆ ಪ್ರವೇಶಿಸಿ',
-      quickDemo: 'ಡೆಮೊ ಲಾಗಿನ್: ಶ್ರೀಮತಿ ಲಕ್ಷ್ಮಿ ಗೌಡ',
+      signInBtn: 'ಪೋರ್ಟಲ್ ಪ್ರವೇಶಿಸಿ',
       welcome: 'ಸುಸ್ವಾಗತ,',
       profileTitle: 'ಗ್ರಾಹಕ ವಿವರ ಮತ್ತು DPDP ಹಕ್ಕುಗಳು',
       aadhaar: 'ಮರೆಮಾಡಿದ ಆಧಾರ್',
@@ -129,13 +108,43 @@ export default function BorrowerPortalPage() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoggedIn(true);
-  };
+    setLoginError('');
 
-  const handleDemoLogin = () => {
-    setCustomerId('1084000039');
-    setPassword('Borrower@123');
-    setIsLoggedIn(true);
+    try {
+      const rawAccounts = localStorage.getItem('nbfc_live_accounts');
+      const accountsList = rawAccounts ? JSON.parse(rawAccounts) : [];
+      const matched = accountsList.filter(
+        (a: any) =>
+          a.customerId?.toLowerCase() === customerId.trim().toLowerCase() ||
+          a.accountNumber?.toLowerCase() === customerId.trim().toLowerCase() ||
+          (a.phone && a.phone.includes(customerId.trim()))
+      );
+
+      if (matched.length > 0) {
+        const primary = matched[0];
+        setBorrowerData({
+          customerId: primary.customerId,
+          fullName: primary.borrowerName,
+          maskedAadhaar: primary.maskedAadhaar || 'XXXX-XXXX-8421',
+          phone: primary.phone || '9845000000',
+          taluk: primary.taluk || 'Karnataka Cluster',
+          dpdpConsentDate: '2026-04-10',
+          accounts: matched.map((a: any) => ({
+            accountNumber: a.accountNumber,
+            product: a.product,
+            sanctionAmount: a.principal,
+            balance: a.balance,
+            monthlyEmi: Math.round(a.principal / (a.tenureMonths || 12)),
+            nextDueDate: '2026-12-05',
+            status: a.status === 'CLOSED' ? 'CLOSED' : 'ACTIVE'
+          }))
+        });
+        setIsLoggedIn(true);
+        return;
+      }
+    } catch {}
+
+    setLoginError('No borrower record found for this Customer ID (CIF) or Account Number. Please verify your details or contact your branch.');
   };
 
   const handleOpenUpi = (acc: BorrowerAccountSummary) => {
@@ -143,14 +152,24 @@ export default function BorrowerPortalPage() {
     setShowQrModal(true);
   };
 
-  const activeLoan = DEMO_BORROWER_DATA.accounts[0];
-  const upiUri = generateUpiUri({
+  const currentBorrower = borrowerData || {
+    customerId: '',
+    fullName: '',
+    maskedAadhaar: '',
+    phone: '',
+    taluk: '',
+    dpdpConsentDate: '',
+    accounts: [] as BorrowerAccountSummary[]
+  };
+
+  const activeLoan = selectedAcc || (currentBorrower.accounts.length > 0 ? currentBorrower.accounts[0] : null);
+  const upiUri = activeLoan ? generateUpiUri({
     vpa: 'ggycollect@icici',
     payeeName: 'GGY Finance',
-    amount: activeLoan.monthlyEmi,
+    amount: activeLoan.monthlyEmi || 5000,
     transactionRef: `EMI-${activeLoan.accountNumber.slice(-6)}`,
     accountNumber: activeLoan.accountNumber
-  });
+  }) : '';
 
   return (
     <div className="min-h-screen bg-sandstone-100 flex flex-col justify-between">
@@ -203,14 +222,12 @@ export default function BorrowerPortalPage() {
                 <p className="text-xs text-forest-800/70">{t.portalSubtitle}</p>
               </div>
 
-              {/* Demo Sign In Pill */}
-              <button
-                type="button"
-                onClick={handleDemoLogin}
-                className="w-full py-2.5 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-xl text-xs font-bold transition-all text-center"
-              >
-                &rarr; {t.quickDemo}
-              </button>
+              {loginError && (
+                <div className="p-3 bg-red-50 border border-red-200 text-xs text-red-800 rounded-xl font-medium flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                  <span>{loginError}</span>
+                </div>
+              )}
 
               <form onSubmit={handleLogin} className="space-y-4 text-xs">
                 <div>
@@ -262,12 +279,12 @@ export default function BorrowerPortalPage() {
                 <div>
                   <p className="text-xs text-forest-800/70 font-semibold">{t.welcome}</p>
                   <h2 className="text-xl sm:text-2xl font-black text-forest-900">
-                    {DEMO_BORROWER_DATA.fullName}
+                    {currentBorrower.fullName}
                   </h2>
                 </div>
 
                 <div className="bg-forest-900 text-sandstone-100 px-3.5 py-1.5 rounded-xl text-xs font-mono">
-                  CIF: <strong>{DEMO_BORROWER_DATA.customerId}</strong>
+                  CIF: <strong>{currentBorrower.customerId}</strong>
                 </div>
               </div>
 
@@ -275,19 +292,19 @@ export default function BorrowerPortalPage() {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                 <div className="bg-sandstone-100 p-3 rounded-xl border border-clay">
                   <p className="text-[10px] text-forest-800/60 uppercase font-bold">{t.aadhaar}</p>
-                  <p className="font-mono font-bold text-forest-900 mt-0.5">{DEMO_BORROWER_DATA.maskedAadhaar}</p>
+                  <p className="font-mono font-bold text-forest-900 mt-0.5">{currentBorrower.maskedAadhaar}</p>
                 </div>
                 <div className="bg-sandstone-100 p-3 rounded-xl border border-clay">
                   <p className="text-[10px] text-forest-800/60 uppercase font-bold">{t.phone}</p>
-                  <p className="font-mono font-bold text-forest-900 mt-0.5">+91 {DEMO_BORROWER_DATA.phone}</p>
+                  <p className="font-mono font-bold text-forest-900 mt-0.5">+91 {currentBorrower.phone}</p>
                 </div>
                 <div className="bg-sandstone-100 p-3 rounded-xl border border-clay">
                   <p className="text-[10px] text-forest-800/60 uppercase font-bold">{t.district}</p>
-                  <p className="font-bold text-forest-900 mt-0.5">{DEMO_BORROWER_DATA.taluk}</p>
+                  <p className="font-bold text-forest-900 mt-0.5">{currentBorrower.taluk}</p>
                 </div>
                 <div className="bg-sandstone-100 p-3 rounded-xl border border-clay">
                   <p className="text-[10px] text-forest-800/60 uppercase font-bold">{t.dpdpConsent}</p>
-                  <p className="font-bold text-emerald-700 mt-0.5">Active ({DEMO_BORROWER_DATA.dpdpConsentDate})</p>
+                  <p className="font-bold text-emerald-700 mt-0.5">Active ({currentBorrower.dpdpConsentDate})</p>
                 </div>
               </div>
             </div>
@@ -296,82 +313,90 @@ export default function BorrowerPortalPage() {
             <div className="space-y-4">
               <h3 className="font-black text-base text-forest-900 flex items-center gap-2">
                 <CreditCard className="w-5 h-5 text-terracotta-600" />
-                <span>{t.myFacilities} (Linked to CIF: {DEMO_BORROWER_DATA.customerId})</span>
+                <span>{t.myFacilities} (Linked to CIF: {currentBorrower.customerId})</span>
               </h3>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {DEMO_BORROWER_DATA.accounts.map((acc) => (
-                  <div
-                    key={acc.accountNumber}
-                    className="bg-sandstone-50 p-6 rounded-3xl border border-clay shadow-xs space-y-4 flex flex-col justify-between"
-                  >
-                    <div>
-                      <div className="flex justify-between items-start gap-2">
-                        <div>
-                          <p className="text-[10px] font-mono text-forest-800/60 uppercase font-bold">16-Digit CBS Account</p>
-                          <p className="font-mono font-black text-forest-900 text-sm">{acc.accountNumber}</p>
+              {currentBorrower.accounts.length === 0 ? (
+                <div className="bg-sandstone-50 p-8 rounded-3xl border border-clay text-center text-xs text-forest-800/60">
+                  <CreditCard className="w-8 h-8 text-forest-800/30 mx-auto mb-2" />
+                  <p className="font-bold text-forest-900 text-sm">No Active Loan Facilities</p>
+                  <p className="mt-1">All loan facilities linked to this Customer ID have been completed or are in processing.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {currentBorrower.accounts.map((acc) => (
+                    <div
+                      key={acc.accountNumber}
+                      className="bg-sandstone-50 p-6 rounded-3xl border border-clay shadow-xs space-y-4 flex flex-col justify-between"
+                    >
+                      <div>
+                        <div className="flex justify-between items-start gap-2">
+                          <div>
+                            <p className="text-[10px] font-mono text-forest-800/60 uppercase font-bold">16-Digit CBS Account</p>
+                            <p className="font-mono font-black text-forest-900 text-sm">{acc.accountNumber}</p>
+                          </div>
+                          <span
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                              acc.status === 'ACTIVE'
+                                ? 'bg-emerald-100 text-emerald-800'
+                                : 'bg-sandstone-200 text-forest-800'
+                            }`}
+                          >
+                            {acc.status === 'ACTIVE' ? t.activeStatus : t.closedStatus}
+                          </span>
                         </div>
-                        <span
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                            acc.status === 'ACTIVE'
-                              ? 'bg-emerald-100 text-emerald-800'
-                              : 'bg-sandstone-200 text-forest-800'
-                          }`}
-                        >
-                          {acc.status === 'ACTIVE' ? t.activeStatus : t.closedStatus}
-                        </span>
+
+                        <h4 className="font-bold text-sm text-forest-900 mt-2">{acc.product}</h4>
+
+                        <div className="grid grid-cols-2 gap-2 text-xs pt-3 font-medium">
+                          <div>
+                            <p className="text-[10px] text-forest-800/60">{t.principal}:</p>
+                            <p className="font-mono font-bold text-forest-900">₹{acc.sanctionAmount.toLocaleString('en-IN')}</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] text-forest-800/60">{t.balance}:</p>
+                            <p className={`font-mono font-bold ${acc.balance === 0 ? 'text-emerald-700' : 'text-forest-900'}`}>
+                              ₹{acc.balance.toLocaleString('en-IN')}
+                            </p>
+                          </div>
+                          {acc.status === 'ACTIVE' && (
+                            <>
+                              <div>
+                                <p className="text-[10px] text-forest-800/60">{t.emi}:</p>
+                                <p className="font-mono font-bold text-terracotta-600">₹{acc.monthlyEmi.toLocaleString('en-IN')}</p>
+                              </div>
+                              <div>
+                                <p className="text-[10px] text-forest-800/60">{t.dueDate}:</p>
+                                <p className="font-bold text-forest-900">{acc.nextDueDate}</p>
+                              </div>
+                            </>
+                          )}
+                        </div>
                       </div>
 
-                      <h4 className="font-bold text-sm text-forest-900 mt-2">{acc.product}</h4>
-
-                      <div className="grid grid-cols-2 gap-2 text-xs pt-3 font-medium">
-                        <div>
-                          <p className="text-[10px] text-forest-800/60">{t.principal}:</p>
-                          <p className="font-mono font-bold text-forest-900">₹{acc.sanctionAmount.toLocaleString('en-IN')}</p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] text-forest-800/60">{t.balance}:</p>
-                          <p className={`font-mono font-bold ${acc.balance === 0 ? 'text-emerald-700' : 'text-forest-900'}`}>
-                            ₹{acc.balance.toLocaleString('en-IN')}
-                          </p>
-                        </div>
-                        {acc.status === 'ACTIVE' && (
-                          <>
-                            <div>
-                              <p className="text-[10px] text-forest-800/60">{t.emi}:</p>
-                              <p className="font-mono font-bold text-terracotta-600">₹{acc.monthlyEmi.toLocaleString('en-IN')}</p>
-                            </div>
-                            <div>
-                              <p className="text-[10px] text-forest-800/60">{t.dueDate}:</p>
-                              <p className="font-bold text-forest-900">{acc.nextDueDate}</p>
-                            </div>
-                          </>
+                      <div className="pt-3 border-t border-clay flex justify-end gap-2">
+                        {acc.status === 'ACTIVE' ? (
+                          <button
+                            onClick={() => handleOpenUpi(acc)}
+                            className="w-full py-2.5 bg-forest-800 hover:bg-forest-900 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
+                          >
+                            <QrCode className="w-3.5 h-3.5 text-terracotta-400" />
+                            <span>{t.payUpi}</span>
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => setShowNocModal(true)}
+                            className="w-full py-2.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                            <span>{t.viewNoc}</span>
+                          </button>
                         )}
                       </div>
                     </div>
-
-                    <div className="pt-3 border-t border-clay flex justify-end gap-2">
-                      {acc.status === 'ACTIVE' ? (
-                        <button
-                          onClick={() => handleOpenUpi(acc)}
-                          className="w-full py-2.5 bg-forest-800 hover:bg-forest-900 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-xs"
-                        >
-                          <QrCode className="w-3.5 h-3.5 text-terracotta-400" />
-                          <span>{t.payUpi}</span>
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => setShowNocModal(true)}
-                          className="w-full py-2.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5"
-                        >
-                          <Download className="w-3.5 h-3.5" />
-                          <span>{t.viewNoc}</span>
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -392,12 +417,12 @@ export default function BorrowerPortalPage() {
             </div>
 
             <div className="p-3 bg-sandstone-100 rounded-xl text-xs font-bold text-forest-900">
-              Amount Due: ₹{activeLoan.monthlyEmi.toLocaleString('en-IN')}
+              Amount Due: ₹{activeLoan?.monthlyEmi ? activeLoan.monthlyEmi.toLocaleString('en-IN') : '0'}
             </div>
 
             <button
               onClick={() => setShowQrModal(false)}
-              className="w-full py-2.5 bg-forest-800 text-white rounded-xl text-xs font-bold"
+              className="w-full py-2.5 bg-forest-800 text-white rounded-xl text-xs font-bold cursor-pointer"
             >
               Done / Close
             </button>
@@ -415,23 +440,23 @@ export default function BorrowerPortalPage() {
             </div>
 
             <div className="text-xs space-y-2 text-forest-900 font-mono">
-              <p>Borrower Name: <strong>Smt. Lakshmi Gowda</strong></p>
-              <p>Customer ID (CIF): <strong>1084000039</strong></p>
-              <p>Account Number: <strong>1084-0101-701-0012-7</strong></p>
-              <p>Facility: <strong>Petty Shop Working Capital</strong></p>
+              <p>Borrower Name: <strong>{currentBorrower.fullName}</strong></p>
+              <p>Customer ID (CIF): <strong>{currentBorrower.customerId}</strong></p>
+              <p>Account Number: <strong>{activeLoan?.accountNumber || 'N/A'}</strong></p>
+              <p>Facility: <strong>{activeLoan?.product || 'Micro-Enterprise Facility'}</strong></p>
               <p>Status: <strong className="text-emerald-700">ZERO OUTSTANDING (NIL)</strong></p>
             </div>
 
             <div className="flex justify-end gap-2 pt-2 border-t border-clay">
               <button
                 onClick={() => setShowNocModal(false)}
-                className="px-4 py-2 text-xs border border-clay rounded-xl text-forest-800"
+                className="px-4 py-2 text-xs border border-clay rounded-xl text-forest-800 cursor-pointer"
               >
                 Close
               </button>
               <button
                 onClick={() => window.print()}
-                className="px-4 py-2 text-xs bg-forest-800 text-white font-bold rounded-xl flex items-center gap-1"
+                className="px-4 py-2 text-xs bg-forest-800 text-white font-bold rounded-xl flex items-center gap-1 cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>Print Certificate</span>

@@ -84,6 +84,19 @@ export default function TransactionsPage() {
     receiptNumber: 'RCPT-KA-45210'
   });
 
+  // Sync session field officer
+  React.useEffect(() => {
+    try {
+      const rawSession = localStorage.getItem('nbfc_staff_session');
+      if (rawSession) {
+        const s = JSON.parse(rawSession);
+        if (s.username) {
+          setCashForm((prev) => ({ ...prev, fieldOfficer: s.username }));
+        }
+      }
+    } catch {}
+  }, []);
+
   const t = {
     en: {
       title: 'Ledger & Financial Transactions',
@@ -199,6 +212,15 @@ export default function TransactionsPage() {
     setLedger(updated);
     try {
       localStorage.setItem('nbfc_ledger_transactions', JSON.stringify(updated));
+
+      // Synchronize outstanding balance into nbfc_live_accounts
+      const updatedAccounts = liveAccounts.map((acc) =>
+        acc.accountNumber === newEntry.accountNumber
+          ? { ...acc, balance: calculatedBalance }
+          : acc
+      );
+      setLiveAccounts(updatedAccounts);
+      localStorage.setItem('nbfc_live_accounts', JSON.stringify(updatedAccounts));
     } catch {}
     setActiveTab('LEDGER');
     setToastMsg(`₹${upiForm.amount} successfully credited via UPI UTR ${upiForm.utr}!`);
@@ -259,17 +281,19 @@ export default function TransactionsPage() {
   };
 
   const handleVerifyCash = (item: LedgerEntry) => {
+    let finalBalance = item.balanceAfter;
     const updated = ledger.map((l) => {
       if (l.id === item.id) {
         const priorSettled = ledger.find(
           (other) => other.accountNumber === item.accountNumber && other.status === 'SETTLED' && other.id !== item.id
         );
         const baseBalance = priorSettled ? priorSettled.balanceAfter : item.balanceAfter;
+        finalBalance = Math.max(0, baseBalance - l.credit);
         return {
           ...l,
           status: 'SETTLED' as const,
           checkerId: 'branch_manager',
-          balanceAfter: Math.max(0, baseBalance - l.credit)
+          balanceAfter: finalBalance
         };
       }
       return l;
@@ -277,6 +301,15 @@ export default function TransactionsPage() {
     setLedger(updated);
     try {
       localStorage.setItem('nbfc_ledger_transactions', JSON.stringify(updated));
+
+      // Synchronize outstanding balance into nbfc_live_accounts
+      const updatedAccounts = liveAccounts.map((acc) =>
+        acc.accountNumber === item.accountNumber
+          ? { ...acc, balance: finalBalance }
+          : acc
+      );
+      setLiveAccounts(updatedAccounts);
+      localStorage.setItem('nbfc_live_accounts', JSON.stringify(updatedAccounts));
     } catch {}
     setToastMsg(`Manager verified cash collection ${item.referenceId}. ₹${item.credit} credited to ledger!`);
     setTimeout(() => setToastMsg(''), 5000);

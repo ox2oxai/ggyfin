@@ -311,6 +311,48 @@ export default function SuperAdminItDashboard() {
     notifySuccess(`Staff account '${user.username}' has been deprovisioned.`);
   };
 
+  const handleResetUserPassword = (userId: string) => {
+    const user = staffList.find((u) => u.id === userId);
+    if (!user) return;
+
+    if (user.username === 'it_superadmin') {
+      notifyError('Security Guard: Primary Super Admin IT password cannot be reset from this action.');
+      return;
+    }
+
+    const generatedTempPassword = `GGY#Temp${Math.floor(100000 + Math.random() * 900000)}!`;
+    const updated = staffList.map((u) =>
+      u.id === userId
+        ? { ...u, password: generatedTempPassword, mustResetPassword: true }
+        : u
+    );
+    persistStaffList(updated);
+
+    setLastProvisionedInvite({
+      username: user.username,
+      fullName: user.fullName,
+      role: user.role,
+      branchCode: user.branchCode,
+      temporaryPassword: generatedTempPassword
+    });
+
+    setAuditEvents((prev) => [
+      {
+        id: `aud-${Date.now()}`,
+        timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
+        action: 'PASSWORD_RESET_ISSUED',
+        targetUser: user.username,
+        details: `Temporary password generated and forced password reset flagged for ${user.username}`,
+        ip: '127.0.0.1'
+      },
+      ...prev
+    ]);
+
+    notifySuccess(
+      `Temporary credentials reissued for '${user.username}'. Please copy the updated invite text above and send it securely.`
+    );
+  };
+
   const handleProvisionSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newUsername.trim() || !newEmail.trim()) return;
@@ -732,8 +774,16 @@ export default function SuperAdminItDashboard() {
                         {user.username !== 'it_superadmin' && (
                           <>
                             <button
+                              onClick={() => handleResetUserPassword(user.id)}
+                              className="py-1 px-2.5 rounded-lg text-[11px] font-bold border border-orange-300 bg-orange-50 text-orange-800 hover:bg-orange-100 transition-colors cursor-pointer"
+                              title="Reissue temporary password with forced first-login reset"
+                            >
+                              Reset Password
+                            </button>
+
+                            <button
                               onClick={() => handleToggleStatus(user.id)}
-                              className={`py-1 px-2.5 rounded-lg text-[11px] font-bold border transition-colors ${
+                              className={`py-1 px-2.5 rounded-lg text-[11px] font-bold border transition-colors cursor-pointer ${
                                 user.isActive
                                   ? 'bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100'
                                   : 'bg-emerald-50 text-emerald-900 border-emerald-300 hover:bg-emerald-100'
@@ -744,7 +794,7 @@ export default function SuperAdminItDashboard() {
 
                             <button
                               onClick={() => handleDeleteStaff(user.id)}
-                              className="py-1 px-2 bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 rounded-lg transition-colors"
+                              className="py-1 px-2 bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 rounded-lg transition-colors cursor-pointer"
                               title="Deprovision user"
                             >
                               <Trash2 className="w-3.5 h-3.5" />

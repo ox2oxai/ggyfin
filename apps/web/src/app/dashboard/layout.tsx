@@ -97,7 +97,26 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const raw = localStorage.getItem('nbfc_staff_session');
     if (raw) {
       try {
-        setSession(JSON.parse(raw));
+        const parsed = JSON.parse(raw);
+        setSession(parsed);
+
+        // Security check: verify account is still active in directory
+        const rawDir = localStorage.getItem('nbfc_staff_directory');
+        if (rawDir) {
+          const dir = JSON.parse(rawDir);
+          const userInDir = dir.find((u: any) => u.username === parsed.username);
+          if (userInDir && !userInDir.isActive) {
+            localStorage.removeItem('nbfc_staff_session');
+            router.push('/login');
+            return;
+          }
+        }
+
+        // Automatic redirect if SUPER_ADMIN_IT lands on /dashboard or /dashboard/workspace
+        if (parsed.role === UserRole.SUPER_ADMIN_IT && (pathname === '/dashboard' || pathname === '/dashboard/workspace')) {
+          router.replace('/dashboard/it-admin');
+          return;
+        }
       } catch (e) {
         router.push('/login');
       }

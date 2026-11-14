@@ -173,6 +173,11 @@ export default function LoginPage() {
       return;
     }
 
+    if (pendingUser && newPassword === pendingUser.password) {
+      setResetError('Your new confidential password must be different from your temporary password.');
+      return;
+    }
+
     if (!pendingUser) return;
 
     try {
@@ -363,10 +368,23 @@ export default function LoginPage() {
                 <span>Assigned Role: <strong>{pendingUser.role}</strong> ({pendingUser.branchCode})</span>
               </div>
 
-              <div className="pt-2">
+              <div className="pt-2 flex flex-col sm:flex-row gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsResetModalOpen(false);
+                    setPendingUser(null);
+                    setNewPassword('');
+                    setConfirmPassword('');
+                    setResetError('');
+                  }}
+                  className="w-full sm:w-1/3 py-3 border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold text-xs rounded-xl transition-all text-center cursor-pointer"
+                >
+                  Cancel
+                </button>
                 <button
                   type="submit"
-                  className="w-full py-3.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-black text-xs rounded-xl shadow-md transition-all text-center cursor-pointer"
+                  className="w-full sm:w-2/3 py-3.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-black text-xs rounded-xl shadow-md transition-all text-center cursor-pointer"
                 >
                   Save Password &amp; Open Workspace &rarr;
                 </button>
