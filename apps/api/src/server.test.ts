@@ -148,6 +148,20 @@ describe('Fastify REST API Server & Security Integration', () => {
     assert.equal(response.statusCode, 401);
   });
 
+  it('GET /openapi.json returns valid OpenAPI 3.0 specification', async () => {
+    const response = await server.inject({
+      method: 'GET',
+      url: '/openapi.json'
+    });
+
+    assert.equal(response.statusCode, 200);
+    const body = JSON.parse(response.payload);
+    assert.equal(body.openapi, '3.0.3');
+    assert.equal(body.info.title, 'GGY Finance - Micro Money Lending Core Banking REST API');
+    assert.ok(body.paths['/api/v1/collections/upi/confirm']);
+    assert.ok(body.paths['/api/v1/accounts/{id}/close']);
+  });
+
   it('GET /api/v1/analytics/overview with date range without JWT returns 401 Unauthorized', async () => {
     const response = await server.inject({
       method: 'GET',

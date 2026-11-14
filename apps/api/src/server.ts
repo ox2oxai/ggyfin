@@ -5,6 +5,9 @@ import jwt from '@fastify/jwt';
 import multipart from '@fastify/multipart';
 import { pool } from './db/client.js';
 import dotenv from 'dotenv';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { authenticate } from './middleware/auth.js';
 import { authRoutes } from './controllers/auth.controller.js';
 import { customerRoutes } from './controllers/customer.controller.js';
@@ -122,6 +125,18 @@ export async function buildServer(): Promise<FastifyInstance> {
 
     reply.header('Content-Type', 'text/plain; version=0.0.4; charset=utf-8');
     return reply.send(metrics.join('\n') + '\n');
+  });
+
+  // 4. OpenAPI / Swagger 3.0 Contract Endpoint
+  fastify.get('/openapi.json', async (_request, reply) => {
+    try {
+      const currentDir = path.dirname(fileURLToPath(import.meta.url));
+      const openApiPath = path.resolve(currentDir, '../openapi.json');
+      const content = fs.readFileSync(openApiPath, 'utf-8');
+      return reply.header('Content-Type', 'application/json').send(content);
+    } catch {
+      return reply.status(404).send({ error: 'OpenAPI specification not found' });
+    }
   });
 
   // Dynamic Comprehensive Health & Diagnostics Endpoint

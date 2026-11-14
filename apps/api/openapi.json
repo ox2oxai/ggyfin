@@ -1,0 +1,248 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "GGY Finance - Micro Money Lending Core Banking REST API",
+    "version": "1.0.0",
+    "description": "Institutional Core Banking & Micro Lending Platform for GGY Finance (RBI Base-Layer NBFC). Complies with RBI Master Directions, DPDP Act 2023, NPCI UPI, and TRAI DLT frameworks.",
+    "contact": {
+      "name": "GGY Finance Engineering",
+      "email": "engineering@ggyfinance.in"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:4000",
+      "description": "Local Development Server"
+    },
+    {
+      "url": "https://api.ggyfinance.in",
+      "description": "Production Cloud Server (AWS Mumbai ap-south-1)"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Staff session JWT issued via POST /api/v1/auth/login"
+      }
+    }
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Platform Health & Engine Parity Diagnostics",
+        "responses": {
+          "200": { "description": "Platform is healthy and database is connected" },
+          "503": { "description": "Database degraded or disconnected" }
+        }
+      }
+    },
+    "/health/liveness": {
+      "get": {
+        "summary": "Kubernetes Liveness Probe",
+        "responses": { "200": { "description": "Container process is up" } }
+      }
+    },
+    "/health/readiness": {
+      "get": {
+        "summary": "Kubernetes Readiness Probe",
+        "responses": {
+          "200": { "description": "PostgreSQL 16 connection is ready" },
+          "503": { "description": "PostgreSQL 16 connection failed" }
+        }
+      }
+    },
+    "/metrics": {
+      "get": {
+        "summary": "Prometheus / OpenMetrics Scraper",
+        "responses": {
+          "200": {
+            "description": "Standard Prometheus gauges for heap, RSS, uptime, and PG connection pool",
+            "content": { "text/plain": {} }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "summary": "Staff Login & JWT Issuance",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["username", "password"],
+                "properties": {
+                  "username": { "type": "string" },
+                  "password": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Login successful with JWT access token" },
+          "401": { "description": "Invalid credentials or inactive account" }
+        }
+      }
+    },
+    "/api/v1/customers": {
+      "post": {
+        "summary": "Create Customer Profile with DPDP Consent",
+        "security": [{ "BearerAuth": [] }],
+        "responses": { "201": { "description": "Customer profile created with unique CIF" } }
+      },
+      "get": {
+        "summary": "List Customers",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 20 } },
+          { "name": "offset", "in": "query", "schema": { "type": "integer", "default": 0 } }
+        ],
+        "responses": { "200": { "description": "Paginated list of customers" } }
+      }
+    },
+    "/api/v1/kyc/upload": {
+      "post": {
+        "summary": "Upload KYC Document with AES-256-GCM Envelope Encryption",
+        "security": [{ "BearerAuth": [] }],
+        "responses": { "201": { "description": "Document securely encrypted into vault" } }
+      }
+    },
+    "/api/v1/kyc/{docId}/view-token": {
+      "get": {
+        "summary": "Generate 60-Second Ephemeral View Token for Checker",
+        "security": [{ "BearerAuth": [] }],
+        "responses": { "200": { "description": "HMAC-signed ephemeral view token" } }
+      }
+    },
+    "/api/v1/kyc/view/{token}": {
+      "get": {
+        "summary": "Stream Decrypted KYC Document",
+        "responses": {
+          "200": { "description": "Decrypted binary document stream" },
+          "403": { "description": "Expired or tampered token" }
+        }
+      }
+    },
+    "/api/v1/accounts": {
+      "post": {
+        "summary": "Maker: Submit Loan Application for Review",
+        "security": [{ "BearerAuth": [] }],
+        "responses": { "201": { "description": "Loan application drafted in PENDING_APPROVAL status" } }
+      }
+    },
+    "/api/v1/accounts/pending": {
+      "get": {
+        "summary": "Checker: Pending Approvals Queue",
+        "security": [{ "BearerAuth": [] }],
+        "responses": { "200": { "description": "List of pending loan applications" } }
+      }
+    },
+    "/api/v1/accounts/{id}/approve": {
+      "post": {
+        "summary": "Checker: Approve Loan & Issue Account Number",
+        "security": [{ "BearerAuth": [] }],
+        "responses": { "200": { "description": "Account activated under RBI dual-control" } }
+      }
+    },
+    "/api/v1/accounts/{id}/suspend": {
+      "post": {
+        "summary": "Authorizer: Suspend Account (Dual Control)",
+        "security": [{ "BearerAuth": [] }],
+        "responses": { "200": { "description": "Account suspended" } }
+      }
+    },
+    "/api/v1/accounts/{id}/reactivate": {
+      "post": {
+        "summary": "Authorizer: Reactivate Suspended Account (Dual Control)",
+        "security": [{ "BearerAuth": [] }],
+        "responses": { "200": { "description": "Account reactivated" } }
+      }
+    },
+    "/api/v1/accounts/{id}/close": {
+      "post": {
+        "summary": "Authorizer: Close Account & Issue No-Dues Certificate (NOC)",
+        "security": [{ "BearerAuth": [] }],
+        "responses": { "200": { "description": "Account closed and NOC issued" } }
+      }
+    },
+    "/api/v1/collections/upi/qr": {
+      "post": {
+        "summary": "Generate Dynamic NPCI UPI QR for Repayment",
+        "security": [{ "BearerAuth": [] }],
+        "responses": { "200": { "description": "UPI intent URI generated" } }
+      }
+    },
+    "/api/v1/collections/upi/confirm": {
+      "post": {
+        "summary": "Confirm Settled UPI Repayment via NPCI UTR",
+        "security": [{ "BearerAuth": [] }],
+        "responses": { "200": { "description": "Repayment credited to loan account" } }
+      }
+    },
+    "/api/v1/collections/cash/receipt": {
+      "post": {
+        "summary": "Field Officer: Log Cash Collection Receipt",
+        "security": [{ "BearerAuth": [] }],
+        "responses": { "201": { "description": "Cash collection logged in pending verification state" } }
+      }
+    },
+    "/api/v1/collections/cash/{receiptId}/verify": {
+      "post": {
+        "summary": "Branch Manager: Verify Cash Deposit & Atomically Credit Balance",
+        "security": [{ "BearerAuth": [] }],
+        "responses": { "200": { "description": "Cash receipt verified and account balance credited" } }
+      }
+    },
+    "/api/v1/analytics/overview": {
+      "get": {
+        "summary": "Portfolio Overview, Turnover & Estimated Net Profit",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "startDate", "in": "query", "schema": { "type": "string" } },
+          { "name": "endDate", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Executive portfolio summary" } }
+      }
+    },
+    "/api/v1/analytics/asset-quality": {
+      "get": {
+        "summary": "Asset Quality, Overdue Aging & RBI NPA Classifications",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "startDate", "in": "query", "schema": { "type": "string" } },
+          { "name": "endDate", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Asset quality buckets (Standard, SMA-0, SMA-1, SMA-2, Gross NPA)" } }
+      }
+    },
+    "/api/v1/analytics/reports/daily-collection": {
+      "get": {
+        "summary": "Download Daily Field Collection Sheet (CSV)",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Daily field collection sheet CSV file",
+            "content": { "text/csv": {} }
+          }
+        }
+      }
+    },
+    "/api/v1/analytics/reports/asset-quality": {
+      "get": {
+        "summary": "Download Monthly Asset Quality & NPA Report (CSV)",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Monthly asset quality & NPA report CSV file",
+            "content": { "text/csv": {} }
+          }
+        }
+      }
+    }
+  }
+}
