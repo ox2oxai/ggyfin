@@ -60,3 +60,13 @@ export const VerifyCashReceiptSchema = z.object({
   status: z.enum([ReceiptStatus.VERIFIED_AND_DEPOSITED, ReceiptStatus.DISCREPANCY]),
   notes: z.string().max(250).optional()
 });
+
+export const ConfirmUpiPaymentSchema = z.object({
+  accountId: z.string().uuid(),
+  amount: z.number().positive().min(1),
+  utrNumber: z.string().min(8, 'Valid 12-digit NPCI UTR or reference is required').max(35),
+  transactionRef: z.string().min(5).max(64).optional(),
+  notes: z.string().max(250).optional()
+});
+
+export type ConfirmUpiPaymentInput = z.infer<typeof ConfirmUpiPaymentSchema>;

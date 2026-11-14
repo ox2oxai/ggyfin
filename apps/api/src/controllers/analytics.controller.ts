@@ -11,7 +11,7 @@ export async function analyticsRoutes(fastify: FastifyInstance) {
   /**
    * Super Admin, Branch Manager, Authorizer: Executive Overview & P&L
    */
-  fastify.get(
+  fastify.get<{ Querystring: { startDate?: string; endDate?: string } }>(
     '/overview',
     {
       preHandler: [
@@ -19,8 +19,9 @@ export async function analyticsRoutes(fastify: FastifyInstance) {
         requireRole(UserRole.SYSTEM_ADMIN, UserRole.BRANCH_MANAGER, UserRole.AUTHORIZER)
       ]
     },
-    async (_request: FastifyRequest, reply: FastifyReply) => {
-      const loans = await analyticsRepo.getRawLoanDataset();
+    async (request, reply) => {
+      const { startDate, endDate } = request.query;
+      const loans = await analyticsRepo.getRawLoanDataset({ startDate, endDate });
       const summary = analyticsService.computePortfolioSummary(loans);
 
       return reply.status(200).send({
@@ -34,7 +35,7 @@ export async function analyticsRoutes(fastify: FastifyInstance) {
   /**
    * Asset Quality, Overdue Aging & RBI PAR Classification
    */
-  fastify.get(
+  fastify.get<{ Querystring: { startDate?: string; endDate?: string } }>(
     '/asset-quality',
     {
       preHandler: [
@@ -42,8 +43,9 @@ export async function analyticsRoutes(fastify: FastifyInstance) {
         requireRole(UserRole.SYSTEM_ADMIN, UserRole.BRANCH_MANAGER, UserRole.AUTHORIZER)
       ]
     },
-    async (_request: FastifyRequest, reply: FastifyReply) => {
-      const loans = await analyticsRepo.getRawLoanDataset();
+    async (request, reply) => {
+      const { startDate, endDate } = request.query;
+      const loans = await analyticsRepo.getRawLoanDataset({ startDate, endDate });
       const aging = analyticsService.computeAssetQualityAging(loans);
 
       return reply.status(200).send({
@@ -57,7 +59,7 @@ export async function analyticsRoutes(fastify: FastifyInstance) {
   /**
    * Demographic Diversity & Geographic Risk Heatmap
    */
-  fastify.get(
+  fastify.get<{ Querystring: { startDate?: string; endDate?: string } }>(
     '/diversity-geography',
     {
       preHandler: [
@@ -65,8 +67,9 @@ export async function analyticsRoutes(fastify: FastifyInstance) {
         requireRole(UserRole.SYSTEM_ADMIN, UserRole.BRANCH_MANAGER, UserRole.AUTHORIZER)
       ]
     },
-    async (_request: FastifyRequest, reply: FastifyReply) => {
-      const loans = await analyticsRepo.getRawLoanDataset();
+    async (request, reply) => {
+      const { startDate, endDate } = request.query;
+      const loans = await analyticsRepo.getRawLoanDataset({ startDate, endDate });
       const demographics = analyticsService.computeDemographics(loans);
       const taluks = await analyticsRepo.getTalukClusterMetrics();
       const geoRisk = analyticsService.computeGeographicRisk(taluks);

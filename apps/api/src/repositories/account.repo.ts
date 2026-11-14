@@ -1,6 +1,6 @@
 import { db } from '../db/client.js';
 import { accounts, loanDetails, customers } from '../db/schema.js';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, and } from 'drizzle-orm';
 import { AccountStatus, AccountType, LoanPurpose } from '@nbfc/shared';
 import crypto from 'node:crypto';
 
@@ -115,7 +115,7 @@ export class AccountRepository {
         approvedByUserId,
         approvedAt: new Date()
       })
-      .where(eq(accounts.id, id))
+      .where(and(eq(accounts.id, id), eq(accounts.status, AccountStatus.PENDING_APPROVAL)))
       .returning();
 
     return results[0] || null;
@@ -127,7 +127,7 @@ export class AccountRepository {
       .set({
         status: AccountStatus.DRAFT
       })
-      .where(eq(accounts.id, id))
+      .where(and(eq(accounts.id, id), eq(accounts.status, AccountStatus.PENDING_APPROVAL)))
       .returning();
 
     return results[0] || null;

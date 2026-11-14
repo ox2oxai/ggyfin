@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { getIndianIsoDate } from './timezone.js';
 
 export enum AccountType {
   LOAN = 'LOAN',
@@ -71,6 +72,137 @@ export function calculateEMI(principal: number, annualRatePercent: number, tenur
   const growthFactor = Math.pow(1 + monthlyRate, tenureMonths);
   const emi = (principal * monthlyRate * growthFactor) / (growthFactor - 1);
   return Math.round(emi * 100) / 100;
+}
+
+export interface AmortizationScheduleEntry {
+  installmentNumber: number;
+  dueDate: string;
+  openingBalance: number;
+  emiAmount: number;
+  principalComponent: number;
+  interestComponent: number;
+  closingBalance: number;
+}
+
+export interface KeyFactStatementDto {
+  loanAmount: number;
+  annualInterestRate: number;
+  tenureMonths: number;
+  monthlyEmi: number;
+  totalInterestPayable: number;
+  processingFee: number;
+  totalCostOfCredit: number;
+  annualPercentageRate: number; // APR conforming to RBI 2022 guidelines
+  schedule: AmortizationScheduleEntry[];
+}
+
+/**
+ * Calculates due date handling month-end rollovers (e.g. Jan 31 -> Feb 28/29).
+ * Uses UTC-neutral calendar math and direct ISO string formatting to prevent any runtime timezone drift.
+ */
+export function calculateNextDueDate(startDate: Date, monthOffset: number, dueDay = 5): string {
+  const d = new Date(startDate);
+  const currentTotalMonths = d.getFullYear() * 12 + d.getMonth() + monthOffset;
+  const targetYear = Math.floor(currentTotalMonths / 12);
+  const targetMonth = currentTotalMonths % 12; // 0-indexed (0 = Jan, 1 = Feb, ...)
+
+  // Get total days in target month (automatically handles leap years: 29 in 2028, 28 in 2026)
+  const daysInMonth = new Date(Date.UTC(targetYear, targetMonth + 1, 0)).getUTCDate();
+  const clampedDay = Math.min(dueDay, daysInMonth);
+
+  const mm = String(targetMonth + 1).padStart(2, '0');
+  const dd = String(clampedDay).padStart(2, '0');
+  return `${targetYear}-${mm}-${dd}`;
+}
+
+/**
+ * Generates month-by-month Reducing Balance Amortization Schedule
+ * Resolves exact principal & interest components with zero fractional rupee leakage.
+ */
+export function generateAmortizationSchedule(
+  principal: number,
+  annualRatePercent: number,
+  tenureMonths: number,
+  startDate: Date = new Date(),
+  dueDay = 5
+): AmortizationScheduleEntry[] {
+  if (principal <= 0 || tenureMonths <= 0) return [];
+
+  const emi = calculateEMI(principal, annualRatePercent, tenureMonths);
+  const monthlyRate = annualRatePercent / 12 / 100;
+  let remainingBalance = principal;
+  const schedule: AmortizationScheduleEntry[] = [];
+
+  for (let i = 1; i <= tenureMonths; i++) {
+    const openingBalance = Math.round(remainingBalance * 100) / 100;
+    const interestComponent = Math.round(openingBalance * monthlyRate * 100) / 100;
+    let principalComponent: number;
+    let closingBalance: number;
+    let currentEmi = emi;
+
+    if (i === tenureMonths) {
+      // Final month: reconcile exact remaining principal to ensure zero residual paise
+      principalComponent = openingBalance;
+      currentEmi = Math.round((principalComponent + interestComponent) * 100) / 100;
+      closingBalance = 0.00;
+    } else {
+      principalComponent = Math.round((emi - interestComponent) * 100) / 100;
+      closingBalance = Math.max(0, Math.round((openingBalance - principalComponent) * 100) / 100);
+    }
+
+    remainingBalance = closingBalance;
+    const dueDate = calculateNextDueDate(startDate, i, dueDay);
+
+    schedule.push({
+      installmentNumber: i,
+      dueDate,
+      openingBalance,
+      emiAmount: currentEmi,
+      principalComponent,
+      interestComponent,
+      closingBalance
+    });
+  }
+
+  return schedule;
+}
+
+/**
+ * Generates RBI-Mandated Key Fact Statement (KFS)
+ */
+export function generateKeyFactStatement(
+  principal: number,
+  annualRatePercent: number,
+  tenureMonths: number,
+  startDate: Date = new Date(),
+  dueDay = 5
+): KeyFactStatementDto {
+  const schedule = generateAmortizationSchedule(principal, annualRatePercent, tenureMonths, startDate, dueDay);
+  const monthlyEmi = calculateEMI(principal, annualRatePercent, tenureMonths);
+  const totalInterestPayable = schedule.reduce((sum, s) => sum + s.interestComponent, 0);
+
+  // RBI Standard Processing Fee: 1.5% of principal + 18% GST
+  const baseFee = principal * 0.015;
+  const processingFee = Math.round((baseFee * 1.18) * 100) / 100;
+
+  const totalCostOfCredit = Math.round((totalInterestPayable + processingFee) * 100) / 100;
+
+  // APR Calculation per RBI Digital Lending Directions:
+  // APR = ((Total Cost / Principal) / (Tenure in Years)) * 100
+  const tenureYears = tenureMonths / 12;
+  const apr = Number((((totalCostOfCredit / principal) / tenureYears) * 100).toFixed(2));
+
+  return {
+    loanAmount: principal,
+    annualInterestRate: annualRatePercent,
+    tenureMonths,
+    monthlyEmi,
+    totalInterestPayable: Math.round(totalInterestPayable * 100) / 100,
+    processingFee,
+    totalCostOfCredit,
+    annualPercentageRate: apr,
+    schedule
+  };
 }
 
 export const CreateLoanAccountSchema = z.object({

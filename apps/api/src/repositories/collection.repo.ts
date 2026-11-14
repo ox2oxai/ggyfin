@@ -53,15 +53,14 @@ export class CollectionRepository {
         if (excess > 0) {
           transactionNotes += ` (Loan cleared in full. Excess advance of INR ${excess.toFixed(2)} credited to customer liability)`;
         } else {
-          transactionNotes += ' (Loan cleared in full)';
+          transactionNotes += ' (Loan cleared in full. Eligible for formal No-Dues Certificate closure)';
         }
 
-        // Transition account status to CLOSED if balance reaches 0
+        // Set balance to 0.00 while preserving ACTIVE status for Authorizer Maker-Checker NOC issuance
         await tx
           .update(accounts)
           .set({
-            currentBalance: '0.00',
-            status: 'CLOSED'
+            currentBalance: '0.00'
           })
           .where(eq(accounts.id, data.accountId));
       } else {
@@ -111,6 +110,117 @@ export class CollectionRepository {
   async findCashReceiptById(id: string) {
     const results = await db.select().from(cashReceipts).where(eq(cashReceipts.id, id)).limit(1);
     return results[0] || null;
+  }
+
+  /**
+   * Atomically verifies a cash receipt and applies credit to the loan account in a single ACID transaction.
+   * Utilizes PostgreSQL 16 row-level locks (FOR UPDATE) to prevent race conditions or double crediting.
+   */
+  async verifyCashReceiptWithCredit(params: {
+    receiptId: string;
+    verifiedByUserId: string;
+    status: ReceiptStatus;
+    notes?: string;
+  }) {
+    return db.transaction(async (tx) => {
+      // 1. Fetch and lock receipt
+      const [receipt] = await tx
+        .select()
+        .from(cashReceipts)
+        .where(eq(cashReceipts.id, params.receiptId))
+        .for('update');
+
+      if (!receipt) {
+        throw new Error('Receipt not found');
+      }
+
+      if (receipt.status !== ReceiptStatus.COLLECTED_PENDING_APPROVAL) {
+        throw new Error(`Receipt is not in pending approval status (Current: ${receipt.status})`);
+      }
+
+      if (receipt.collectedByUserId === params.verifiedByUserId) {
+        throw new Error('Dual-Control Cash Violation: The field agent who collected the cash cannot verify its deposit');
+      }
+
+      if (params.status === ReceiptStatus.DISCREPANCY) {
+        const [updatedReceipt] = await tx
+          .update(cashReceipts)
+          .set({
+            verifiedByUserId: params.verifiedByUserId,
+            status: ReceiptStatus.DISCREPANCY,
+            notes: params.notes || receipt.notes
+          })
+          .where(eq(cashReceipts.id, params.receiptId))
+          .returning();
+
+        return { receipt: updatedReceipt, transaction: null, newBalance: null };
+      }
+
+      // 2. Fetch and lock loan account
+      const [acc] = await tx
+        .select()
+        .from(accounts)
+        .where(eq(accounts.id, receipt.accountId))
+        .for('update');
+
+      if (!acc) {
+        throw new Error('Associated loan account not found');
+      }
+
+      const currentBal = Number(acc.currentBalance);
+      const amount = Number(receipt.amount);
+      let newBal = 0;
+      let transactionNotes = params.notes || 'Cash verified and deposited into branch counter';
+
+      if (amount >= currentBal) {
+        newBal = 0;
+        const excess = amount - currentBal;
+        if (excess > 0) {
+          transactionNotes += ` (Loan cleared in full. Excess advance of INR ${excess.toFixed(2)} credited to customer liability)`;
+        } else {
+          transactionNotes += ' (Loan cleared in full. Eligible for formal No-Dues Certificate closure)';
+        }
+
+        await tx
+          .update(accounts)
+          .set({ currentBalance: '0.00' })
+          .where(eq(accounts.id, receipt.accountId));
+      } else {
+        newBal = Number((currentBal - amount).toFixed(2));
+        await tx
+          .update(accounts)
+          .set({ currentBalance: newBal.toFixed(2) })
+          .where(eq(accounts.id, receipt.accountId));
+      }
+
+      // 3. Insert transaction record
+      const [txn] = await tx
+        .insert(transactions)
+        .values({
+          accountId: receipt.accountId,
+          txnRefNumber: receipt.receiptNumber,
+          amount: amount.toFixed(2),
+          txnType: TransactionType.CREDIT,
+          mode: PaymentMode.CASH,
+          balanceAfter: newBal.toFixed(2),
+          notes: transactionNotes.trim()
+        })
+        .returning();
+
+      // 4. Update cash receipt with verified status and transaction link
+      const [updatedReceipt] = await tx
+        .update(cashReceipts)
+        .set({
+          verifiedByUserId: params.verifiedByUserId,
+          status: ReceiptStatus.VERIFIED_AND_DEPOSITED,
+          transactionId: txn.id,
+          notes: params.notes || receipt.notes
+        })
+        .where(eq(cashReceipts.id, params.receiptId))
+        .returning();
+
+      return { receipt: updatedReceipt, transaction: txn, newBalance: newBal };
+    });
   }
 
   async verifyCashReceipt(receiptId: string, verifiedByUserId: string, newStatus: ReceiptStatus, transactionId: string) {

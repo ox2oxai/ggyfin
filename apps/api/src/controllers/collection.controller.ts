@@ -8,6 +8,7 @@ import {
   GenerateUpiQrSchema,
   LogCashReceiptSchema,
   VerifyCashReceiptSchema,
+  ConfirmUpiPaymentSchema,
   ReceiptStatus,
   PaymentMode,
   TransactionType,
@@ -73,6 +74,92 @@ export async function collectionRoutes(fastify: FastifyInstance) {
         message: 'Dynamic UPI QR generated successfully',
         data: qrData
       });
+    }
+  );
+
+  /**
+   * Confirms Settled Inward UPI Repayment (NPCI UTR/RRN)
+   */
+  fastify.post(
+    '/upi/confirm',
+    {
+      preHandler: [
+        fastify.authenticate,
+        requireRole(UserRole.BRANCH_MANAGER, UserRole.AUTHORIZER, UserRole.SYSTEM_ADMIN)
+      ]
+    },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const parseResult = ConfirmUpiPaymentSchema.safeParse(request.body);
+      if (!parseResult.success) {
+        return reply.status(400).send({
+          success: false,
+          statusCode: 400,
+          message: 'Invalid UPI repayment confirmation payload',
+          errors: parseResult.error.flatten()
+        });
+      }
+
+      const input = parseResult.data;
+      const accountRecord = await accountRepo.findById(input.accountId);
+      if (!accountRecord) {
+        return reply.status(404).send({ success: false, statusCode: 404, message: 'Account not found' });
+      }
+
+      try {
+        const { transaction, newBalance } = await collectionRepo.recordCreditTransaction({
+          accountId: input.accountId,
+          txnRefNumber: input.utrNumber,
+          amount: input.amount,
+          txnType: TransactionType.CREDIT,
+          mode: PaymentMode.UPI,
+          notes: input.notes || `UPI repayment via UTR ${input.utrNumber}`
+        });
+
+        // Audit Log
+        await auditRepo.append(
+          auditService.prepareAuditEntry({
+            userId: request.userSession!.userId,
+            action: AuditAction.UPI_PAYMENT_CONFIRMED,
+            entityType: 'ACCOUNT',
+            entityId: input.accountId,
+            ipAddress: request.ip,
+            userAgent: request.headers['user-agent'],
+            payloadAfter: {
+              utrNumber: input.utrNumber,
+              amount: input.amount,
+              newBalance
+            }
+          })
+        );
+
+        // Automated Notification
+        if (accountRecord.customer?.phone) {
+          await notificationService.notifyRepaymentReceived({
+            phone: accountRecord.customer.phone,
+            accountNumber: accountRecord.account.accountNumber,
+            amount: input.amount,
+            balance: newBalance,
+            ref: input.utrNumber
+          }).catch((e) => fastify.log.warn(`Repayment notification failed: ${e.message}`));
+        }
+
+        return reply.status(200).send({
+          success: true,
+          statusCode: 200,
+          message: 'UPI repayment credited to loan account successfully',
+          data: {
+            transaction,
+            newBalance
+          }
+        });
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Failed to record UPI payment';
+        return reply.status(400).send({
+          success: false,
+          statusCode: 400,
+          message
+        });
+      }
     }
   );
 
@@ -198,27 +285,15 @@ export async function collectionRoutes(fastify: FastifyInstance) {
       const verifierUserId = request.userSession!.userId;
 
       try {
-        // Enforce dual-control: field agent cannot verify their own cash
-        collectionService.validateCashReceiptVerification({
-          collectedByUserId: receipt.collectedByUserId,
+        // Enforce dual-control & atomic credit inside a single ACID transaction with row-level locks
+        const { receipt, transaction, newBalance } = await collectionRepo.verifyCashReceiptWithCredit({
+          receiptId,
           verifiedByUserId: verifierUserId,
-          currentStatus: receipt.status as ReceiptStatus,
-          newStatus: status
+          status,
+          notes
         });
 
-        if (status === ReceiptStatus.VERIFIED_AND_DEPOSITED) {
-          // Atomically apply credit to the loan account in an ACID transaction
-          const { transaction } = await collectionRepo.recordCreditTransaction({
-            accountId: receipt.accountId,
-            txnRefNumber: receipt.receiptNumber,
-            amount: Number(receipt.amount),
-            txnType: TransactionType.CREDIT,
-            mode: PaymentMode.CASH,
-            notes: notes || 'Cash verified and deposited into branch counter'
-          });
-
-          await collectionRepo.verifyCashReceipt(receipt.id, verifierUserId, status, transaction.id);
-
+        if (transaction) {
           // Automated Repayment Confirmation SMS & WhatsApp
           const accountRecord = await accountRepo.findById(receipt.accountId);
           if (accountRecord?.customer?.phone) {
@@ -241,24 +316,26 @@ export async function collectionRoutes(fastify: FastifyInstance) {
             entityId: receipt.id,
             ipAddress: request.ip,
             userAgent: request.headers['user-agent'],
-            payloadAfter: { status, receiptNumber: receipt.receiptNumber }
+            payloadAfter: { status, receiptNumber: receipt.receiptNumber, newBalance }
           })
         );
 
         return reply.status(200).send({
           success: true,
           statusCode: 200,
-          message: 'Cash receipt verified and account balance credited under dual control'
+          message: 'Cash receipt verified and account balance credited under dual control',
+          data: {
+            receipt,
+            transaction
+          }
         });
       } catch (err: unknown) {
-        if (err instanceof CollectionValidationError) {
-          return reply.status(403).send({
-            success: false,
-            statusCode: 403,
-            message: err.message
-          });
-        }
-        throw err;
+        const message = err instanceof Error ? err.message : 'Cash verification failed';
+        return reply.status(403).send({
+          success: false,
+          statusCode: 403,
+          message
+        });
       }
     }
   );
