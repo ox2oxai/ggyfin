@@ -31,8 +31,10 @@ export default function LoginPage() {
       }));
 
       // Route based on role
-      if (selectedRole === UserRole.FIELD_OFFICER) {
-        router.push('/dashboard/field');
+      if (selectedRole === UserRole.SYSTEM_ADMIN) {
+        router.push('/dashboard/accounts');
+      } else if (selectedRole === UserRole.BRANCH_MANAGER) {
+        router.push('/dashboard/transactions');
       } else if (selectedRole === UserRole.AUTHORIZER) {
         router.push('/dashboard/approvals');
       } else {
@@ -81,20 +83,33 @@ export default function LoginPage() {
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
-                onClick={() => setRolePreset(UserRole.FIELD_OFFICER, 'field_officer_ramesh')}
+                onClick={() => setRolePreset(UserRole.SYSTEM_ADMIN, 'admin_suresh')}
                 className={`text-xs p-2.5 rounded-xl border text-left font-medium transition-all ${
-                  selectedRole === UserRole.FIELD_OFFICER
+                  selectedRole === UserRole.SYSTEM_ADMIN
                     ? 'bg-terracotta-50 border-terracotta-500 text-terracotta-700 font-bold'
                     : 'bg-sandstone-100 border-clay text-forest-800 hover:bg-sandstone-200'
                 }`}
               >
-                <p className="font-bold">Field Officer</p>
-                <p className="text-[10px] text-forest-800/60">Maker • Mobile PWA</p>
+                <p className="font-bold">System Admin</p>
+                <p className="text-[10px] text-forest-800/60">Full Oversight • Setup</p>
               </button>
 
               <button
                 type="button"
-                onClick={() => setRolePreset(UserRole.AUTHORIZER, 'checker_suresh')}
+                onClick={() => setRolePreset(UserRole.BRANCH_MANAGER, 'manager_anita')}
+                className={`text-xs p-2.5 rounded-xl border text-left font-medium transition-all ${
+                  selectedRole === UserRole.BRANCH_MANAGER
+                    ? 'bg-terracotta-50 border-terracotta-500 text-terracotta-700 font-bold'
+                    : 'bg-sandstone-100 border-clay text-forest-800 hover:bg-sandstone-200'
+                }`}
+              >
+                <p className="font-bold">Branch Manager</p>
+                <p className="text-[10px] text-forest-800/60">Dual Controls • Cash</p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setRolePreset(UserRole.AUTHORIZER, 'checker_sharma')}
                 className={`text-xs p-2.5 rounded-xl border text-left font-medium transition-all ${
                   selectedRole === UserRole.AUTHORIZER
                     ? 'bg-terracotta-50 border-terracotta-500 text-terracotta-700 font-bold'
@@ -103,6 +118,19 @@ export default function LoginPage() {
               >
                 <p className="font-bold">Authorizer (Checker)</p>
                 <p className="text-[10px] text-forest-800/60">4-Eyes Approvals</p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setRolePreset(UserRole.FIELD_OFFICER, 'field_officer_ramesh')}
+                className={`text-xs p-2.5 rounded-xl border text-left font-medium transition-all ${
+                  selectedRole === UserRole.FIELD_OFFICER
+                    ? 'bg-terracotta-50 border-terracotta-500 text-terracotta-700 font-bold'
+                    : 'bg-sandstone-100 border-clay text-forest-800 hover:bg-sandstone-200'
+                }`}
+              >
+                <p className="font-bold">Field Officer (Maker)</p>
+                <p className="text-[10px] text-forest-800/60">Mobile PWA • Onboarding</p>
               </button>
             </div>
           </div>

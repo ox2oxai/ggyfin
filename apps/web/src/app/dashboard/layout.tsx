@@ -11,7 +11,9 @@ import {
   Building2,
   Lock,
   FileCheck2,
-  QrCode
+  QrCode,
+  Users,
+  ArrowLeftRight
 } from 'lucide-react';
 import { GGYBrandMark } from '../../components/brand-mark';
 
@@ -79,6 +81,30 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Tab Bar */}
         <div className="bg-forest-800/80 px-4 sm:px-8 flex gap-6 text-xs font-semibold overflow-x-auto border-t border-forest-700/60">
           <Link
+            href="/dashboard/accounts"
+            className={`py-3 inline-flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${
+              pathname === '/dashboard/accounts'
+                ? 'border-terracotta-500 text-white font-bold'
+                : 'border-transparent text-sandstone-300 hover:text-white'
+            }`}
+          >
+            <Users className="w-4 h-4 text-terracotta-400" />
+            <span>Accounts & Loan Lifecycle</span>
+          </Link>
+
+          <Link
+            href="/dashboard/transactions"
+            className={`py-3 inline-flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${
+              pathname === '/dashboard/transactions'
+                ? 'border-terracotta-500 text-white font-bold'
+                : 'border-transparent text-sandstone-300 hover:text-white'
+            }`}
+          >
+            <ArrowLeftRight className="w-4 h-4 text-terracotta-400" />
+            <span>Ledger & Transactions (Credit/Debit)</span>
+          </Link>
+
+          <Link
             href="/dashboard/field"
             className={`py-3 inline-flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${
               pathname === '/dashboard/field'
@@ -87,7 +113,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             }`}
           >
             <Smartphone className="w-4 h-4 text-terracotta-400" />
-            <span>Field Agent PWA (Onboarding & UPI QR)</span>
+            <span>Field Agent PWA</span>
           </Link>
 
           <Link
