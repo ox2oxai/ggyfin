@@ -1,0 +1,450 @@
+'use client';
+
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { useLanguage } from '../../components/language-context';
+import { GGYBrandMark } from '../../components/brand-mark';
+import {
+  User,
+  KeyRound,
+  Shield,
+  CreditCard,
+  QrCode,
+  FileCheck2,
+  Download,
+  ArrowLeft,
+  LogOut,
+  CheckCircle2,
+  Calendar,
+  AlertCircle,
+  HelpCircle,
+  Phone
+} from 'lucide-react';
+import { generateUpiUri } from '@nbfc/shared';
+
+interface BorrowerAccountSummary {
+  accountNumber: string;
+  product: string;
+  sanctionAmount: number;
+  balance: number;
+  monthlyEmi: number;
+  nextDueDate: string;
+  status: 'ACTIVE' | 'CLOSED';
+}
+
+const DEMO_BORROWER_DATA = {
+  customerId: '1084000039',
+  fullName: 'Smt. Lakshmi Gowda',
+  maskedAadhaar: 'XXXX-XXXX-8421',
+  phone: '9845123450',
+  taluk: 'Channapatna, Ramanagara',
+  dpdpConsentDate: '2026-04-10',
+  accounts: [
+    {
+      accountNumber: '1084-0101-702-0039-4',
+      product: 'Dairy Development Term Loan',
+      sanctionAmount: 60000,
+      balance: 24500,
+      monthlyEmi: 4500,
+      nextDueDate: '2026-12-05',
+      status: 'ACTIVE'
+    },
+    {
+      accountNumber: '1084-0101-701-0012-7',
+      product: 'Petty Shop Working Capital',
+      sanctionAmount: 30000,
+      balance: 0,
+      monthlyEmi: 0,
+      nextDueDate: 'Completed',
+      status: 'CLOSED'
+    }
+  ] as BorrowerAccountSummary[]
+};
+
+export default function BorrowerPortalPage() {
+  const { lang } = useLanguage();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [customerId, setCustomerId] = useState('1084000039');
+  const [password, setPassword] = useState('Borrower@123');
+  const [selectedAcc, setSelectedAcc] = useState<BorrowerAccountSummary | null>(null);
+  const [showQrModal, setShowQrModal] = useState(false);
+  const [showNocModal, setShowNocModal] = useState(false);
+
+  const t = {
+    en: {
+      portalTitle: 'Borrower Self-Service Portal',
+      portalSubtitle: 'Secure digital access for micro-enterprise, dairy, and rural borrowers using your Customer ID (CIF).',
+      cifLabel: 'Customer ID (CIF)',
+      cifHelp: 'Your 10-digit permanent Customer ID issued during onboarding (e.g. 1084000039).',
+      passwordLabel: 'Password / MPIN',
+      signInBtn: 'Sign In with Customer ID',
+      quickDemo: 'Quick Demo: Sign In as Smt. Lakshmi Gowda',
+      welcome: 'Welcome,',
+      profileTitle: 'Customer Identity & DPDP Rights Profile',
+      aadhaar: 'Masked Aadhaar',
+      phone: 'Mobile',
+      district: 'Location',
+      dpdpConsent: 'DPDP Act Consent',
+      myFacilities: 'My Loan Facilities',
+      accNum: 'CBS Account Number',
+      principal: 'Sanction',
+      balance: 'Outstanding Balance',
+      emi: 'Monthly Installment',
+      dueDate: 'Due Date',
+      status: 'Status',
+      payUpi: 'Pay via UPI QR',
+      viewNoc: 'Download NOC',
+      signOut: 'Sign Out',
+      activeStatus: 'Active',
+      closedStatus: 'Fully Repaid (Closed)'
+    },
+    kn: {
+      portalTitle: 'ಗ್ರಾಹಕರ ಸ್ವಯಂ-ಸೇವಾ ಪೋರ್ಟಲ್ (Borrower Portal)',
+      portalSubtitle: 'ನಿಮ್ಮ ಗ್ರಾಹಕ ಸಂಖ್ಯೆ (Customer ID / CIF) ಬಳಸಿ ನಿಮ್ಮ ಸಾಲದ ವಿವರಗಳನ್ನು ಪರಿಶೀಲಿಸಿ.',
+      cifLabel: 'ಗ್ರಾಹಕ ಸಂಖ್ಯೆ (Customer ID / CIF)',
+      cifHelp: 'ನಿಮ್ಮ 10-ಅಂಕಿಯ ಶಾಶ್ವತ ಗ್ರಾಹಕ ಸಂಖ್ಯೆ (ಉದಾ: 1084000039).',
+      passwordLabel: 'ಪಾಸ್‌ವರ್ಡ್ / ಎಂ-ಪಿನ್ (MPIN)',
+      signInBtn: 'ಗ್ರಾಹಕ ಸಂಖ್ಯೆಯೊಂದಿಗೆ ಪ್ರವೇಶಿಸಿ',
+      quickDemo: 'ಡೆಮೊ ಲಾಗಿನ್: ಶ್ರೀಮತಿ ಲಕ್ಷ್ಮಿ ಗೌಡ',
+      welcome: 'ಸುಸ್ವಾಗತ,',
+      profileTitle: 'ಗ್ರಾಹಕ ವಿವರ ಮತ್ತು DPDP ಹಕ್ಕುಗಳು',
+      aadhaar: 'ಮರೆಮಾಡಿದ ಆಧಾರ್',
+      phone: 'ಮೊಬೈಲ್',
+      district: 'ಸ್ಥಳ',
+      dpdpConsent: 'DPDP ಒಪ್ಪಿಗೆ',
+      myFacilities: 'ನನ್ನ ಸಾಲದ ಖಾತೆಗಳು',
+      accNum: 'ಖಾತೆ ಸಂಖ್ಯೆ',
+      principal: 'ಸಾಲದ ಮೊತ್ತ',
+      balance: 'ಬಾಕಿ ಮೊತ್ತ',
+      emi: 'ಮಾಸಿಕ ಕಂತು',
+      dueDate: 'ಕೊನೆಯ ದಿನಾಂಕ',
+      status: 'ಸ್ಥಿತಿ',
+      payUpi: 'ಯುಪಿಐ ಮೂಲಕ ಪಾವತಿಸಿ',
+      viewNoc: 'NOC ಡೌನ್‌ಲೋಡ್',
+      signOut: 'ಲಾಗ್ ಔಟ್',
+      activeStatus: 'ಸಕ್ರಿಯ',
+      closedStatus: 'ಸಂಪೂರ್ಣ ಮರುಪಾವತಿಯಾಗಿದೆ'
+    }
+  }[lang];
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoggedIn(true);
+  };
+
+  const handleDemoLogin = () => {
+    setCustomerId('1084000039');
+    setPassword('Borrower@123');
+    setIsLoggedIn(true);
+  };
+
+  const handleOpenUpi = (acc: BorrowerAccountSummary) => {
+    setSelectedAcc(acc);
+    setShowQrModal(true);
+  };
+
+  const activeLoan = DEMO_BORROWER_DATA.accounts[0];
+  const upiUri = generateUpiUri({
+    vpa: 'ggycollect@icici',
+    payeeName: 'GGY Finance',
+    amount: activeLoan.monthlyEmi,
+    transactionRef: `EMI-${activeLoan.accountNumber.slice(-6)}`,
+    accountNumber: activeLoan.accountNumber
+  });
+
+  return (
+    <div className="min-h-screen bg-sandstone-100 flex flex-col justify-between">
+      {/* Top Bar */}
+      <header className="bg-forest-900 text-sandstone-100 py-3.5 px-4 sm:px-8 border-b border-forest-800">
+        <div className="max-w-6xl mx-auto flex justify-between items-center">
+          <Link href="/" className="flex items-center gap-2.5">
+            <GGYBrandMark size="sm" />
+            <div>
+              <span className="font-extrabold text-sm sm:text-base tracking-tight text-white block leading-tight">
+                GGY Finance
+              </span>
+              <span className="text-[10px] text-terracotta-400 font-bold tracking-wider uppercase block">
+                {t.portalTitle}
+              </span>
+            </div>
+          </Link>
+
+          {isLoggedIn ? (
+            <button
+              onClick={() => setIsLoggedIn(false)}
+              className="inline-flex items-center gap-1.5 text-xs bg-forest-800 hover:bg-forest-700 text-sandstone-200 py-1.5 px-3 rounded-lg border border-forest-700 transition-all"
+            >
+              <LogOut className="w-3.5 h-3.5 text-terracotta-400" />
+              <span>{t.signOut}</span>
+            </button>
+          ) : (
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 text-xs text-sandstone-300 hover:text-white transition-colors"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Back to Home</span>
+            </Link>
+          )}
+        </div>
+      </header>
+
+      {/* Main Body */}
+      <main className="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+        {!isLoggedIn ? (
+          /* LOGIN SCREEN */
+          <div className="max-w-md mx-auto my-8">
+            <div className="bg-sandstone-50 p-6 sm:p-8 rounded-3xl border border-clay shadow-md space-y-5">
+              <div className="text-center space-y-1">
+                <div className="w-12 h-12 rounded-2xl bg-terracotta-50 text-terracotta-600 flex items-center justify-center mx-auto border border-terracotta-200">
+                  <User className="w-6 h-6" />
+                </div>
+                <h2 className="text-xl font-black text-forest-900">{t.portalTitle}</h2>
+                <p className="text-xs text-forest-800/70">{t.portalSubtitle}</p>
+              </div>
+
+              {/* Demo Sign In Pill */}
+              <button
+                type="button"
+                onClick={handleDemoLogin}
+                className="w-full py-2.5 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-xl text-xs font-bold transition-all text-center"
+              >
+                &rarr; {t.quickDemo}
+              </button>
+
+              <form onSubmit={handleLogin} className="space-y-4 text-xs">
+                <div>
+                  <label className="block font-bold text-forest-900 mb-1">{t.cifLabel}</label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      required
+                      value={customerId}
+                      onChange={(e) => setCustomerId(e.target.value)}
+                      placeholder="e.g. 1084000039"
+                      className="w-full px-3 py-2.5 bg-sandstone-100 border border-clay rounded-xl font-mono text-forest-900 font-bold focus:ring-2 focus:ring-terracotta-500 outline-hidden"
+                    />
+                  </div>
+                  <p className="text-[10px] text-forest-800/60 mt-1">{t.cifHelp}</p>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-forest-900 mb-1">{t.passwordLabel}</label>
+                  <input
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full px-3 py-2.5 bg-sandstone-100 border border-clay rounded-xl text-forest-900 focus:ring-2 focus:ring-terracotta-500 outline-hidden"
+                  />
+                </div>
+
+                <div className="p-3 bg-sandstone-100 rounded-xl border border-clay text-[11px] text-forest-800/80 flex items-start gap-2">
+                  <Shield className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <span>Protected by 256-bit encryption. Conforms to UIDAI Aadhaar masking and DPDP Act 2023.</span>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full py-3 bg-forest-800 hover:bg-forest-900 text-white font-bold rounded-xl shadow-md transition-all text-xs"
+                >
+                  {t.signInBtn}
+                </button>
+              </form>
+            </div>
+          </div>
+        ) : (
+          /* AUTHENTICATED BORROWER DASHBOARD */
+          <div className="space-y-6">
+            {/* Welcome & Profile Card */}
+            <div className="bg-sandstone-50 p-6 rounded-3xl border border-clay shadow-xs space-y-4">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-clay pb-4">
+                <div>
+                  <p className="text-xs text-forest-800/70 font-semibold">{t.welcome}</p>
+                  <h2 className="text-xl sm:text-2xl font-black text-forest-900">
+                    {DEMO_BORROWER_DATA.fullName}
+                  </h2>
+                </div>
+
+                <div className="bg-forest-900 text-sandstone-100 px-3.5 py-1.5 rounded-xl text-xs font-mono">
+                  CIF: <strong>{DEMO_BORROWER_DATA.customerId}</strong>
+                </div>
+              </div>
+
+              {/* Profile KYC Details */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                <div className="bg-sandstone-100 p-3 rounded-xl border border-clay">
+                  <p className="text-[10px] text-forest-800/60 uppercase font-bold">{t.aadhaar}</p>
+                  <p className="font-mono font-bold text-forest-900 mt-0.5">{DEMO_BORROWER_DATA.maskedAadhaar}</p>
+                </div>
+                <div className="bg-sandstone-100 p-3 rounded-xl border border-clay">
+                  <p className="text-[10px] text-forest-800/60 uppercase font-bold">{t.phone}</p>
+                  <p className="font-mono font-bold text-forest-900 mt-0.5">+91 {DEMO_BORROWER_DATA.phone}</p>
+                </div>
+                <div className="bg-sandstone-100 p-3 rounded-xl border border-clay">
+                  <p className="text-[10px] text-forest-800/60 uppercase font-bold">{t.district}</p>
+                  <p className="font-bold text-forest-900 mt-0.5">{DEMO_BORROWER_DATA.taluk}</p>
+                </div>
+                <div className="bg-sandstone-100 p-3 rounded-xl border border-clay">
+                  <p className="text-[10px] text-forest-800/60 uppercase font-bold">{t.dpdpConsent}</p>
+                  <p className="font-bold text-emerald-700 mt-0.5">Active ({DEMO_BORROWER_DATA.dpdpConsentDate})</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Linked Loan Facilities */}
+            <div className="space-y-4">
+              <h3 className="font-black text-base text-forest-900 flex items-center gap-2">
+                <CreditCard className="w-5 h-5 text-terracotta-600" />
+                <span>{t.myFacilities} (Linked to CIF: {DEMO_BORROWER_DATA.customerId})</span>
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {DEMO_BORROWER_DATA.accounts.map((acc) => (
+                  <div
+                    key={acc.accountNumber}
+                    className="bg-sandstone-50 p-6 rounded-3xl border border-clay shadow-xs space-y-4 flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="flex justify-between items-start gap-2">
+                        <div>
+                          <p className="text-[10px] font-mono text-forest-800/60 uppercase font-bold">16-Digit CBS Account</p>
+                          <p className="font-mono font-black text-forest-900 text-sm">{acc.accountNumber}</p>
+                        </div>
+                        <span
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            acc.status === 'ACTIVE'
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : 'bg-sandstone-200 text-forest-800'
+                          }`}
+                        >
+                          {acc.status === 'ACTIVE' ? t.activeStatus : t.closedStatus}
+                        </span>
+                      </div>
+
+                      <h4 className="font-bold text-sm text-forest-900 mt-2">{acc.product}</h4>
+
+                      <div className="grid grid-cols-2 gap-2 text-xs pt-3 font-medium">
+                        <div>
+                          <p className="text-[10px] text-forest-800/60">{t.principal}:</p>
+                          <p className="font-mono font-bold text-forest-900">₹{acc.sanctionAmount.toLocaleString('en-IN')}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-forest-800/60">{t.balance}:</p>
+                          <p className={`font-mono font-bold ${acc.balance === 0 ? 'text-emerald-700' : 'text-forest-900'}`}>
+                            ₹{acc.balance.toLocaleString('en-IN')}
+                          </p>
+                        </div>
+                        {acc.status === 'ACTIVE' && (
+                          <>
+                            <div>
+                              <p className="text-[10px] text-forest-800/60">{t.emi}:</p>
+                              <p className="font-mono font-bold text-terracotta-600">₹{acc.monthlyEmi.toLocaleString('en-IN')}</p>
+                            </div>
+                            <div>
+                              <p className="text-[10px] text-forest-800/60">{t.dueDate}:</p>
+                              <p className="font-bold text-forest-900">{acc.nextDueDate}</p>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="pt-3 border-t border-clay flex justify-end gap-2">
+                      {acc.status === 'ACTIVE' ? (
+                        <button
+                          onClick={() => handleOpenUpi(acc)}
+                          className="w-full py-2.5 bg-forest-800 hover:bg-forest-900 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-xs"
+                        >
+                          <QrCode className="w-3.5 h-3.5 text-terracotta-400" />
+                          <span>{t.payUpi}</span>
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => setShowNocModal(true)}
+                          className="w-full py-2.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                          <span>{t.viewNoc}</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
+
+      {/* QR MODAL */}
+      {showQrModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+          <div className="bg-sandstone-50 max-w-sm w-full rounded-3xl p-6 border border-clay shadow-2xl space-y-4 text-center">
+            <h4 className="font-extrabold text-base text-forest-900">Instant UPI Repayment QR</h4>
+            <p className="text-xs text-forest-800/70">
+              Scan with PhonePe, Google Pay, Paytm, or BHIM to instantly credit your installment.
+            </p>
+
+            <div className="p-4 bg-white rounded-2xl border-2 border-forest-900 flex flex-col items-center">
+              <QrCode className="w-36 h-36 text-forest-900" />
+              <p className="text-[10px] font-mono text-forest-800/60 mt-2 break-all">{upiUri}</p>
+            </div>
+
+            <div className="p-3 bg-sandstone-100 rounded-xl text-xs font-bold text-forest-900">
+              Amount Due: ₹{activeLoan.monthlyEmi.toLocaleString('en-IN')}
+            </div>
+
+            <button
+              onClick={() => setShowQrModal(false)}
+              className="w-full py-2.5 bg-forest-800 text-white rounded-xl text-xs font-bold"
+            >
+              Done / Close
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* NOC MODAL */}
+      {showNocModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+          <div className="bg-sandstone-50 max-w-md w-full rounded-3xl p-6 border-2 border-forest-900 shadow-2xl space-y-4">
+            <div className="text-center border-b border-clay pb-3">
+              <p className="text-[10px] uppercase font-bold text-terracotta-600">GGY Finance • Core Banking</p>
+              <h3 className="font-black text-base text-forest-900">No Objection Certificate (NOC)</h3>
+            </div>
+
+            <div className="text-xs space-y-2 text-forest-900 font-mono">
+              <p>Borrower Name: <strong>Smt. Lakshmi Gowda</strong></p>
+              <p>Customer ID (CIF): <strong>1084000039</strong></p>
+              <p>Account Number: <strong>1084-0101-701-0012-7</strong></p>
+              <p>Facility: <strong>Petty Shop Working Capital</strong></p>
+              <p>Status: <strong className="text-emerald-700">ZERO OUTSTANDING (NIL)</strong></p>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t border-clay">
+              <button
+                onClick={() => setShowNocModal(false)}
+                className="px-4 py-2 text-xs border border-clay rounded-xl text-forest-800"
+              >
+                Close
+              </button>
+              <button
+                onClick={() => window.print()}
+                className="px-4 py-2 text-xs bg-forest-800 text-white font-bold rounded-xl flex items-center gap-1"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Print Certificate</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Footer */}
+      <footer className="bg-forest-900 text-sandstone-300 text-[11px] py-4 px-4 text-center border-t border-forest-800">
+        <p>GGY Finance Core Banking Platform • RBI Registered NBFC-BL (Base Layer) • DPDP Act 2023 Compliant</p>
+      </footer>
+    </div>
+  );
+}

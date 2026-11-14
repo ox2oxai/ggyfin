@@ -3,6 +3,10 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../../../components/language-context';
 import {
+  generateCustomerId,
+  generateCBSAccountNumber
+} from '@nbfc/shared';
+import {
   Users,
   PlusCircle,
   Search,
@@ -18,6 +22,7 @@ import {
 
 interface AccountRecord {
   id: string;
+  customerId: string;
   accountNumber: string;
   borrowerName: string;
   maskedAadhaar: string;
@@ -39,12 +44,13 @@ interface AccountRecord {
 const INITIAL_ACCOUNTS: AccountRecord[] = [
   {
     id: 'acc-001',
-    accountNumber: 'GGY-LN-KA-2026-0001',
+    customerId: '1084000039',
+    accountNumber: '1084-0101-702-0039-4',
     borrowerName: 'Smt. Lakshmi Gowda',
     maskedAadhaar: 'XXXX-XXXX-8421',
     phone: '9845123450',
     taluk: 'Channapatna, Ramanagara',
-    product: 'Dairy Development Micro-Loan',
+    product: 'Dairy Development Term Loan',
     principal: 60000,
     balance: 24500,
     interestRate: 14.5,
@@ -56,7 +62,8 @@ const INITIAL_ACCOUNTS: AccountRecord[] = [
   },
   {
     id: 'acc-002',
-    accountNumber: 'GGY-LN-KA-2026-0002',
+    customerId: '1084000012',
+    accountNumber: '1084-0101-701-0012-7',
     borrowerName: 'Sri Manjunath Hegde',
     maskedAadhaar: 'XXXX-XXXX-3912',
     phone: '9741298456',
@@ -74,7 +81,8 @@ const INITIAL_ACCOUNTS: AccountRecord[] = [
   },
   {
     id: 'acc-003',
-    accountNumber: 'GGY-LN-KA-2026-0003',
+    customerId: '1084000042',
+    accountNumber: '1084-0101-703-0042-3',
     borrowerName: 'Smt. Kavitha Revanna',
     maskedAadhaar: 'XXXX-XXXX-9104',
     phone: '9480112233',
@@ -89,7 +97,8 @@ const INITIAL_ACCOUNTS: AccountRecord[] = [
   },
   {
     id: 'acc-004',
-    accountNumber: 'GGY-LN-KA-2026-0004',
+    customerId: '1084000018',
+    accountNumber: '1084-0101-704-0018-9',
     borrowerName: 'Sri Basavaraj Patil',
     maskedAadhaar: 'XXXX-XXXX-1567',
     phone: '9611554433',
@@ -238,11 +247,21 @@ export default function AccountsPage() {
 
   const handleCreateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const newId = `acc-00${accounts.length + 1}`;
-    const newAccNum = `GGY-LN-KA-2026-000${accounts.length + 1}`;
+    const newSeq = accounts.length + 1;
+    const newId = `acc-00${newSeq}`;
+    const newCif = generateCustomerId('1084', newSeq + 42);
+    const schemeCode = newBorrower.product.includes('Dairy')
+      ? '702'
+      : newBorrower.product.includes('Shop')
+      ? '701'
+      : newBorrower.product.includes('Powerloom')
+      ? '703'
+      : '704';
+    const newAccNum = generateCBSAccountNumber('1084', '0101', schemeCode, newSeq + 42, true);
 
     const record: AccountRecord = {
       id: newId,
+      customerId: newCif,
       accountNumber: newAccNum,
       borrowerName: newBorrower.name,
       maskedAadhaar: newBorrower.aadhaarMasked || 'XXXX-XXXX-9999',
@@ -259,7 +278,7 @@ export default function AccountsPage() {
 
     setAccounts([record, ...accounts]);
     setShowCreateModal(false);
-    setSuccessToast(`Application for ${record.borrowerName} submitted into Checker Approval Queue!`);
+    setSuccessToast(`Application for ${record.borrowerName} submitted into Checker Approval Queue! Assigned CIF: ${newCif}, CBS A/C: ${newAccNum}`);
     setTimeout(() => setSuccessToast(''), 4000);
   };
 
@@ -429,7 +448,10 @@ export default function AccountsPage() {
               {filteredAccounts.map((acc) => (
                 <tr key={acc.id} className="hover:bg-sandstone-100/60 transition-colors">
                   <td className="py-3.5 px-4 font-mono font-bold text-forest-900">
-                    <div>{acc.accountNumber}</div>
+                    <div className="text-xs">{acc.accountNumber}</div>
+                    <div className="text-[10px] text-terracotta-600 font-sans mt-0.5 font-bold">
+                      CIF: <span className="font-mono">{acc.customerId}</span>
+                    </div>
                     <div className="text-[10px] text-forest-800/60 font-sans mt-0.5">
                       {t.makerSignature}: <span className="font-semibold">{acc.makerId}</span>
                       {acc.checkerId && (

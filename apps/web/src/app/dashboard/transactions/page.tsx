@@ -17,6 +17,7 @@ import {
 interface LedgerEntry {
   id: string;
   timestamp: string;
+  customerId: string;
   accountNumber: string;
   borrowerName: string;
   type: 'DISBURSEMENT' | 'UPI_REPAYMENT' | 'CASH_COLLECTION' | 'INTEREST_ACCRUAL';
@@ -33,7 +34,8 @@ const INITIAL_LEDGER: LedgerEntry[] = [
   {
     id: 'TXN-DISB-2026-001',
     timestamp: '2026-04-15 10:30',
-    accountNumber: 'GGY-LN-KA-2026-0001',
+    customerId: '1084000039',
+    accountNumber: '1084-0101-702-0039-4',
     borrowerName: 'Smt. Lakshmi Gowda',
     type: 'DISBURSEMENT',
     debit: 60000,
@@ -47,7 +49,8 @@ const INITIAL_LEDGER: LedgerEntry[] = [
   {
     id: 'TXN-UPI-2026-002',
     timestamp: '2026-05-10 14:15',
-    accountNumber: 'GGY-LN-KA-2026-0001',
+    customerId: '1084000039',
+    accountNumber: '1084-0101-702-0039-4',
     borrowerName: 'Smt. Lakshmi Gowda',
     type: 'UPI_REPAYMENT',
     debit: 0,
@@ -61,7 +64,8 @@ const INITIAL_LEDGER: LedgerEntry[] = [
   {
     id: 'TXN-CASH-2026-003',
     timestamp: '2026-06-10 11:20',
-    accountNumber: 'GGY-LN-KA-2026-0001',
+    customerId: '1084000039',
+    accountNumber: '1084-0101-702-0039-4',
     borrowerName: 'Smt. Lakshmi Gowda',
     type: 'CASH_COLLECTION',
     debit: 0,
@@ -75,7 +79,8 @@ const INITIAL_LEDGER: LedgerEntry[] = [
   {
     id: 'TXN-CASH-2026-004',
     timestamp: '2026-06-14 16:40',
-    accountNumber: 'GGY-LN-KA-2026-0004',
+    customerId: '1084000018',
+    accountNumber: '1084-0101-704-0018-9',
     borrowerName: 'Sri Basavaraj Patil',
     type: 'CASH_COLLECTION',
     debit: 0,
@@ -96,7 +101,8 @@ export default function TransactionsPage() {
 
   // UPI Simulation Form State (deterministic default for SSR hydration safety)
   const [upiForm, setUpiForm] = useState({
-    accountNumber: 'GGY-LN-KA-2026-0001',
+    accountNumber: '1084-0101-702-0039-4',
+    customerId: '1084000039',
     borrowerName: 'Smt. Lakshmi Gowda',
     amount: 5500,
     utr: '202611149814'
@@ -104,7 +110,8 @@ export default function TransactionsPage() {
 
   // Cash Entry Form State (deterministic default for SSR hydration safety)
   const [cashForm, setCashForm] = useState({
-    accountNumber: 'GGY-LN-KA-2026-0001',
+    accountNumber: '1084-0101-702-0039-4',
+    customerId: '1084000039',
     borrowerName: 'Smt. Lakshmi Gowda',
     amount: 4500,
     fieldOfficer: 'field_officer_ramesh',
@@ -197,12 +204,13 @@ export default function TransactionsPage() {
     );
     const priorBalance = priorSettledEntry
       ? priorSettledEntry.balanceAfter
-      : (upiForm.accountNumber === 'GGY-LN-KA-2026-0004' ? 38200 : 24500);
+      : (upiForm.accountNumber === '1084-0101-704-0018-9' ? 38200 : 24500);
     const calculatedBalance = Math.max(0, priorBalance - Number(upiForm.amount));
 
     const newEntry: LedgerEntry = {
       id: newTxnId,
       timestamp: new Date().toISOString().replace('T', ' ').slice(0, 16),
+      customerId: upiForm.customerId || '1084000039',
       accountNumber: upiForm.accountNumber,
       borrowerName: upiForm.borrowerName,
       type: 'UPI_REPAYMENT',
@@ -236,11 +244,12 @@ export default function TransactionsPage() {
     );
     const priorBalance = priorSettledEntry
       ? priorSettledEntry.balanceAfter
-      : (cashForm.accountNumber === 'GGY-LN-KA-2026-0004' ? 38200 : 24500);
+      : (cashForm.accountNumber === '1084-0101-704-0018-9' ? 38200 : 24500);
 
     const newEntry: LedgerEntry = {
       id: newTxnId,
       timestamp: new Date().toISOString().replace('T', ' ').slice(0, 16),
+      customerId: cashForm.customerId || '1084000039',
       accountNumber: cashForm.accountNumber,
       borrowerName: cashForm.borrowerName,
       type: 'CASH_COLLECTION',
@@ -441,7 +450,8 @@ export default function TransactionsPage() {
 
                       <td className="py-3 px-4">
                         <p className="font-bold text-forest-900">{item.borrowerName}</p>
-                        <p className="text-[10px] font-mono text-forest-800/70">{item.accountNumber}</p>
+                        <p className="text-[10px] font-mono text-forest-800/80">{item.accountNumber}</p>
+                        <p className="text-[9px] font-mono text-terracotta-600 font-semibold">CIF: {item.customerId}</p>
                       </td>
 
                       <td className="py-3 px-4">
@@ -526,13 +536,14 @@ export default function TransactionsPage() {
                 value={upiForm.accountNumber}
                 onChange={(e) => {
                   const acc = e.target.value;
-                  const name = acc === 'GGY-LN-KA-2026-0001' ? 'Smt. Lakshmi Gowda' : 'Sri Basavaraj Patil';
-                  setUpiForm({ ...upiForm, accountNumber: acc, borrowerName: name });
+                  const name = acc === '1084-0101-702-0039-4' ? 'Smt. Lakshmi Gowda' : 'Sri Basavaraj Patil';
+                  const cif = acc === '1084-0101-702-0039-4' ? '1084000039' : '1084000018';
+                  setUpiForm({ ...upiForm, accountNumber: acc, borrowerName: name, customerId: cif });
                 }}
                 className="w-full px-3 py-2 bg-sandstone-100 border border-clay rounded-xl text-forest-900 font-mono"
               >
-                <option value="GGY-LN-KA-2026-0001">GGY-LN-KA-2026-0001 (Smt. Lakshmi Gowda)</option>
-                <option value="GGY-LN-KA-2026-0004">GGY-LN-KA-2026-0004 (Sri Basavaraj Patil)</option>
+                <option value="1084-0101-702-0039-4">1084-0101-702-0039-4 (Smt. Lakshmi Gowda • CIF 1084000039)</option>
+                <option value="1084-0101-704-0018-9">1084-0101-704-0018-9 (Sri Basavaraj Patil • CIF 1084000018)</option>
               </select>
             </div>
 
@@ -599,13 +610,14 @@ export default function TransactionsPage() {
                 value={cashForm.accountNumber}
                 onChange={(e) => {
                   const acc = e.target.value;
-                  const name = acc === 'GGY-LN-KA-2026-0001' ? 'Smt. Lakshmi Gowda' : 'Sri Basavaraj Patil';
-                  setCashForm({ ...cashForm, accountNumber: acc, borrowerName: name });
+                  const name = acc === '1084-0101-702-0039-4' ? 'Smt. Lakshmi Gowda' : 'Sri Basavaraj Patil';
+                  const cif = acc === '1084-0101-702-0039-4' ? '1084000039' : '1084000018';
+                  setCashForm({ ...cashForm, accountNumber: acc, borrowerName: name, customerId: cif });
                 }}
                 className="w-full px-3 py-2 bg-sandstone-100 border border-clay rounded-xl text-forest-900 font-mono"
               >
-                <option value="GGY-LN-KA-2026-0001">GGY-LN-KA-2026-0001 (Smt. Lakshmi Gowda)</option>
-                <option value="GGY-LN-KA-2026-0004">GGY-LN-KA-2026-0004 (Sri Basavaraj Patil)</option>
+                <option value="1084-0101-702-0039-4">1084-0101-702-0039-4 (Smt. Lakshmi Gowda • CIF 1084000039)</option>
+                <option value="1084-0101-704-0018-9">1084-0101-704-0018-9 (Sri Basavaraj Patil • CIF 1084000018)</option>
               </select>
             </div>
 

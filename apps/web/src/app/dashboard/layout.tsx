@@ -10,9 +10,58 @@ import {
   LogOut,
   FileCheck2,
   Users,
-  ArrowLeftRight
+  ArrowLeftRight,
+  Settings,
+  ShieldAlert,
+  ArrowRight
 } from 'lucide-react';
 import { GGYBrandMark } from '../../components/brand-mark';
+
+interface NavTab {
+  href: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  roles: UserRole[];
+}
+
+const ALL_TABS: NavTab[] = [
+  {
+    href: '/dashboard/field',
+    label: 'Field Agent PWA (Onboarding & UPI)',
+    icon: Smartphone,
+    roles: [UserRole.FIELD_OFFICER, UserRole.SYSTEM_ADMIN]
+  },
+  {
+    href: '/dashboard/approvals',
+    label: 'Checker 4-Eyes Approvals Queue',
+    icon: FileCheck2,
+    roles: [UserRole.AUTHORIZER, UserRole.SYSTEM_ADMIN]
+  },
+  {
+    href: '/dashboard/transactions',
+    label: 'Ledger & Transactions (Credit/Debit)',
+    icon: ArrowLeftRight,
+    roles: [UserRole.BRANCH_MANAGER, UserRole.SYSTEM_ADMIN]
+  },
+  {
+    href: '/dashboard/accounts',
+    label: 'Accounts & Loan Lifecycle',
+    icon: Users,
+    roles: [UserRole.BRANCH_MANAGER, UserRole.AUTHORIZER, UserRole.SYSTEM_ADMIN]
+  },
+  {
+    href: '/dashboard/analytics',
+    label: 'Portfolio Analytics & Reports',
+    icon: ShieldCheck,
+    roles: [UserRole.SYSTEM_ADMIN]
+  },
+  {
+    href: '/dashboard/settings',
+    label: 'Core Banking (CBS) & CIF Config',
+    icon: Settings,
+    roles: [UserRole.SYSTEM_ADMIN]
+  }
+];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -45,6 +94,30 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     router.push('/login');
   };
 
+  const userRole = session?.role || UserRole.FIELD_OFFICER;
+
+  // Filter tabs visible to this specific role
+  const visibleTabs = ALL_TABS.filter((tab) => tab.roles.includes(userRole));
+
+  // Check if current route is authorized for this user
+  const currentTabConfig = ALL_TABS.find((tab) => pathname === tab.href || (tab.href !== '/dashboard' && pathname.startsWith(tab.href)));
+  const isAuthorized = !currentTabConfig || currentTabConfig.roles.includes(userRole);
+
+  const getDefaultRouteForRole = (role: UserRole) => {
+    switch (role) {
+      case UserRole.FIELD_OFFICER:
+        return '/dashboard/field';
+      case UserRole.AUTHORIZER:
+        return '/dashboard/approvals';
+      case UserRole.BRANCH_MANAGER:
+        return '/dashboard/transactions';
+      case UserRole.SYSTEM_ADMIN:
+        return '/dashboard/analytics';
+      default:
+        return '/dashboard/field';
+    }
+  };
+
   return (
     <div className="min-h-screen bg-sandstone-100 flex flex-col">
       {/* Top Staff Navigation */}
@@ -58,6 +131,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <span className="text-xs text-sandstone-400 hidden sm:inline">•</span>
             <span className="text-xs bg-forest-800 text-sandstone-200 py-0.5 px-2.5 rounded-full border border-forest-700">
               Branch: <strong>{mounted ? (session?.branchCode || 'KA-BLR-01') : 'KA-BLR-01'}</strong>
+            </span>
+            <span className="hidden md:inline-flex items-center gap-1.5 text-[11px] bg-terracotta-500/20 text-terracotta-300 py-0.5 px-2 rounded-full border border-terracotta-500/40 font-mono">
+              RBAC: <strong>{userRole}</strong>
             </span>
           </div>
 
@@ -77,73 +153,53 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </div>
 
-        {/* Tab Bar */}
+        {/* Role-Filtered Tab Bar */}
         <div className="bg-forest-800/80 px-4 sm:px-8 flex gap-6 text-xs font-semibold overflow-x-auto border-t border-forest-700/60">
-          <Link
-            href="/dashboard/accounts"
-            className={`py-3 inline-flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${
-              pathname === '/dashboard/accounts'
-                ? 'border-terracotta-500 text-white font-bold'
-                : 'border-transparent text-sandstone-300 hover:text-white'
-            }`}
-          >
-            <Users className="w-4 h-4 text-terracotta-400" />
-            <span>Accounts & Loan Lifecycle</span>
-          </Link>
-
-          <Link
-            href="/dashboard/transactions"
-            className={`py-3 inline-flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${
-              pathname === '/dashboard/transactions'
-                ? 'border-terracotta-500 text-white font-bold'
-                : 'border-transparent text-sandstone-300 hover:text-white'
-            }`}
-          >
-            <ArrowLeftRight className="w-4 h-4 text-terracotta-400" />
-            <span>Ledger & Transactions (Credit/Debit)</span>
-          </Link>
-
-          <Link
-            href="/dashboard/field"
-            className={`py-3 inline-flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${
-              pathname === '/dashboard/field'
-                ? 'border-terracotta-500 text-white font-bold'
-                : 'border-transparent text-sandstone-300 hover:text-white'
-            }`}
-          >
-            <Smartphone className="w-4 h-4 text-terracotta-400" />
-            <span>Field Agent PWA</span>
-          </Link>
-
-          <Link
-            href="/dashboard/approvals"
-            className={`py-3 inline-flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${
-              pathname === '/dashboard/approvals'
-                ? 'border-terracotta-500 text-white font-bold'
-                : 'border-transparent text-sandstone-300 hover:text-white'
-            }`}
-          >
-            <FileCheck2 className="w-4 h-4 text-terracotta-400" />
-            <span>Checker 4-Eyes Approvals Queue</span>
-          </Link>
-
-          <Link
-            href="/dashboard/analytics"
-            className={`py-3 inline-flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${
-              pathname === '/dashboard/analytics'
-                ? 'border-terracotta-500 text-white font-bold'
-                : 'border-transparent text-sandstone-300 hover:text-white'
-            }`}
-          >
-            <ShieldCheck className="w-4 h-4 text-terracotta-400" />
-            <span>Portfolio Analytics & Reports</span>
-          </Link>
+          {visibleTabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = pathname === tab.href;
+            return (
+              <Link
+                key={tab.href}
+                href={tab.href}
+                className={`py-3 inline-flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${
+                  isActive
+                    ? 'border-terracotta-500 text-white font-bold'
+                    : 'border-transparent text-sandstone-300 hover:text-white'
+                }`}
+              >
+                <Icon className="w-4 h-4 text-terracotta-400" />
+                <span>{tab.label}</span>
+              </Link>
+            );
+          })}
         </div>
       </header>
 
-      {/* Main Content Area */}
+      {/* Main Content Area with RBAC Guard */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
-        {children}
+        {!isAuthorized ? (
+          <div className="max-w-xl mx-auto my-12 bg-sandstone-50 rounded-3xl border-2 border-red-200 p-8 shadow-md text-center space-y-4">
+            <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto">
+              <ShieldAlert className="w-6 h-6" />
+            </div>
+            <h3 className="text-lg font-black text-forest-900">Access Restricted — RBI Segregation of Duties</h3>
+            <p className="text-xs text-forest-800/80 leading-relaxed">
+              Under RBI Four-Eyes Corporate Governance regulations, your role (<strong>{userRole}</strong>) is strictly segregated from this module. Field officers cannot authorize loans or view institutional risk analytics, and authorizers cannot execute field collections.
+            </p>
+            <div className="pt-2">
+              <Link
+                href={getDefaultRouteForRole(userRole)}
+                className="inline-flex items-center gap-2 bg-forest-800 hover:bg-forest-900 text-white font-bold text-xs py-2.5 px-5 rounded-xl transition-all"
+              >
+                <span>Return to My Authorized Workspace</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+        ) : (
+          children
+        )}
       </main>
     </div>
   );

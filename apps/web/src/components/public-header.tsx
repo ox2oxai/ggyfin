@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { GGYBrandMark } from './brand-mark';
 import { useLanguage } from './language-context';
-import { Lock } from 'lucide-react';
+import { Lock, User } from 'lucide-react';
 
 export function PublicHeader() {
   const { lang, setLang } = useLanguage();
@@ -18,6 +18,7 @@ export function PublicHeader() {
       tagline: 'Micro Money Lending Platform',
       home: 'Home',
       about: 'About Us',
+      borrowerPortal: 'Borrower Portal',
       staffPortal: 'Staff Portal',
       tollFree: 'Toll-Free: 1800-209-4321',
       dpdp: 'DPDP Act 2023 Compliant'
@@ -28,6 +29,7 @@ export function PublicHeader() {
       tagline: 'ಕಿರು ಹಣಕಾಸು ಸಾಲ ವೇದಿಕೆ (Micro Money Lending Platform)',
       home: 'ಮುಖಪುಟ (Home)',
       about: 'ನಮ್ಮ ಬಗ್ಗೆ (About)',
+      borrowerPortal: 'ಗ್ರಾಹಕರ ಪೋರ್ಟಲ್',
       staffPortal: 'ಸಿಬ್ಬಂದಿ ಪೋರ್ಟಲ್',
       tollFree: 'ಉಚಿತ ಕರೆ: 1800-209-4321',
       dpdp: 'DPDP ಕಾಯ್ದೆ 2023 ಅನುಸರಣೆ'
@@ -118,6 +120,16 @@ export function PublicHeader() {
                 ಕನ್ನಡ
               </button>
             </div>
+
+            {/* Borrower Portal Login */}
+            <Link
+              href="/portal"
+              className="inline-flex items-center gap-1.5 bg-sandstone-200/80 hover:bg-sandstone-300 text-forest-900 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all border border-clay"
+            >
+              <User className="w-3.5 h-3.5 text-forest-700" />
+              <span className="hidden sm:inline">{t.borrowerPortal}</span>
+              <span className="sm:hidden">Borrower</span>
+            </Link>
 
             {/* Staff Portal Login */}
             <Link

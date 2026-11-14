@@ -7,3 +7,4 @@ export * from './audit.dto.js';
 export * from './analytics.dto.js';
 export * from './timezone.js';
 export * from './notification.dto.js';
+export * from './cbs-account.js';
