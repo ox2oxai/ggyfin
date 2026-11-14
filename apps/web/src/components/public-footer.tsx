@@ -4,50 +4,60 @@ import React from 'react';
 import Link from 'next/link';
 import { GGYBrandMark } from './brand-mark';
 import { useLanguage } from './language-context';
-import { Building2, Shield, HeartHandshake, FileText, Lock } from 'lucide-react';
+import { Building2, Shield, HeartHandshake, FileText, Lock, PhoneCall, Mail } from 'lucide-react';
 
 export function PublicFooter() {
   const { lang } = useLanguage();
 
   const labels = {
     en: {
-      brandDesc: 'Empowering rural micro-entrepreneurs, dairy farmers, and village households with honest, transparent, and technology-driven credit solutions across Karnataka.',
-      platformLinks: 'Platform & Impact',
-      home: 'Home',
-      about: 'About GGY Finance',
-      stories: 'Field Stories & Community Impact',
-      legalLinks: 'Legal & Regulatory',
-      privacy: 'Privacy Policy (DPDP 2023)',
-      terms: 'Terms & Conditions',
-      fairPractices: 'RBI Fair Practices Code',
-      rbiReg: 'Certificate: B-14.02981',
-      grievanceTitle: 'Grievance Redressal',
-      grievanceOfficer: 'Principal Nodal Officer: Shri A. Deshmukh',
+      brandDesc: 'Empowering rural micro-entrepreneurs, dairy farmers, and village artisans with honest, transparent, and technology-driven credit solutions across Karnataka.',
+      schemesTitle: 'Credit Schemes',
+      scheme1: 'SCHM-701: Kirana Retail Capital',
+      scheme2: 'SCHM-702: Dairy Development Loan',
+      scheme3: 'SCHM-703: Powerloom Artisan Loan',
+      scheme4: 'SCHM-704: Organic Agri-Allied Loan',
+      branchesTitle: 'Karnataka Branches',
+      branch1: 'Bengaluru City & Rural Hub',
+      branch2: 'Ramanagara & Channapatna Hub',
+      branch3: 'Mandya & Maddur Hub',
+      branch4: 'Tumakuru & Kunigal Hub',
+      branch5: 'Mysuru & Nanjangud Hub',
+      grievanceTitle: 'Nodal Grievance Redressal',
+      grievanceOfficer: 'Principal Nodal Officer: Smt. Anita Deshmukh',
       tollFree: 'Toll-Free: 1800-209-4321 (9 AM - 6 PM)',
-      escalation: 'Escalation: RBI CMS Portal (cms.rbi.org.in)',
-      staffTitle: 'Staff & Internal Access',
-      staffDesc: 'Dedicated login portal for Field Officers, Branch Managers, and Authorizers.',
+      email: 'nodal@ggyfinance.in',
+      escalation: 'Escalation: RBI Ombudsman CMS Portal (cms.rbi.org.in)',
       staffLogin: 'Staff Login Portal',
-      copyright: '© 2026 GGY Finance Ltd. All rights reserved. 100% Data Sovereignty inside Indian Data Centers.'
+      privacy: 'DPDP Privacy Notice',
+      terms: 'Terms & Conditions',
+      fairPractices: 'Fair Practices Code',
+      rbiReg: 'Certificate: B-14.02981',
+      copyright: '© 2026 GGY Finance (Karnataka) Private Limited. All rights reserved. 100% Data Sovereignty inside Indian Data Centers.'
     },
     kn: {
-      brandDesc: 'ಕರ್ನಾಟಕದ ಗ್ರಾಮೀಣ ಸಣ್ಣ ವ್ಯಾಪಾರಿಗಳು, ಹೈನುಗಾರಿಕೆ ಕುಟುಂಬಗಳು ಮತ್ತು ಸ್ವಸಹಾಯ ಗುಂಪುಗಳಿಗೆ ಪಾರದರ್ಶಕ ಮತ್ತು ಪ್ರಾಮಾಣಿಕ ಕಿರು ಸಾಲ ಸೇವೆ.',
-      platformLinks: 'ವೇದಿಕೆ ಮತ್ತು ಪ್ರಭಾವ',
-      home: 'ಮುಖಪುಟ',
-      about: 'ಜಿಜಿವೈ ಫೈನಾನ್ಸ್ ಬಗ್ಗೆ',
-      stories: 'ಗ್ರಾಮೀಣ ಕಥೆಗಳು & ಸಮುದಾಯ ಪ್ರಭಾವ (Stories)',
-      legalLinks: 'ಕಾನೂನು & ನಿಯಮಾವಳಿಗಳು',
-      privacy: 'ಗೌಪ್ಯತಾ ನೀತಿ (DPDP ಕಾಯ್ದೆ 2023)',
-      terms: 'ನಿಯಮಗಳು & ಷರತ್ತುಗಳು (Terms)',
+      brandDesc: 'ಕರ್ನಾಟಕದ ಗ್ರಾಮೀಣ ಸಣ್ಣ ವ್ಯಾಪಾರಿಗಳು, ಹೈನುಗಾರಿಕೆ ಕುಟುಂಬಗಳು ಮತ್ತು ನೇಕಾರರಿಗೆ ಪಾರದರ್ಶಕ ಮತ್ತು ಪ್ರಾಮಾಣಿಕ ಕಿರು ಸಾಲ ಸೇವೆ.',
+      schemesTitle: 'ಸಾಲ ಯೋಜನೆಗಳು (Schemes)',
+      scheme1: 'SCHM-701: ಕಿರಾಣಿ & ಸಣ್ಣ ವ್ಯಾಪಾರ ಬಂಡವಾಳ',
+      scheme2: 'SCHM-702: ಹೈನುಗಾರಿಕೆ ಅಭಿವೃದ್ಧಿ ಸಾಲ',
+      scheme3: 'SCHM-703: ನೇಯ್ಗೆ & ಕೈಮಗ್ಗ ಕುಶಲಕರ್ಮಿ ಸಾಲ',
+      scheme4: 'SCHM-704: ಕಿರು ಕೃಷಿ & ತೋಟಗಾರಿಕೆ ಸಾಲ',
+      branchesTitle: 'ಕರ್ನಾಟಕ ಶಾಖಾ ಜಾಲ',
+      branch1: 'ಬೆಂಗಳೂರು ನಗರ & ಗ್ರಾಮಾಂತರ',
+      branch2: 'ರಾಮನಗರ & ಚನ್ನಪಟ್ಟಣ',
+      branch3: 'ಮಂಡ್ಯ & ಮದ್ದೂರು',
+      branch4: 'ತುಮಕೂರು & ಕುಣಿಗಲ್',
+      branch5: 'ಮೈಸೂರು & ನಂಜನಗೂಡು',
+      grievanceTitle: 'ಕುಂದುಕೊರತೆ ನಿವಾರಣೆ',
+      grievanceOfficer: 'ಮುಖ್ಯ ಕುಂದುಕೊರತೆ ಅಧಿಕಾರಿ: ಶ್ರೀಮತಿ ಅನಿತಾ ದೇಶಮುಖ್',
+      tollFree: 'ಉಚಿತ ಕರೆ: 1800-209-4321 (ಬೆಳಿಗ್ಗೆ 9 - ಸಂಜೆ 6)',
+      email: 'nodal@ggyfinance.in',
+      escalation: 'ಮೇಲ್ಮನವಿ: ಆರ್.ಬಿ.ಐ ಸಿ.ಎಂ.ಎಸ್ ಪೋರ್ಟಲ್',
+      staffLogin: 'ಸಿಬ್ಬಂದಿ ಲಾಗಿನ್ ಪೋರ್ಟಲ್',
+      privacy: 'ಗೌಪ್ಯತಾ ನೀತಿ (DPDP 2023)',
+      terms: 'ನಿಯಮಗಳು & ಷರತ್ತುಗಳು',
       fairPractices: 'ಆರ್.ಬಿ.ಐ ಪ್ರಾಮಾಣಿಕ ಸಾಲ ನೀತಿ',
       rbiReg: 'ಆರ್.ಬಿ.ಐ ನೋಂದಣಿ: B-14.02981',
-      grievanceTitle: 'ಕುಂದುಕೊರತೆ ನಿವಾರಣೆ',
-      grievanceOfficer: 'ಮುಖ್ಯ ಕುಂದುಕೊರತೆ ಅಧಿಕಾರಿ: ಶ್ರೀ ಎ. ದೇಶಮುಖ್',
-      tollFree: 'ಉಚಿತ ಕರೆ: 1800-209-4321 (ಬೆಳಿಗ್ಗೆ 9 - ಸಂಜೆ 6)',
-      escalation: 'ಮೇಲ್ಮನವಿ: ಆರ್.ಬಿ.ಐ ಸಿ.ಎಂ.ಎಸ್ ಪೋರ್ಟಲ್',
-      staffTitle: 'ಸಿಬ್ಬಂದಿ ಆಂತರಿಕ ಪ್ರವೇಶ',
-      staffDesc: 'ಕ್ಷೇತ್ರಾಧಿಕಾರಿಗಳು ಮತ್ತು ಶಾಖಾ ವ್ಯವಸ್ಥಾಪಕರಿಗೆ ಮಾತ್ರ ಅಧಿಕೃತ ಲಾಗಿನ್ ಪೋರ್ಟಲ್.',
-      staffLogin: 'ಸಿಬ್ಬಂದಿ ಲಾಗಿನ್ ಪೋರ್ಟಲ್',
       copyright: '© 2026 ಜಿಜಿವೈ ಫೈನಾನ್ಸ್ (GGY Finance Ltd). ಎಲ್ಲ ಹಕ್ಕುಗಳನ್ನು ಕಾಯ್ದಿರಿಸಲಾಗಿದೆ. ಭಾರತೀಯ ಡೇಟಾ ಕೇಂದ್ರಗಳಲ್ಲಿ ಸಂಪೂರ್ಣ ಭದ್ರತೆ.'
     }
   };
@@ -55,99 +65,111 @@ export function PublicFooter() {
   const t = labels[lang];
 
   return (
-    <footer className="bg-forest-900 text-sandstone-200 py-12 px-4 border-t border-forest-800 mt-auto">
-      <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 text-xs">
-        {/* Brand & Purpose */}
+    <footer className="bg-gradient-to-b from-[#064e3b] to-[#022c22] text-white pt-14 pb-8 px-4 sm:px-8 lg:px-12 border-t border-emerald-900 mt-auto">
+      <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 pb-10 border-b border-emerald-800/80 text-xs">
+        {/* Col 1: Brand & Purpose */}
         <div className="space-y-3">
           <div className="flex items-center gap-2.5">
             <GGYBrandMark size="sm" />
             <div>
-              <span className="font-bold text-sm text-white block">GGY Finance</span>
-              <span className="text-[10px] text-terracotta-400 font-bold uppercase tracking-wider">
+              <span className="font-black text-base text-white block tracking-tight">GGY Finance</span>
+              <span className="text-[10px] text-amber-300 font-extrabold uppercase tracking-wider">
                 Micro Money Lending Platform
               </span>
             </div>
           </div>
-          <p className="text-sandstone-300/80 leading-relaxed text-[11px]">
+          <p className="text-emerald-200/90 text-xs leading-relaxed font-normal">
             {t.brandDesc}
           </p>
-          <div className="pt-2 text-[11px] text-sandstone-400">
-            <p>Mandya • Ramanagara • Mysuru</p>
+          <div className="pt-1">
+            <span className="inline-block bg-emerald-950/80 text-emerald-200 border border-emerald-700/80 px-2.5 py-1 rounded-full text-[10px] font-mono">
+              RBI Reg: B-14.02981
+            </span>
           </div>
         </div>
 
-        {/* Platform Links (Home, About, Stories) */}
-        <div>
-          <h5 className="font-bold text-white uppercase tracking-wider mb-3 flex items-center gap-1.5">
-            <HeartHandshake className="w-3.5 h-3.5 text-terracotta-400" />
-            <span>{t.platformLinks}</span>
-          </h5>
-          <ul className="space-y-2 text-sandstone-300">
+        {/* Col 2: Core Banking Schemes */}
+        <div className="space-y-2.5">
+          <p className="font-extrabold text-amber-300 text-xs uppercase tracking-wider">
+            {t.schemesTitle}
+          </p>
+          <ul className="space-y-2 text-emerald-200 text-xs">
             <li>
-              <Link href="/" className="hover:text-terracotta-400 transition-colors">
-                {t.home}
+              <Link href="/#products" className="hover:text-white transition-colors">
+                {t.scheme1}
               </Link>
             </li>
             <li>
-              <Link href="/about" className="hover:text-terracotta-400 transition-colors font-medium">
-                {t.about}
+              <Link href="/#products" className="hover:text-white transition-colors">
+                {t.scheme2}
               </Link>
             </li>
             <li>
-              <Link href="/stories" className="hover:text-terracotta-400 transition-colors font-medium">
-                {t.stories}
+              <Link href="/#products" className="hover:text-white transition-colors">
+                {t.scheme3}
+              </Link>
+            </li>
+            <li>
+              <Link href="/#products" className="hover:text-white transition-colors">
+                {t.scheme4}
               </Link>
             </li>
           </ul>
         </div>
 
-        {/* Legal & Regulatory (Privacy, Terms, FPC) - FOOTER ONLY */}
-        <div>
-          <h5 className="font-bold text-white uppercase tracking-wider mb-3 flex items-center gap-1.5">
-            <Shield className="w-3.5 h-3.5 text-terracotta-400" />
-            <span>{t.legalLinks}</span>
-          </h5>
-          <ul className="space-y-2 text-sandstone-300">
-            <li>
-              <Link href="/privacy" className="hover:text-terracotta-400 transition-colors">
-                {t.privacy}
-              </Link>
-            </li>
-            <li>
-              <Link href="/terms" className="hover:text-terracotta-400 transition-colors">
-                {t.terms}
-              </Link>
-            </li>
-            <li className="text-sandstone-400">{t.fairPractices}</li>
-            <li className="text-sandstone-400">{t.rbiReg}</li>
+        {/* Col 3: Karnataka Operational Branches */}
+        <div className="space-y-2.5">
+          <p className="font-extrabold text-amber-300 text-xs uppercase tracking-wider">
+            {t.branchesTitle}
+          </p>
+          <ul className="space-y-1.5 text-emerald-200 text-xs">
+            <li>{t.branch1}</li>
+            <li>{t.branch2}</li>
+            <li>{t.branch3}</li>
+            <li>{t.branch4}</li>
+            <li>{t.branch5}</li>
           </ul>
         </div>
 
-        {/* Grievance & Staff Access */}
-        <div>
-          <h5 className="font-bold text-white uppercase tracking-wider mb-3 flex items-center gap-1.5">
-            <FileText className="w-3.5 h-3.5 text-terracotta-400" />
-            <span>{t.grievanceTitle}</span>
-          </h5>
-          <ul className="space-y-1.5 text-sandstone-300 mb-4 text-[11px]">
-            <li className="font-semibold text-white">{t.grievanceOfficer}</li>
-            <li>grievance@ggyfinance.in</li>
-            <li>{t.tollFree}</li>
-            <li className="text-sandstone-400 text-[10px]">{t.escalation}</li>
-          </ul>
-
-          <Link
-            href="/login"
-            className="inline-flex items-center gap-2 bg-terracotta-600 hover:bg-terracotta-700 text-white px-3 py-1.5 rounded-lg font-semibold transition-all text-xs shadow-xs"
-          >
-            <Building2 className="w-3.5 h-3.5" />
-            <span>{t.staffLogin}</span>
-          </Link>
+        {/* Col 4: Grievance Redressal & Staff Access */}
+        <div className="space-y-2.5">
+          <p className="font-extrabold text-amber-300 text-xs uppercase tracking-wider">
+            {t.grievanceTitle}
+          </p>
+          <p className="text-emerald-200 leading-relaxed text-xs">
+            {t.grievanceOfficer}<br />
+            {t.tollFree}<br />
+            Email: <span className="font-mono text-emerald-300">{t.email}</span>
+          </p>
+          <p className="text-[11px] text-amber-300 font-semibold pt-1">
+            {t.escalation}
+          </p>
+          <div className="pt-2">
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-1.5 bg-emerald-900/90 hover:bg-emerald-800 text-emerald-100 px-3 py-1.5 rounded-lg border border-emerald-700/80 text-xs font-bold transition-all"
+            >
+              <Lock className="w-3.5 h-3.5 text-amber-300" />
+              <span>{t.staffLogin}</span>
+            </Link>
+          </div>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto pt-8 mt-8 border-t border-forest-800 text-center text-sandstone-400 text-xs">
-        {t.copyright}
+      {/* Sub-Footer Legal & DPDP Notice */}
+      <div className="max-w-6xl mx-auto pt-6 flex flex-col sm:flex-row justify-between items-center text-[11px] text-emerald-300/80 gap-3">
+        <p>{t.copyright}</p>
+        <div className="flex gap-4">
+          <Link href="/privacy" className="hover:text-white transition-colors">
+            {t.privacy}
+          </Link>
+          <span>•</span>
+          <Link href="/terms" className="hover:text-white transition-colors">
+            {t.terms}
+          </Link>
+          <span>•</span>
+          <span className="text-emerald-400">{t.fairPractices}</span>
+        </div>
       </div>
     </footer>
   );
