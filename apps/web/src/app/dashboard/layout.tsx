@@ -90,7 +90,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const router = useRouter();
   const [session, setSession] = useState<UserSession | null>(null);
   const [mounted, setMounted] = useState(false);
-  const [unreadMailCount, setUnreadMailCount] = useState<number>(2);
+  const [unreadMailCount, setUnreadMailCount] = useState<number>(0);
 
   useEffect(() => {
     setMounted(true);
@@ -99,16 +99,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       try {
         setSession(JSON.parse(raw));
       } catch (e) {
-        // fallback
+        router.push('/login');
       }
     } else {
-      // Default to Field Officer demo session
-      setSession({
-        userId: 'u-field_officer-001',
-        username: 'field_officer_ramesh',
-        role: UserRole.FIELD_OFFICER,
-        branchCode: 'KA-BLR-01'
-      });
+      router.push('/login');
     }
 
     // Dynamic unread count listener

@@ -31,40 +31,20 @@ interface PendingApplication {
 }
 
 export default function ApprovalsPage() {
-  const [applications, setApplications] = useState<PendingApplication[]>([
-    {
-      id: 'acc-app-001',
-      cifNumber: 'CIF-2026-F9A1B2',
-      customerName: 'Suresh Gowda',
-      phone: '+91 98450 12345',
-      address: 'Plot No 4, Maddur Taluk, Mandya, Karnataka - 571428',
-      maskedAadhaar: 'XXXX-XXXX-4821',
-      loanPurpose: 'Dairy & Cattle Purchase',
-      principalAmount: 75000,
-      interestRate: 13.0,
-      tenureMonths: 18,
-      emiAmount: 4607.33,
-      makerName: 'Field Officer Ramesh (Branch KA-BLR-01)',
-      submittedAt: 'Today, 03:45 PM'
-    },
-    {
-      id: 'acc-app-002',
-      cifNumber: 'CIF-2026-C4B8E1',
-      customerName: 'Anandi Devi',
-      phone: '+91 97410 54321',
-      address: 'Near Bus Stand, Ramanagara, Karnataka - 562159',
-      maskedAadhaar: 'XXXX-XXXX-9023',
-      loanPurpose: 'Kirana / Retail Inventory',
-      principalAmount: 50000,
-      interestRate: 14.5,
-      tenureMonths: 12,
-      emiAmount: 4501.25,
-      makerName: 'Field Officer Ramesh (Branch KA-BLR-01)',
-      submittedAt: 'Today, 02:15 PM'
+  const [applications, setApplications] = useState<PendingApplication[]>(() => {
+    try {
+      const raw = localStorage.getItem('nbfc_pending_applications');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch {
+      // fallback
     }
-  ]);
+    return [];
+  });
 
-  const [selectedAppId, setSelectedAppId] = useState<string>('acc-app-001');
+  const [selectedAppId, setSelectedAppId] = useState<string>('');
   const [remarks, setRemarks] = useState('KYC documents audited. Livelihood verification completed. Approved under dual-control Four-Eyes governance.');
   const [isProcessing, setIsProcessing] = useState(false);
   const [decisionNotice, setDecisionNotice] = useState<{ type: 'APPROVED' | 'REJECTED'; accountNo?: string } | null>(null);
@@ -77,9 +57,57 @@ export default function ApprovalsPage() {
 
     setTimeout(() => {
       const generatedAccountNo = `GGY-2026-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+      const updatedApps = applications.filter((a) => a.id !== activeApp.id);
+      setApplications(updatedApps);
+      try {
+        localStorage.setItem('nbfc_pending_applications', JSON.stringify(updatedApps));
+
+        // Add to active accounts
+        const rawAccounts = localStorage.getItem('nbfc_live_accounts');
+        const accList = rawAccounts ? JSON.parse(rawAccounts) : [];
+        accList.unshift({
+          id: `acc-${Date.now()}`,
+          customerId: activeApp.cifNumber,
+          accountNumber: generatedAccountNo,
+          borrowerName: activeApp.customerName,
+          maskedAadhaar: activeApp.maskedAadhaar,
+          phone: activeApp.phone,
+          taluk: activeApp.address,
+          product: activeApp.loanPurpose,
+          principal: activeApp.principalAmount,
+          balance: activeApp.principalAmount,
+          interestRate: activeApp.interestRate,
+          tenureMonths: activeApp.tenureMonths,
+          status: 'ACTIVE',
+          makerId: activeApp.makerName,
+          checkerId: 'checker_authorizer',
+          disbursedAt: new Date().toISOString().replace('T', ' ').slice(0, 16)
+        });
+        localStorage.setItem('nbfc_live_accounts', JSON.stringify(accList));
+
+        // Add initial disbursement entry into ledger
+        const rawLedger = localStorage.getItem('nbfc_ledger_transactions');
+        const ledgerList = rawLedger ? JSON.parse(rawLedger) : [];
+        ledgerList.unshift({
+          id: `TXN-DISB-${Date.now().toString().slice(-6)}`,
+          timestamp: new Date().toISOString().replace('T', ' ').slice(0, 16),
+          customerId: activeApp.cifNumber,
+          accountNumber: generatedAccountNo,
+          borrowerName: activeApp.customerName,
+          type: 'DISBURSEMENT',
+          debit: activeApp.principalAmount,
+          credit: 0,
+          balanceAfter: activeApp.principalAmount,
+          makerId: activeApp.makerName,
+          checkerId: 'checker_authorizer',
+          referenceId: `SANCTION-${generatedAccountNo}`,
+          status: 'SETTLED'
+        });
+        localStorage.setItem('nbfc_ledger_transactions', JSON.stringify(ledgerList));
+      } catch (e) {}
+
       setIsProcessing(false);
       setDecisionNotice({ type: 'APPROVED', accountNo: generatedAccountNo });
-      setApplications(applications.filter((a) => a.id !== activeApp.id));
     }, 700);
   };
 
@@ -88,9 +116,13 @@ export default function ApprovalsPage() {
     setIsProcessing(true);
 
     setTimeout(() => {
+      const updatedApps = applications.filter((a) => a.id !== activeApp.id);
+      setApplications(updatedApps);
+      try {
+        localStorage.setItem('nbfc_pending_applications', JSON.stringify(updatedApps));
+      } catch (e) {}
       setIsProcessing(false);
       setDecisionNotice({ type: 'REJECTED' });
-      setApplications(applications.filter((a) => a.id !== activeApp.id));
     }, 700);
   };
 

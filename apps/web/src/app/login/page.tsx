@@ -4,17 +4,103 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { UserRole } from '@nbfc/shared';
-import { Lock, Shield, ArrowLeft, Building2, User, KeyRound } from 'lucide-react';
+import {
+  Lock,
+  Shield,
+  ArrowLeft,
+  User,
+  KeyRound,
+  Eye,
+  EyeOff,
+  CheckCircle2,
+  AlertCircle
+} from 'lucide-react';
 import { GGYBrandMark } from '../../components/brand-mark';
+
+interface StoredStaffUser {
+  id: string;
+  username: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  password: string;
+  role: UserRole;
+  branchCode: string;
+  isActive: boolean;
+  mustResetPassword?: boolean;
+}
+
+const DEFAULT_SUPER_ADMIN: StoredStaffUser = {
+  id: 'u-superadmin-it-001',
+  username: 'it_superadmin',
+  fullName: 'Sri Chethan Gowda (IT Lead)',
+  email: 'it.admin@ggyfinance.in',
+  phone: '9800000001',
+  password: 'GGY#SuperAdminIT@2026!',
+  role: UserRole.SUPER_ADMIN_IT,
+  branchCode: 'KA-HQ-IT',
+  isActive: true,
+  mustResetPassword: false
+};
 
 export default function LoginPage() {
   const router = useRouter();
-  const [username, setUsername] = useState('it_superadmin');
-  const [password, setPassword] = useState('GGY#SuperAdminIT@2026!');
-  const [selectedRole, setSelectedRole] = useState<UserRole>(UserRole.SUPER_ADMIN_IT);
-  const [branchCode, setBranchCode] = useState('KA-HQ-IT');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  // First-Time Password Reset Modal State
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+  const [pendingUser, setPendingUser] = useState<StoredStaffUser | null>(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [resetError, setResetError] = useState('');
+
+  const getStaffDirectory = (): StoredStaffUser[] => {
+    try {
+      const raw = localStorage.getItem('nbfc_staff_directory');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Ensure it_superadmin is always present
+          if (!parsed.some((u: StoredStaffUser) => u.username === 'it_superadmin')) {
+            parsed.unshift(DEFAULT_SUPER_ADMIN);
+          }
+          return parsed;
+        }
+      }
+    } catch {
+      // fallback
+    }
+    // Default initial directory with ONLY the Super Admin IT
+    const initial = [DEFAULT_SUPER_ADMIN];
+    localStorage.setItem('nbfc_staff_directory', JSON.stringify(initial));
+    return initial;
+  };
+
+  const routeByRole = (role: UserRole) => {
+    switch (role) {
+      case UserRole.SUPER_ADMIN_IT:
+        router.push('/dashboard/it-admin');
+        break;
+      case UserRole.FIELD_OFFICER:
+        router.push('/dashboard/workspace');
+        break;
+      case UserRole.AUTHORIZER:
+        router.push('/dashboard/approvals');
+        break;
+      case UserRole.BRANCH_MANAGER:
+        router.push('/dashboard/transactions');
+        break;
+      case UserRole.SYSTEM_ADMIN:
+        router.push('/dashboard/analytics');
+        break;
+      default:
+        router.push('/dashboard/workspace');
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,39 +108,110 @@ export default function LoginPage() {
     setErrorMessage('');
 
     try {
-      // In production, calls REST API: POST /api/v1/auth/login
-      // Store session token in localStorage for dashboard client usage
-      localStorage.setItem('nbfc_staff_session', JSON.stringify({
-        userId: selectedRole === UserRole.SUPER_ADMIN_IT ? 'u-superadmin-it-001' : 'u-' + selectedRole.toLowerCase() + '-001',
-        username,
-        role: selectedRole,
-        branchCode: selectedRole === UserRole.SUPER_ADMIN_IT ? 'KA-HQ-IT' : branchCode
-      }));
+      const directory = getStaffDirectory();
+      const user = directory.find(
+        (u) => u.username.toLowerCase() === username.trim().toLowerCase()
+      );
 
-      // Route technical super admin to dedicated isolated IT dashboard; banking staff to Daily Workspace
-      if (selectedRole === UserRole.SUPER_ADMIN_IT) {
-        router.push('/dashboard/it-admin');
-      } else {
-        router.push('/dashboard/workspace');
+      if (!user) {
+        setErrorMessage('Invalid credentials. Staff username not found in directory.');
+        setIsLoading(false);
+        return;
       }
-    } catch (err: unknown) {
-      setErrorMessage('Failed to sign in. Please verify your credentials.');
+
+      if (!user.isActive) {
+        setErrorMessage('Your account access has been suspended by the Super IT Admin. Please contact IT support.');
+        setIsLoading(false);
+        return;
+      }
+
+      if (user.password !== password) {
+        setErrorMessage('Invalid password. Please verify your credentials.');
+        setIsLoading(false);
+        return;
+      }
+
+      // Check if user is logging in with a temporary password from Super IT Admin
+      if (user.mustResetPassword) {
+        setPendingUser(user);
+        setIsResetModalOpen(true);
+        setIsLoading(false);
+        return;
+      }
+
+      // Successful Authentication: Establish staff session
+      localStorage.setItem(
+        'nbfc_staff_session',
+        JSON.stringify({
+          userId: user.id,
+          username: user.username,
+          fullName: user.fullName,
+          role: user.role,
+          branchCode: user.branchCode
+        })
+      );
+
+      routeByRole(user.role);
+    } catch {
+      setErrorMessage('An unexpected authentication error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const setRolePreset = (role: UserRole, user: string, pass: string, branch = 'KA-BLR-01') => {
-    setSelectedRole(role);
-    setUsername(user);
-    setPassword(pass);
-    setBranchCode(branch);
+  const handleCompletePasswordReset = (e: React.FormEvent) => {
+    e.preventDefault();
+    setResetError('');
+
+    if (newPassword.length < 8) {
+      setResetError('Password must be at least 8 characters long.');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setResetError('Passwords do not match. Please retype carefully.');
+      return;
+    }
+
+    if (!pendingUser) return;
+
+    try {
+      // Update password in staff directory
+      const directory = getStaffDirectory();
+      const updated = directory.map((u) =>
+        u.id === pendingUser.id
+          ? { ...u, password: newPassword, mustResetPassword: false }
+          : u
+      );
+      localStorage.setItem('nbfc_staff_directory', JSON.stringify(updated));
+
+      // Establish session
+      localStorage.setItem(
+        'nbfc_staff_session',
+        JSON.stringify({
+          userId: pendingUser.id,
+          username: pendingUser.username,
+          fullName: pendingUser.fullName,
+          role: pendingUser.role,
+          branchCode: pendingUser.branchCode
+        })
+      );
+
+      setIsResetModalOpen(false);
+      routeByRole(pendingUser.role);
+    } catch {
+      setResetError('Failed to update password. Please try again.');
+    }
   };
 
   return (
-    <div className="min-h-screen bg-sandstone-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#FDFBF7] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+      {/* Brand & Heading */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <Link href="/" className="inline-flex items-center gap-2 text-xs font-semibold text-forest-800 hover:text-terracotta-600 mb-6 transition-all">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-orange-600 mb-6 transition-colors"
+        >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Public Website</span>
         </Link>
@@ -63,160 +220,161 @@ export default function LoginPage() {
           <GGYBrandMark size="xl" />
         </div>
 
-        <h2 className="mt-4 text-center text-2xl font-extrabold text-forest-900">
+        <h2 className="mt-4 text-center text-2xl font-black text-slate-950 tracking-tight">
           GGY Finance Staff Portal
         </h2>
-        <p className="mt-1 text-center text-xs text-forest-800/70">
+        <p className="mt-1 text-center text-xs text-slate-500 font-medium">
           Micro-Lending Platform • Karnataka Dual-Control Core Banking
         </p>
       </div>
 
+      {/* Clean Modern Login Form */}
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-sandstone-50 py-8 px-6 shadow-md rounded-3xl border border-clay sm:px-10">
-          {/* Quick Role Preset Picker */}
-          <div className="mb-6 space-y-2">
-            <label className="block text-xs font-bold text-forest-900">
-              Select Staff Persona to Test:
-            </label>
-
-            {/* Featured: Super Admin IT (Technical Lead) */}
-            <button
-              type="button"
-              onClick={() => setRolePreset(UserRole.SUPER_ADMIN_IT, 'it_superadmin', 'GGY#SuperAdminIT@2026!', 'KA-HQ-IT')}
-              className={`w-full text-xs p-3 rounded-2xl border text-left transition-all ${
-                selectedRole === UserRole.SUPER_ADMIN_IT
-                  ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold shadow-md border-orange-600'
-                  : 'bg-orange-50/70 border-orange-200 text-slate-800 hover:bg-orange-100/70'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <p className="font-black flex items-center gap-1.5">
-                  <span className={`w-2 h-2 rounded-full ${selectedRole === UserRole.SUPER_ADMIN_IT ? 'bg-emerald-300 animate-pulse' : 'bg-orange-600'}`}></span>
-                  Super Admin IT (Technical Admin)
-                </p>
-                <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${selectedRole === UserRole.SUPER_ADMIN_IT ? 'bg-white text-orange-700' : 'bg-orange-600 text-white'}`}>
-                  Primary System Admin
-                </span>
-              </div>
-              <p className={`text-[10px] mt-1 ${selectedRole === UserRole.SUPER_ADMIN_IT ? 'text-orange-100 font-medium' : 'text-slate-600'}`}>
-                Staff Provisioning • Gateway Settings (Email/WhatsApp/SMS) • Isolated
-              </p>
-            </button>
-
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setRolePreset(UserRole.SYSTEM_ADMIN, 'admin', 'GGYSecurePassword@2026', 'KA-HQ-01')}
-                className={`text-xs p-2.5 rounded-xl border text-left font-medium transition-all ${
-                  selectedRole === UserRole.SYSTEM_ADMIN
-                    ? 'bg-emerald-50 border-emerald-500 text-emerald-800 font-bold'
-                    : 'bg-sandstone-100 border-clay text-forest-800 hover:bg-sandstone-200'
-                }`}
-              >
-                <p className="font-bold">System Admin (Banking)</p>
-                <p className="text-[10px] text-forest-800/60">Portfolio & Risk Oversight</p>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setRolePreset(UserRole.BRANCH_MANAGER, 'manager_blr', 'GGYSecurePassword@2026', 'KA-BLR-01')}
-                className={`text-xs p-2.5 rounded-xl border text-left font-medium transition-all ${
-                  selectedRole === UserRole.BRANCH_MANAGER
-                    ? 'bg-emerald-50 border-emerald-500 text-emerald-800 font-bold'
-                    : 'bg-sandstone-100 border-clay text-forest-800 hover:bg-sandstone-200'
-                }`}
-              >
-                <p className="font-bold">Branch Manager</p>
-                <p className="text-[10px] text-forest-800/60">Dual Controls • Cash</p>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setRolePreset(UserRole.AUTHORIZER, 'authorizer_blr', 'GGYSecurePassword@2026', 'KA-BLR-01')}
-                className={`text-xs p-2.5 rounded-xl border text-left font-medium transition-all ${
-                  selectedRole === UserRole.AUTHORIZER
-                    ? 'bg-emerald-50 border-emerald-500 text-emerald-800 font-bold'
-                    : 'bg-sandstone-100 border-clay text-forest-800 hover:bg-sandstone-200'
-                }`}
-              >
-                <p className="font-bold">Authorizer (Checker)</p>
-                <p className="text-[10px] text-forest-800/60">4-Eyes Approvals</p>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setRolePreset(UserRole.FIELD_OFFICER, 'officer_ramesh', 'GGYSecurePassword@2026', 'KA-BLR-01')}
-                className={`text-xs p-2.5 rounded-xl border text-left font-medium transition-all ${
-                  selectedRole === UserRole.FIELD_OFFICER
-                    ? 'bg-emerald-50 border-emerald-500 text-emerald-800 font-bold'
-                    : 'bg-sandstone-100 border-clay text-forest-800 hover:bg-sandstone-200'
-                }`}
-              >
-                <p className="font-bold">Field Officer (Maker)</p>
-                <p className="text-[10px] text-forest-800/60">Doorstep Onboarding & UPI</p>
-              </button>
-            </div>
+        <div className="bg-white py-8 px-6 shadow-xl rounded-3xl border border-slate-200/80 sm:px-10 space-y-6">
+          <div className="text-center space-y-1 pb-1">
+            <h3 className="text-sm font-black text-slate-900">Sign In to Your Workspace</h3>
+            <p className="text-xs text-slate-500">
+              Enter your assigned institutional username and password
+            </p>
           </div>
 
-          <form className="space-y-5" onSubmit={handleLogin}>
-            {errorMessage && (
-              <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 font-medium">
-                {errorMessage}
-              </div>
-            )}
+          {errorMessage && (
+            <div className="p-3.5 rounded-2xl bg-red-50 border border-red-200 text-xs text-red-800 font-medium flex items-start gap-2 animate-in fade-in">
+              <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+              <span>{errorMessage}</span>
+            </div>
+          )}
 
+          <form className="space-y-4" onSubmit={handleLogin}>
             <div>
-              <label className="block text-xs font-bold text-forest-900">
+              <label className="block text-xs font-bold text-slate-800 mb-1">
                 Staff Username
               </label>
-              <div className="mt-1 relative rounded-xl shadow-xs">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-forest-800/50">
+              <div className="relative rounded-xl">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                   <User className="h-4 w-4" />
                 </div>
                 <input
                   type="text"
                   required
+                  placeholder="e.g. it_superadmin"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-2.5 text-xs bg-sandstone-100 border border-clay rounded-xl text-forest-900 focus:outline-hidden focus:ring-2 focus:ring-terracotta-500"
+                  className="block w-full pl-10 pr-3 py-3 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-orange-500 transition-all font-mono"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-forest-900">
+              <label className="block text-xs font-bold text-slate-800 mb-1">
                 Password
               </label>
-              <div className="mt-1 relative rounded-xl shadow-xs">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-forest-800/50">
+              <div className="relative rounded-xl">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                   <KeyRound className="h-4 w-4" />
                 </div>
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   required
+                  placeholder="••••••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-2.5 text-xs bg-sandstone-100 border border-clay rounded-xl text-forest-900 focus:outline-hidden focus:ring-2 focus:ring-terracotta-500"
+                  className="block w-full pl-10 pr-10 py-3 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-orange-500 transition-all font-mono"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
               </div>
             </div>
 
-            <div className="p-3 bg-sandstone-100 rounded-xl border border-clay/60 text-[11px] text-forest-800/80 flex items-start gap-2">
-              <Shield className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-              <span>Session protected with device fingerprinting and immutable audit logging under statutory IT security guidelines.</span>
+            <div className="p-3 bg-emerald-50/70 rounded-2xl border border-emerald-200/80 text-[11px] text-emerald-900 flex items-start gap-2">
+              <Shield className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
+              <span>
+                Role-based access privileges are assigned directly by the Super Admin IT.
+              </span>
             </div>
 
             <button
               type="submit"
-              disabled={isLoading}
-              className="w-full flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-forest-800 hover:bg-forest-900 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-terracotta-500 transition-all disabled:opacity-50"
+              disabled={isLoading || !username.trim() || !password}
+              className="w-full flex justify-center items-center gap-2 py-3.5 px-4 rounded-xl shadow-md text-xs font-black text-white bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 active:scale-[0.99] transition-all disabled:opacity-50 cursor-pointer"
             >
-              <Lock className="w-4 h-4 text-terracotta-400" />
-              <span>{isLoading ? 'Verifying...' : `Sign In as ${selectedRole}`}</span>
+              <Lock className="w-4 h-4" />
+              <span>{isLoading ? 'Verifying Credentials...' : 'Sign In to Staff Portal'}</span>
             </button>
           </form>
         </div>
       </div>
+
+      {/* ======================================================== */}
+      {/* MANDATORY FIRST-TIME PASSWORD RESET MODAL */}
+      {/* ======================================================== */}
+      {isResetModalOpen && pendingUser && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 space-y-5 shadow-2xl border border-slate-200 animate-in zoom-in-95">
+            <div className="text-center space-y-1">
+              <div className="w-12 h-12 bg-orange-100 text-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-2 font-bold">
+                <KeyRound className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-black text-slate-950">Set Your Private Password</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Welcome, <strong>{pendingUser.fullName}</strong>. As an institutional banking security requirement, please create your own confidential password before continuing.
+              </p>
+            </div>
+
+            {resetError && (
+              <div className="p-3 bg-red-50 border border-red-200 text-xs text-red-800 rounded-xl font-medium">
+                {resetError}
+              </div>
+            )}
+
+            <form onSubmit={handleCompletePasswordReset} className="space-y-4 text-xs font-bold">
+              <div>
+                <label className="block text-slate-800 mb-1">New Password (Min 8 characters)</label>
+                <input
+                  type="password"
+                  required
+                  placeholder="Enter your new secure password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-mono font-normal focus:ring-2 focus:ring-orange-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-800 mb-1">Confirm New Password</label>
+                <input
+                  type="password"
+                  required
+                  placeholder="Retype password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-mono font-normal focus:ring-2 focus:ring-orange-500"
+                />
+              </div>
+
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-[11px] text-slate-600 flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>Assigned Role: <strong>{pendingUser.role}</strong> ({pendingUser.branchCode})</span>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  className="w-full py-3.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-black text-xs rounded-xl shadow-md transition-all text-center cursor-pointer"
+                >
+                  Save Password &amp; Open Workspace &rarr;
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

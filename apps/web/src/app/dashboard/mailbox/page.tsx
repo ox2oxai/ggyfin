@@ -35,75 +35,20 @@ interface StaffMessage {
   referenceId?: string;
 }
 
-const INITIAL_MESSAGES: StaffMessage[] = [
-  {
-    id: 'msg-001',
-    sender: 'checker_sharma',
-    senderRole: UserRole.AUTHORIZER,
-    senderName: 'Sri Raghavendra Sharma (Authorizer / Checker)',
-    recipient: 'field_officer_ramesh',
-    recipientName: 'Sri Ramesh Kumar (Field Officer)',
-    subject: 'KYC Clarification: Powerloom Artisan Loan (Smt. Kavitha Revanna)',
-    body: 'Namaskara Ramesh. I am reviewing loan application APP-703-902 for Smt. Kavitha Revanna. The geotagged shop photo looks clear, but please upload or re-confirm the electric meter RR number to complete the 4-eyes sanction check.',
-    timestamp: 'Today, 10:45 AM',
-    category: 'KYC_CLARIFICATION',
-    isRead: false,
-    referenceId: 'APP-703-902'
-  },
-  {
-    id: 'msg-002',
-    sender: 'manager_anita',
-    senderRole: UserRole.BRANCH_MANAGER,
-    senderName: 'Smt. Anita Deshmukh (Branch Manager)',
-    recipient: 'all_staff',
-    recipientName: 'All Branch Staff',
-    subject: 'EOD Branch Cash Vault Settlement & Cut-off Time',
-    body: 'All Field Officers: Please ensure all doorstep cash collections for today are handed over to the cashier counter before 4:30 PM. We have dual-custody audit scheduled at 5:00 PM for vault balancing.',
-    timestamp: 'Today, 09:15 AM',
-    category: 'BRANCH_NOTICE',
-    isRead: false
-  },
-  {
-    id: 'msg-003',
-    sender: 'field_officer_ramesh',
-    senderRole: UserRole.FIELD_OFFICER,
-    senderName: 'Sri Ramesh Kumar (Field Officer)',
-    recipient: 'manager_anita',
-    recipientName: 'Smt. Anita Deshmukh (Branch Manager)',
-    subject: 'Physical Cash Counterfoil Deposited: Receipt RCPT-KA-BLR-0041',
-    body: 'Madam, I have collected ₹4,500 cash installment from Smt. Lakshmi Gowda (Dairy Loan account 1084-0101-702-0039-4). The signed paper counterfoil has been deposited in Tray B for your dual-control verification.',
-    timestamp: 'Yesterday, 04:50 PM',
-    category: 'CASH_VERIFICATION',
-    isRead: true,
-    referenceId: 'RCPT-KA-BLR-0041'
-  },
-  {
-    id: 'msg-004',
-    sender: 'admin_suresh',
-    senderRole: UserRole.SYSTEM_ADMIN,
-    senderName: 'Sri Suresh Hegde (System Admin / IT Head)',
-    recipient: 'all_staff',
-    recipientName: 'All Branch Staff',
-    subject: 'CBS 16-Digit Numbering & 10-Digit CIF Decoupling Live',
-    body: 'Dear Team, Core Banking migration features are now active in the platform. Every customer now has an independent 10-digit CIF (Customer ID) and 16-digit CBS account numbers. Customer portal is accessible at /portal.',
-    timestamp: 'Yesterday, 02:15 PM',
-    category: 'URGENT_AUDIT',
-    isRead: true,
-    referenceId: 'CBS-STD-2026'
-  }
-];
+const INITIAL_MESSAGES: StaffMessage[] = [];
 
 export default function StaffMailboxPage() {
   const [session, setSession] = useState<UserSession | null>(null);
   const [mounted, setMounted] = useState(false);
-  const [messages, setMessages] = useState<StaffMessage[]>(INITIAL_MESSAGES);
+  const [messages, setMessages] = useState<StaffMessage[]>([]);
   const [activeFilter, setActiveFilter] = useState<'all' | 'unread' | 'urgent' | 'sent'>('all');
-  const [selectedMessage, setSelectedMessage] = useState<StaffMessage | null>(INITIAL_MESSAGES[0]);
+  const [selectedMessage, setSelectedMessage] = useState<StaffMessage | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [staffDirectory, setStaffDirectory] = useState<Array<{ username: string; fullName: string; role: string }>>([]);
 
   // Compose Modal State
   const [isComposeOpen, setIsComposeOpen] = useState(false);
-  const [recipient, setRecipient] = useState('checker_sharma');
+  const [recipient, setRecipient] = useState('all_staff');
   const [subject, setSubject] = useState('');
   const [category, setCategory] = useState<'KYC_CLARIFICATION' | 'CASH_VERIFICATION' | 'URGENT_AUDIT' | 'BRANCH_NOTICE'>('KYC_CLARIFICATION');
   const [referenceId, setReferenceId] = useState('');
@@ -120,12 +65,18 @@ export default function StaffMailboxPage() {
         // fallback
       }
     } else {
-      setSession({
-        userId: 'u-field_officer-001',
-        username: 'field_officer_ramesh',
-        role: UserRole.FIELD_OFFICER,
-        branchCode: 'KA-BLR-01'
-      });
+      window.location.href = '/login';
+      return;
+    }
+
+    const rawDir = localStorage.getItem('nbfc_staff_directory');
+    if (rawDir) {
+      try {
+        const parsedDir = JSON.parse(rawDir);
+        if (Array.isArray(parsedDir)) {
+          setStaffDirectory(parsedDir);
+        }
+      } catch (e) {}
     }
 
     const rawMsgs = localStorage.getItem('nbfc_staff_messages');
@@ -142,7 +93,7 @@ export default function StaffMailboxPage() {
     }
   }, []);
 
-  const currentUsername = session?.username || 'field_officer_ramesh';
+  const currentUsername = session?.username || 'Staff User';
 
   const updateMessagesAndSync = (newMessages: StaffMessage[]) => {
     setMessages(newMessages);
@@ -204,13 +155,13 @@ export default function StaffMailboxPage() {
     e.preventDefault();
     if (!subject.trim() || !body.trim()) return;
 
-    const recipientNames: Record<string, string> = {
-      checker_sharma: 'Sri Raghavendra Sharma (Authorizer / Checker)',
-      manager_anita: 'Smt. Anita Deshmukh (Branch Manager)',
-      field_officer_ramesh: 'Sri Ramesh Kumar (Field Officer)',
-      admin_suresh: 'Sri Suresh Hegde (System Admin / IT Head)',
-      all_staff: 'All Branch Staff'
-    };
+    const targetStaff = staffDirectory.find((s) => s.username === recipient);
+    const resolvedRecipientName =
+      recipient === 'all_staff'
+        ? 'All Branch Staff'
+        : targetStaff
+        ? `${targetStaff.fullName} (${targetStaff.role})`
+        : recipient;
 
     const newMsgId = `msg-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
     const newMsg: StaffMessage = {
@@ -219,7 +170,7 @@ export default function StaffMailboxPage() {
       senderRole: session?.role || UserRole.FIELD_OFFICER,
       senderName: `${currentUsername} (${session?.role || 'Staff'})`,
       recipient,
-      recipientName: recipientNames[recipient] || recipient,
+      recipientName: resolvedRecipientName,
       subject,
       body,
       timestamp: 'Just now',
@@ -542,11 +493,12 @@ export default function StaffMailboxPage() {
                   onChange={(e) => setRecipient(e.target.value)}
                   className="w-full p-2.5 bg-white border border-clay rounded-xl text-xs font-semibold text-forest-900 focus:ring-2 focus:ring-saffron-500"
                 >
-                  <option value="checker_sharma">Sri Raghavendra Sharma (Authorizer / Checker)</option>
-                  <option value="manager_anita">Smt. Anita Deshmukh (Branch Manager)</option>
-                  <option value="field_officer_ramesh">Sri Ramesh Kumar (Field Officer)</option>
-                  <option value="admin_suresh">Sri Suresh Hegde (System Admin / IT Head)</option>
                   <option value="all_staff">📢 Broadcast: All Branch Staff</option>
+                  {staffDirectory.map((staff) => (
+                    <option key={staff.username} value={staff.username}>
+                      {staff.fullName} ({staff.role})
+                    </option>
+                  ))}
                 </select>
               </div>
 

@@ -31,6 +31,7 @@ import {
   Sliders,
   Send,
   Check,
+  Copy,
   X
 } from 'lucide-react';
 
@@ -82,7 +83,7 @@ interface AuditEvent {
   ip: string;
 }
 
-const INITIAL_STAFF: StaffUser[] = [
+const DEFAULT_SUPER_ADMIN_STAFF: StaffUser[] = [
   {
     id: 'u-superadmin-it-001',
     username: 'it_superadmin',
@@ -93,72 +94,58 @@ const INITIAL_STAFF: StaffUser[] = [
     branchCode: 'KA-HQ-IT',
     isActive: true,
     createdAt: '2026-01-01'
-  },
-  {
-    id: 'u-sysadmin-001',
-    username: 'admin',
-    fullName: 'Sri Suresh Kulkarni',
-    email: 'admin@ggyfinance.in',
-    phone: '9800010001',
-    role: UserRole.SYSTEM_ADMIN,
-    branchCode: 'KA-HQ-01',
-    isActive: true,
-    createdAt: '2026-01-15'
-  },
-  {
-    id: 'u-manager-001',
-    username: 'manager_blr',
-    fullName: 'Smt. Anita Deshmukh',
-    email: 'manager.blr@ggyfinance.in',
-    phone: '9800010002',
-    role: UserRole.BRANCH_MANAGER,
-    branchCode: 'KA-BLR-01',
-    isActive: true,
-    createdAt: '2026-02-01'
-  },
-  {
-    id: 'u-authorizer-001',
-    username: 'authorizer_blr',
-    fullName: 'Sri Raghavendra Sharma',
-    email: 'authorizer.blr@ggyfinance.in',
-    phone: '9800010003',
-    role: UserRole.AUTHORIZER,
-    branchCode: 'KA-BLR-01',
-    isActive: true,
-    createdAt: '2026-02-10'
-  },
-  {
-    id: 'u-field-001',
-    username: 'officer_ramesh',
-    fullName: 'Sri Ramesh Kumar B.',
-    email: 'ramesh.field@ggyfinance.in',
-    phone: '9800010004',
-    role: UserRole.FIELD_OFFICER,
-    branchCode: 'KA-BLR-01',
-    isActive: true,
-    createdAt: '2026-02-15'
-  },
-  {
-    id: 'u-field-002',
-    username: 'officer_manju',
-    fullName: 'Sri Manjunath Prasad',
-    email: 'manju.field@ggyfinance.in',
-    phone: '9800010005',
-    role: UserRole.FIELD_OFFICER,
-    branchCode: 'KA-MND-01',
-    isActive: true,
-    createdAt: '2026-03-01'
   }
 ];
 
 export default function SuperAdminItDashboard() {
   const [activeTab, setActiveTab] = useState<'staff' | 'gateways' | 'telemetry'>('staff');
-  const [staffList, setStaffList] = useState<StaffUser[]>(INITIAL_STAFF);
+  const [staffList, setStaffList] = useState<StaffUser[]>(DEFAULT_SUPER_ADMIN_STAFF);
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('ALL');
   const [isProvisionModalOpen, setIsProvisionModalOpen] = useState(false);
   const [actionSuccessMsg, setActionSuccessMsg] = useState('');
   const [actionErrorMsg, setActionErrorMsg] = useState('');
+  const [lastProvisionedInvite, setLastProvisionedInvite] = useState<{
+    username: string;
+    fullName: string;
+    role: UserRole;
+    branchCode: string;
+    temporaryPassword: string;
+  } | null>(null);
+  const [copiedInvite, setCopiedInvite] = useState(false);
+
+  // Sync staff directory from localStorage
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('nbfc_staff_directory');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Filter out legacy dummy mock users, preserve it_superadmin and user-provisioned accounts
+          const cleaned = parsed.filter(
+            (u: any) => u.username === 'it_superadmin' || (u.id && u.id.startsWith('u-prov-'))
+          );
+          if (cleaned.length === 0) cleaned.push(DEFAULT_SUPER_ADMIN_STAFF[0]);
+          setStaffList(cleaned);
+          localStorage.setItem('nbfc_staff_directory', JSON.stringify(cleaned));
+          return;
+        }
+      }
+    } catch {
+      // fallback
+    }
+    setStaffList(DEFAULT_SUPER_ADMIN_STAFF);
+    localStorage.setItem('nbfc_staff_directory', JSON.stringify(DEFAULT_SUPER_ADMIN_STAFF));
+  }, []);
+
+  const persistStaffList = (updated: StaffUser[]) => {
+    setStaffList(updated);
+    try {
+      localStorage.setItem('nbfc_staff_directory', JSON.stringify(updated));
+    } catch {
+      // ignore
+    }
+  };
 
   // Provision Form State
   const [newUsername, setNewUsername] = useState('');
@@ -243,9 +230,8 @@ export default function SuperAdminItDashboard() {
       return;
     }
 
-    setStaffList((prev) =>
-      prev.map((u) => (u.id === userId ? { ...u, role: targetRole } : u))
-    );
+    const updated = staffList.map((u) => (u.id === userId ? { ...u, role: targetRole } : u));
+    persistStaffList(updated);
 
     // Record audit event
     setAuditEvents((prev) => [
@@ -273,9 +259,8 @@ export default function SuperAdminItDashboard() {
     }
 
     const nextState = !user.isActive;
-    setStaffList((prev) =>
-      prev.map((u) => (u.id === userId ? { ...u, isActive: nextState } : u))
-    );
+    const updated = staffList.map((u) => (u.id === userId ? { ...u, isActive: nextState } : u));
+    persistStaffList(updated);
 
     // Record audit event
     setAuditEvents((prev) => [
@@ -308,7 +293,8 @@ export default function SuperAdminItDashboard() {
       return;
     }
 
-    setStaffList((prev) => prev.filter((u) => u.id !== userId));
+    const updated = staffList.filter((u) => u.id !== userId);
+    persistStaffList(updated);
 
     setAuditEvents((prev) => [
       {
@@ -335,7 +321,7 @@ export default function SuperAdminItDashboard() {
       return;
     }
 
-    const created: StaffUser = {
+    const created: StaffUser & { password?: string; mustResetPassword?: boolean } = {
       id: `u-prov-${Date.now()}`,
       username: newUsername.trim(),
       fullName: newFullName.trim() || newUsername.trim(),
@@ -344,10 +330,21 @@ export default function SuperAdminItDashboard() {
       role: newRole,
       branchCode: newBranch,
       isActive: true,
-      createdAt: new Date().toISOString().slice(0, 10)
+      createdAt: new Date().toISOString().slice(0, 10),
+      password: newPassword,
+      mustResetPassword: true
     };
 
-    setStaffList((prev) => [created, ...prev]);
+    const updated = [created as StaffUser, ...staffList];
+    persistStaffList(updated);
+
+    setLastProvisionedInvite({
+      username: created.username,
+      fullName: created.fullName,
+      role: created.role,
+      branchCode: created.branchCode,
+      temporaryPassword: newPassword
+    });
 
     setAuditEvents((prev) => [
       {
@@ -366,7 +363,16 @@ export default function SuperAdminItDashboard() {
     setNewFullName('');
     setNewEmail('');
     setNewPhone('');
-    notifySuccess(`New staff member '${created.username}' provisioned as ${created.role}.`);
+    notifySuccess(`New staff member '${created.username}' provisioned as ${created.role}. You can now copy and securely send their login credentials.`);
+  };
+
+  const handleCopyInvite = () => {
+    if (!lastProvisionedInvite) return;
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://ggyfinance.in';
+    const text = `GGY Finance Staff Portal Access Credentials\nPortal URL: ${origin}/login\nUsername: ${lastProvisionedInvite.username}\nTemporary Password: ${lastProvisionedInvite.temporaryPassword}\nAssigned Role: ${lastProvisionedInvite.role}\nBranch SOL: ${lastProvisionedInvite.branchCode}\n\nNote: You will be prompted to create your own confidential password on first login.`;
+    navigator.clipboard.writeText(text);
+    setCopiedInvite(true);
+    setTimeout(() => setCopiedInvite(false), 3000);
   };
 
   // Gateway Test Helper
@@ -530,6 +536,56 @@ export default function SuperAdminItDashboard() {
       {/* ======================================================== */}
       {activeTab === 'staff' && (
         <section className="space-y-6">
+          {/* Last Provisioned Invite Share Card */}
+          {lastProvisionedInvite && (
+            <div className="bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50 border-2 border-orange-300 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4 animate-in fade-in">
+              <div className="flex justify-between items-start">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-orange-600 text-white flex items-center justify-center font-bold shadow-xs">
+                    <KeyRound className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-black text-slate-950">
+                      Staff Account Provisioned &amp; Ready for Handover
+                    </h4>
+                    <p className="text-xs text-slate-600">
+                      Share these credentials with <strong>{lastProvisionedInvite.fullName}</strong>. They will set their own private password upon logging in.
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setLastProvisionedInvite(null)}
+                  className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="bg-white p-4 rounded-2xl border border-orange-200/80 font-mono text-xs text-slate-800 space-y-1.5 shadow-xs">
+                <p><strong>Portal Login URL:</strong> {typeof window !== 'undefined' ? window.location.origin : ''}/login</p>
+                <p><strong>Username:</strong> {lastProvisionedInvite.username}</p>
+                <p><strong>Initial Password:</strong> {lastProvisionedInvite.temporaryPassword}</p>
+                <p><strong>Assigned Role:</strong> {lastProvisionedInvite.role}</p>
+                <p><strong>Branch SOL:</strong> {lastProvisionedInvite.branchCode}</p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                <button
+                  type="button"
+                  onClick={handleCopyInvite}
+                  className="py-2.5 px-5 bg-orange-600 hover:bg-orange-700 text-white text-xs font-black rounded-xl shadow-xs flex items-center gap-2 transition-all cursor-pointer"
+                >
+                  {copiedInvite ? <Check className="w-4 h-4 text-emerald-300" /> : <Copy className="w-4 h-4" />}
+                  <span>{copiedInvite ? 'Copied to Clipboard!' : 'Copy Secure Invite Text'}</span>
+                </button>
+                <span className="text-[11px] text-slate-500 font-medium">
+                  Ready to paste into official onboarding email or secure messenger.
+                </span>
+              </div>
+            </div>
+          )}
+
           {/* Quick Metrics */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">

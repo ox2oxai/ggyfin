@@ -28,18 +28,18 @@ import {
 export default function FieldOfficerPage() {
   const [activeSubTab, setActiveSubTab] = useState<'ONBOARDING' | 'TRACKER'>('ONBOARDING');
   // Form State
-  const [fullName, setFullName] = useState('Suresh Gowda');
-  const [phone, setPhone] = useState('9845012345');
-  const [dob, setDob] = useState('1988-06-20');
-  const [gender, setGender] = useState<Gender>(Gender.MALE);
-  const [addressLine, setAddressLine] = useState('Near Kalikamba Temple, Maddur Taluk');
-  const [pincode, setPincode] = useState('571428');
+  const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [dob, setDob] = useState('');
+  const [gender, setGender] = useState<Gender>(Gender.FEMALE);
+  const [addressLine, setAddressLine] = useState('');
+  const [pincode, setPincode] = useState('');
   const [state, setState] = useState('Karnataka');
-  const [aadhaarLast4, setAadhaarLast4] = useState('4821');
+  const [aadhaarLast4, setAadhaarLast4] = useState('');
   const [loanPurpose, setLoanPurpose] = useState<LoanPurpose>(LoanPurpose.DAIRY_LIVESTOCK);
-  const [principalAmount, setPrincipalAmount] = useState<number>(75000);
-  const [tenureMonths, setTenureMonths] = useState<number>(18);
-  const [consentGranted, setConsentGranted] = useState(true);
+  const [principalAmount, setPrincipalAmount] = useState<number>(60000);
+  const [tenureMonths, setTenureMonths] = useState<number>(12);
+  const [consentGranted, setConsentGranted] = useState(false);
 
   // Status
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -55,9 +55,39 @@ export default function FieldOfficerPage() {
 
   const handleSubmitApplication = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!consentGranted) {
+      alert('DPDP Act statutory consent is required before submitting the application.');
+      return;
+    }
     setIsSubmitting(true);
 
     setTimeout(() => {
+      const generatedId = `APP-${Date.now().toString().slice(-6)}`;
+      const generatedCif = `108400${Math.floor(1000 + Math.random() * 9000)}`;
+
+      const newApp = {
+        id: generatedId,
+        cifNumber: generatedCif,
+        customerName: fullName,
+        phone,
+        address: `${addressLine}, ${pincode}`,
+        maskedAadhaar: `XXXX-XXXX-${aadhaarLast4}`,
+        loanPurpose: currentLoanConfig.title,
+        principalAmount,
+        interestRate: currentLoanConfig.defaultRate,
+        tenureMonths,
+        emiAmount: calculatedEmi,
+        makerName: 'field_officer',
+        submittedAt: new Date().toISOString().replace('T', ' ').slice(0, 16)
+      };
+
+      try {
+        const raw = localStorage.getItem('nbfc_pending_applications');
+        const list = raw ? JSON.parse(raw) : [];
+        list.unshift(newApp);
+        localStorage.setItem('nbfc_pending_applications', JSON.stringify(list));
+      } catch (err) {}
+
       setIsSubmitting(false);
       setSubmitSuccess(true);
     }, 700);

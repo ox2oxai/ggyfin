@@ -17,12 +17,10 @@ export async function seedDatabase() {
   console.log('[Seed] Starting GGY Finance Karnataka Operations database seeding...');
 
   try {
-    // 1. Seed Core Staff Users (Bcrypt salt rounds: 10)
-    console.log('[Seed] Seeding staff users...');
+    // 1. Seed Initial Super Admin IT (Bcrypt salt rounds: 10)
+    console.log('[Seed] Seeding initial Super Admin IT...');
     const superAdminPassword = 'GGY#SuperAdminIT@2026!';
     const superAdminPasswordHash = await bcrypt.hash(superAdminPassword, 10);
-    const defaultPassword = 'GGYSecurePassword@2026';
-    const passwordHash = await bcrypt.hash(defaultPassword, 10);
 
     const staffProfiles = [
       {
@@ -32,38 +30,6 @@ export async function seedDatabase() {
         passwordHash: superAdminPasswordHash,
         role: 'SUPER_ADMIN_IT' as const,
         branchCode: 'KA-HQ-IT'
-      },
-      {
-        username: 'admin',
-        email: 'admin@ggyfinance.in',
-        phone: '9800010001',
-        passwordHash,
-        role: 'SYSTEM_ADMIN' as const,
-        branchCode: 'KA-HQ-01'
-      },
-      {
-        username: 'manager_blr',
-        email: 'manager.blr@ggyfinance.in',
-        phone: '9800010002',
-        passwordHash,
-        role: 'BRANCH_MANAGER' as const,
-        branchCode: 'KA-BLR-01'
-      },
-      {
-        username: 'authorizer_blr',
-        email: 'authorizer.blr@ggyfinance.in',
-        phone: '9800010003',
-        passwordHash,
-        role: 'AUTHORIZER' as const,
-        branchCode: 'KA-BLR-01'
-      },
-      {
-        username: 'officer_ramesh',
-        email: 'ramesh.field@ggyfinance.in',
-        phone: '9800010004',
-        passwordHash,
-        role: 'FIELD_OFFICER' as const,
-        branchCode: 'KA-BLR-01'
       }
     ];
 
@@ -81,8 +47,8 @@ export async function seedDatabase() {
       }
     }
 
-    const fieldOfficerId = seededUsers['officer_ramesh'];
-    const authorizerId = seededUsers['authorizer_blr'];
+    const fieldOfficerId = seededUsers['it_superadmin'];
+    const authorizerId = seededUsers['it_superadmin'];
 
     // 2. Seed Customer Profiles (Mandya & Ramanagara Clusters)
     console.log('[Seed] Seeding sample rural borrowers with DPDP consent...');

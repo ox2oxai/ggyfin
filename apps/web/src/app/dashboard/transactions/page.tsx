@@ -30,91 +30,57 @@ interface LedgerEntry {
   status: 'SETTLED' | 'PENDING_VERIFICATION';
 }
 
-const INITIAL_LEDGER: LedgerEntry[] = [
-  {
-    id: 'TXN-DISB-2026-001',
-    timestamp: '2026-04-15 10:30',
-    customerId: '1084000039',
-    accountNumber: '1084-0101-702-0039-4',
-    borrowerName: 'Smt. Lakshmi Gowda',
-    type: 'DISBURSEMENT',
-    debit: 60000,
-    credit: 0,
-    balanceAfter: 60000,
-    makerId: 'field_officer_ramesh',
-    checkerId: 'checker_sharma',
-    referenceId: 'IMPS-NEFT-9847291034',
-    status: 'SETTLED'
-  },
-  {
-    id: 'TXN-UPI-2026-002',
-    timestamp: '2026-05-10 14:15',
-    customerId: '1084000039',
-    accountNumber: '1084-0101-702-0039-4',
-    borrowerName: 'Smt. Lakshmi Gowda',
-    type: 'UPI_REPAYMENT',
-    debit: 0,
-    credit: 5500,
-    balanceAfter: 54500,
-    makerId: 'SYSTEM_NPCI_WEBHOOK',
-    checkerId: 'NPCI_AUTO_SETTLED',
-    referenceId: 'UTR:2026051098231',
-    status: 'SETTLED'
-  },
-  {
-    id: 'TXN-CASH-2026-003',
-    timestamp: '2026-06-10 11:20',
-    customerId: '1084000039',
-    accountNumber: '1084-0101-702-0039-4',
-    borrowerName: 'Smt. Lakshmi Gowda',
-    type: 'CASH_COLLECTION',
-    debit: 0,
-    credit: 5500,
-    balanceAfter: 49000,
-    makerId: 'field_officer_ramesh',
-    checkerId: 'manager_anita',
-    referenceId: 'RCPT-KA-BLR-0041',
-    status: 'SETTLED'
-  },
-  {
-    id: 'TXN-CASH-2026-004',
-    timestamp: '2026-06-14 16:40',
-    customerId: '1084000018',
-    accountNumber: '1084-0101-704-0018-9',
-    borrowerName: 'Sri Basavaraj Patil',
-    type: 'CASH_COLLECTION',
-    debit: 0,
-    credit: 4800,
-    balanceAfter: 33400,
-    makerId: 'field_officer_ramesh',
-    referenceId: 'RCPT-KA-TUM-0082',
-    status: 'PENDING_VERIFICATION'
-  }
-];
+const INITIAL_LEDGER: LedgerEntry[] = [];
 
 export default function TransactionsPage() {
   const { lang } = useLanguage();
-  const [ledger, setLedger] = useState<LedgerEntry[]>(INITIAL_LEDGER);
+  const [ledger, setLedger] = useState<LedgerEntry[]>(() => {
+    try {
+      const raw = localStorage.getItem('nbfc_ledger_transactions');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch {
+      // fallback
+    }
+    return [];
+  });
+
   const [activeTab, setActiveTab] = useState<'LEDGER' | 'UPI_SIM' | 'CASH_ENTRY'>('LEDGER');
   const [searchTerm, setSearchTerm] = useState('');
   const [toastMsg, setToastMsg] = useState('');
 
-  // UPI Simulation Form State (deterministic default for SSR hydration safety)
+  // Live accounts from CBS
+  const [liveAccounts, setLiveAccounts] = useState<Array<{ accountNumber: string; borrowerName: string; customerId: string; balance: number }>>(() => {
+    try {
+      const raw = localStorage.getItem('nbfc_live_accounts');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch {
+      // fallback
+    }
+    return [];
+  });
+
+  // UPI Simulation Form State
   const [upiForm, setUpiForm] = useState({
-    accountNumber: '1084-0101-702-0039-4',
-    customerId: '1084000039',
-    borrowerName: 'Smt. Lakshmi Gowda',
-    amount: 5500,
+    accountNumber: '',
+    customerId: '',
+    borrowerName: '',
+    amount: 5000,
     utr: '202611149814'
   });
 
-  // Cash Entry Form State (deterministic default for SSR hydration safety)
+  // Cash Entry Form State
   const [cashForm, setCashForm] = useState({
-    accountNumber: '1084-0101-702-0039-4',
-    customerId: '1084000039',
-    borrowerName: 'Smt. Lakshmi Gowda',
+    accountNumber: '',
+    customerId: '',
+    borrowerName: '',
     amount: 4500,
-    fieldOfficer: 'field_officer_ramesh',
+    fieldOfficer: 'field_officer',
     receiptNumber: 'RCPT-KA-45210'
   });
 
@@ -196,21 +162,27 @@ export default function TransactionsPage() {
 
   const handleSimulateUpi = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!upiForm.accountNumber || !upiForm.borrowerName) {
+      setToastMsg('Please specify a valid borrower account and name.');
+      setTimeout(() => setToastMsg(''), 4000);
+      return;
+    }
     const newTxnId = `TXN-UPI-2026-00${ledger.length + 1}`;
     
     // Resolve dynamic prior balance for the target account
     const priorSettledEntry = ledger.find(
       (l) => l.accountNumber === upiForm.accountNumber && l.status === 'SETTLED'
     );
+    const liveAcc = liveAccounts.find((a) => a.accountNumber === upiForm.accountNumber);
     const priorBalance = priorSettledEntry
       ? priorSettledEntry.balanceAfter
-      : (upiForm.accountNumber === '1084-0101-704-0018-9' ? 38200 : 24500);
+      : (liveAcc ? liveAcc.balance : 50000);
     const calculatedBalance = Math.max(0, priorBalance - Number(upiForm.amount));
 
     const newEntry: LedgerEntry = {
       id: newTxnId,
       timestamp: new Date().toISOString().replace('T', ' ').slice(0, 16),
-      customerId: upiForm.customerId || '1084000039',
+      customerId: upiForm.customerId || (liveAcc ? liveAcc.customerId : '1084000001'),
       accountNumber: upiForm.accountNumber,
       borrowerName: upiForm.borrowerName,
       type: 'UPI_REPAYMENT',
@@ -223,7 +195,11 @@ export default function TransactionsPage() {
       status: 'SETTLED'
     };
 
-    setLedger([newEntry, ...ledger]);
+    const updated = [newEntry, ...ledger];
+    setLedger(updated);
+    try {
+      localStorage.setItem('nbfc_ledger_transactions', JSON.stringify(updated));
+    } catch {}
     setActiveTab('LEDGER');
     setToastMsg(`₹${upiForm.amount} successfully credited via UPI UTR ${upiForm.utr}!`);
     // Randomize next UTR for subsequent simulations
@@ -236,20 +212,26 @@ export default function TransactionsPage() {
 
   const handleRecordCash = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!cashForm.accountNumber || !cashForm.borrowerName) {
+      setToastMsg('Please specify a valid borrower account and name.');
+      setTimeout(() => setToastMsg(''), 4000);
+      return;
+    }
     const newTxnId = `TXN-CASH-2026-00${ledger.length + 1}`;
     
     // Resolve current balance
     const priorSettledEntry = ledger.find(
       (l) => l.accountNumber === cashForm.accountNumber && l.status === 'SETTLED'
     );
+    const liveAcc = liveAccounts.find((a) => a.accountNumber === cashForm.accountNumber);
     const priorBalance = priorSettledEntry
       ? priorSettledEntry.balanceAfter
-      : (cashForm.accountNumber === '1084-0101-704-0018-9' ? 38200 : 24500);
+      : (liveAcc ? liveAcc.balance : 50000);
 
     const newEntry: LedgerEntry = {
       id: newTxnId,
       timestamp: new Date().toISOString().replace('T', ' ').slice(0, 16),
-      customerId: cashForm.customerId || '1084000039',
+      customerId: cashForm.customerId || (liveAcc ? liveAcc.customerId : '1084000001'),
       accountNumber: cashForm.accountNumber,
       borrowerName: cashForm.borrowerName,
       type: 'CASH_COLLECTION',
@@ -261,7 +243,11 @@ export default function TransactionsPage() {
       status: 'PENDING_VERIFICATION'
     };
 
-    setLedger([newEntry, ...ledger]);
+    const updated = [newEntry, ...ledger];
+    setLedger(updated);
+    try {
+      localStorage.setItem('nbfc_ledger_transactions', JSON.stringify(updated));
+    } catch {}
     setActiveTab('LEDGER');
     setToastMsg(`Cash entry recorded for ${cashForm.borrowerName}. Pending Branch Manager verification!`);
     // Randomize next receipt number
@@ -273,23 +259,25 @@ export default function TransactionsPage() {
   };
 
   const handleVerifyCash = (item: LedgerEntry) => {
-    setLedger(
-      ledger.map((l) => {
-        if (l.id === item.id) {
-          const priorSettled = ledger.find(
-            (other) => other.accountNumber === item.accountNumber && other.status === 'SETTLED' && other.id !== item.id
-          );
-          const baseBalance = priorSettled ? priorSettled.balanceAfter : item.balanceAfter;
-          return {
-            ...l,
-            status: 'SETTLED',
-            checkerId: 'manager_anita',
-            balanceAfter: Math.max(0, baseBalance - l.credit)
-          };
-        }
-        return l;
-      })
-    );
+    const updated = ledger.map((l) => {
+      if (l.id === item.id) {
+        const priorSettled = ledger.find(
+          (other) => other.accountNumber === item.accountNumber && other.status === 'SETTLED' && other.id !== item.id
+        );
+        const baseBalance = priorSettled ? priorSettled.balanceAfter : item.balanceAfter;
+        return {
+          ...l,
+          status: 'SETTLED' as const,
+          checkerId: 'branch_manager',
+          balanceAfter: Math.max(0, baseBalance - l.credit)
+        };
+      }
+      return l;
+    });
+    setLedger(updated);
+    try {
+      localStorage.setItem('nbfc_ledger_transactions', JSON.stringify(updated));
+    } catch {}
     setToastMsg(`Manager verified cash collection ${item.referenceId}. ₹${item.credit} credited to ledger!`);
     setTimeout(() => setToastMsg(''), 5000);
   };
@@ -437,80 +425,94 @@ export default function TransactionsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-clay/40 font-medium">
-                  {filteredLedger.map((item) => (
-                    <tr key={item.id} className="hover:bg-sandstone-100/60 transition-colors">
-                      <td className="py-3 px-4 font-mono font-bold text-forest-900">
-                        <div>{item.id}</div>
-                        <div className="text-[10px] text-forest-800/60 font-sans">{item.referenceId}</div>
-                      </td>
-
-                      <td className="py-3 px-4 text-forest-800/80 whitespace-nowrap">
-                        {item.timestamp}
-                      </td>
-
-                      <td className="py-3 px-4">
-                        <p className="font-bold text-forest-900">{item.borrowerName}</p>
-                        <p className="text-[10px] font-mono text-forest-800/80">{item.accountNumber}</p>
-                        <p className="text-[9px] font-mono text-terracotta-600 font-semibold">CIF: {item.customerId}</p>
-                      </td>
-
-                      <td className="py-3 px-4">
-                        <span
-                          className={`inline-block px-2 py-0.5 rounded-md text-[10px] font-bold ${
-                            item.type === 'DISBURSEMENT'
-                              ? 'bg-amber-100 text-amber-900'
-                              : item.type === 'UPI_REPAYMENT'
-                              ? 'bg-emerald-100 text-emerald-900'
-                              : item.type === 'CASH_COLLECTION'
-                              ? 'bg-blue-100 text-blue-900'
-                              : 'bg-sandstone-200 text-forest-900'
-                          }`}
-                        >
-                          {item.type}
-                        </span>
-                      </td>
-
-                      <td className="py-3 px-4 text-right font-mono font-bold text-terracotta-600">
-                        {item.debit > 0 ? `₹${item.debit.toLocaleString('en-IN')}` : '-'}
-                      </td>
-
-                      <td className="py-3 px-4 text-right font-mono font-bold text-emerald-700">
-                        {item.credit > 0 ? `₹${item.credit.toLocaleString('en-IN')}` : '-'}
-                      </td>
-
-                      <td className="py-3 px-4 text-right font-mono font-bold text-forest-900">
-                        ₹{item.balanceAfter.toLocaleString('en-IN')}
-                      </td>
-
-                      <td className="py-3 px-4 text-[10px]">
-                        <div>Maker: <strong className="font-mono">{item.makerId}</strong></div>
-                        {item.checkerId ? (
-                          <div>Checker: <strong className="font-mono text-emerald-700">{item.checkerId}</strong></div>
-                        ) : (
-                          <div className="text-amber-700 font-semibold">Checker Verification Pending</div>
-                        )}
-                      </td>
-
-                      <td className="py-3 px-4 text-center">
-                        {item.status === 'SETTLED' ? (
-                          <span className="inline-flex items-center gap-1 text-emerald-700 font-bold text-[11px]">
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                            <span>Settled</span>
-                          </span>
-                        ) : (
-                          <div className="flex flex-col items-center gap-1">
-                            <span className="text-[10px] text-amber-700 font-bold">Unverified</span>
-                            <button
-                              onClick={() => handleVerifyCash(item)}
-                              className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-[10px] font-bold shadow-xs transition-all"
-                            >
-                              {t.verifyCashBtn}
-                            </button>
-                          </div>
-                        )}
+                  {filteredLedger.length === 0 ? (
+                    <tr>
+                      <td colSpan={9} className="py-16 text-center text-forest-800/60">
+                        <div className="flex flex-col items-center justify-center gap-2">
+                          <ArrowLeftRight className="w-8 h-8 text-forest-800/30" />
+                          <p className="font-bold text-forest-900 text-sm">No Transactions Recorded</p>
+                          <p className="text-xs text-forest-800/60 max-w-sm">
+                            Cash collections, UPI settlements, and loan disbursements will appear here in real-time as operations occur.
+                          </p>
+                        </div>
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    filteredLedger.map((item) => (
+                      <tr key={item.id} className="hover:bg-sandstone-100/60 transition-colors">
+                        <td className="py-3 px-4 font-mono font-bold text-forest-900">
+                          <div>{item.id}</div>
+                          <div className="text-[10px] text-forest-800/60 font-sans">{item.referenceId}</div>
+                        </td>
+
+                        <td className="py-3 px-4 text-forest-800/80 whitespace-nowrap">
+                          {item.timestamp}
+                        </td>
+
+                        <td className="py-3 px-4">
+                          <p className="font-bold text-forest-900">{item.borrowerName}</p>
+                          <p className="text-[10px] font-mono text-forest-800/80">{item.accountNumber}</p>
+                          <p className="text-[9px] font-mono text-terracotta-600 font-semibold">CIF: {item.customerId}</p>
+                        </td>
+
+                        <td className="py-3 px-4">
+                          <span
+                            className={`inline-block px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                              item.type === 'DISBURSEMENT'
+                                ? 'bg-amber-100 text-amber-900'
+                                : item.type === 'UPI_REPAYMENT'
+                                ? 'bg-emerald-100 text-emerald-900'
+                                : item.type === 'CASH_COLLECTION'
+                                ? 'bg-blue-100 text-blue-900'
+                                : 'bg-sandstone-200 text-forest-900'
+                            }`}
+                          >
+                            {item.type}
+                          </span>
+                        </td>
+
+                        <td className="py-3 px-4 text-right font-mono font-bold text-terracotta-600">
+                          {item.debit > 0 ? `₹${item.debit.toLocaleString('en-IN')}` : '-'}
+                        </td>
+
+                        <td className="py-3 px-4 text-right font-mono font-bold text-emerald-700">
+                          {item.credit > 0 ? `₹${item.credit.toLocaleString('en-IN')}` : '-'}
+                        </td>
+
+                        <td className="py-3 px-4 text-right font-mono font-bold text-forest-900">
+                          ₹{item.balanceAfter.toLocaleString('en-IN')}
+                        </td>
+
+                        <td className="py-3 px-4 text-[10px]">
+                          <div>Maker: <strong className="font-mono">{item.makerId}</strong></div>
+                          {item.checkerId ? (
+                            <div>Checker: <strong className="font-mono text-emerald-700">{item.checkerId}</strong></div>
+                          ) : (
+                            <div className="text-amber-700 font-semibold">Checker Verification Pending</div>
+                          )}
+                        </td>
+
+                        <td className="py-3 px-4 text-center">
+                          {item.status === 'SETTLED' ? (
+                            <span className="inline-flex items-center gap-1 text-emerald-700 font-bold text-[11px]">
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              <span>Settled</span>
+                            </span>
+                          ) : (
+                            <div className="flex flex-col items-center gap-1">
+                              <span className="text-[10px] text-amber-700 font-bold">Unverified</span>
+                              <button
+                                onClick={() => handleVerifyCash(item)}
+                                className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-[10px] font-bold shadow-xs transition-all"
+                              >
+                                {t.verifyCashBtn}
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -532,19 +534,52 @@ export default function TransactionsPage() {
           <form onSubmit={handleSimulateUpi} className="space-y-3.5 text-xs">
             <div>
               <label className="block font-bold text-forest-900 mb-1">Target Loan Account</label>
-              <select
-                value={upiForm.accountNumber}
-                onChange={(e) => {
-                  const acc = e.target.value;
-                  const name = acc === '1084-0101-702-0039-4' ? 'Smt. Lakshmi Gowda' : 'Sri Basavaraj Patil';
-                  const cif = acc === '1084-0101-702-0039-4' ? '1084000039' : '1084000018';
-                  setUpiForm({ ...upiForm, accountNumber: acc, borrowerName: name, customerId: cif });
-                }}
-                className="w-full px-3 py-2 bg-sandstone-100 border border-clay rounded-xl text-forest-900 font-mono"
-              >
-                <option value="1084-0101-702-0039-4">1084-0101-702-0039-4 (Smt. Lakshmi Gowda • CIF 1084000039)</option>
-                <option value="1084-0101-704-0018-9">1084-0101-704-0018-9 (Sri Basavaraj Patil • CIF 1084000018)</option>
-              </select>
+              {liveAccounts.length > 0 ? (
+                <select
+                  value={upiForm.accountNumber}
+                  onChange={(e) => {
+                    const acc = liveAccounts.find((a) => a.accountNumber === e.target.value);
+                    if (acc) {
+                      setUpiForm({
+                        ...upiForm,
+                        accountNumber: acc.accountNumber,
+                        borrowerName: acc.borrowerName,
+                        customerId: acc.customerId
+                      });
+                    } else {
+                      setUpiForm({ ...upiForm, accountNumber: e.target.value });
+                    }
+                  }}
+                  className="w-full px-3 py-2 bg-sandstone-100 border border-clay rounded-xl text-forest-900 font-mono"
+                  required
+                >
+                  <option value="">-- Select Active Loan Account --</option>
+                  {liveAccounts.map((acc) => (
+                    <option key={acc.accountNumber} value={acc.accountNumber}>
+                      {acc.accountNumber} ({acc.borrowerName} • Balance: ₹{acc.balance.toLocaleString('en-IN')})
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    placeholder="Enter Loan Account Number (e.g. GGY-2026-001)"
+                    value={upiForm.accountNumber}
+                    onChange={(e) => setUpiForm({ ...upiForm, accountNumber: e.target.value })}
+                    className="w-full px-3 py-2 bg-sandstone-100 border border-clay rounded-xl text-forest-900 font-mono"
+                    required
+                  />
+                  <input
+                    type="text"
+                    placeholder="Borrower Full Name"
+                    value={upiForm.borrowerName}
+                    onChange={(e) => setUpiForm({ ...upiForm, borrowerName: e.target.value })}
+                    className="w-full px-3 py-2 bg-sandstone-100 border border-clay rounded-xl text-forest-900"
+                    required
+                  />
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -606,19 +641,52 @@ export default function TransactionsPage() {
           <form onSubmit={handleRecordCash} className="space-y-3.5 text-xs">
             <div>
               <label className="block font-bold text-forest-900 mb-1">Borrower Account</label>
-              <select
-                value={cashForm.accountNumber}
-                onChange={(e) => {
-                  const acc = e.target.value;
-                  const name = acc === '1084-0101-702-0039-4' ? 'Smt. Lakshmi Gowda' : 'Sri Basavaraj Patil';
-                  const cif = acc === '1084-0101-702-0039-4' ? '1084000039' : '1084000018';
-                  setCashForm({ ...cashForm, accountNumber: acc, borrowerName: name, customerId: cif });
-                }}
-                className="w-full px-3 py-2 bg-sandstone-100 border border-clay rounded-xl text-forest-900 font-mono"
-              >
-                <option value="1084-0101-702-0039-4">1084-0101-702-0039-4 (Smt. Lakshmi Gowda • CIF 1084000039)</option>
-                <option value="1084-0101-704-0018-9">1084-0101-704-0018-9 (Sri Basavaraj Patil • CIF 1084000018)</option>
-              </select>
+              {liveAccounts.length > 0 ? (
+                <select
+                  value={cashForm.accountNumber}
+                  onChange={(e) => {
+                    const acc = liveAccounts.find((a) => a.accountNumber === e.target.value);
+                    if (acc) {
+                      setCashForm({
+                        ...cashForm,
+                        accountNumber: acc.accountNumber,
+                        borrowerName: acc.borrowerName,
+                        customerId: acc.customerId
+                      });
+                    } else {
+                      setCashForm({ ...cashForm, accountNumber: e.target.value });
+                    }
+                  }}
+                  className="w-full px-3 py-2 bg-sandstone-100 border border-clay rounded-xl text-forest-900 font-mono"
+                  required
+                >
+                  <option value="">-- Select Active Loan Account --</option>
+                  {liveAccounts.map((acc) => (
+                    <option key={acc.accountNumber} value={acc.accountNumber}>
+                      {acc.accountNumber} ({acc.borrowerName} • Balance: ₹{acc.balance.toLocaleString('en-IN')})
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    placeholder="Enter Loan Account Number (e.g. GGY-2026-001)"
+                    value={cashForm.accountNumber}
+                    onChange={(e) => setCashForm({ ...cashForm, accountNumber: e.target.value })}
+                    className="w-full px-3 py-2 bg-sandstone-100 border border-clay rounded-xl text-forest-900 font-mono"
+                    required
+                  />
+                  <input
+                    type="text"
+                    placeholder="Borrower Full Name"
+                    value={cashForm.borrowerName}
+                    onChange={(e) => setCashForm({ ...cashForm, borrowerName: e.target.value })}
+                    className="w-full px-3 py-2 bg-sandstone-100 border border-clay rounded-xl text-forest-900"
+                    required
+                  />
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -652,7 +720,7 @@ export default function TransactionsPage() {
                 <ShieldCheck className="w-3.5 h-3.5 text-amber-600" />
                 <span>Dual-Control Cash Rule</span>
               </p>
-              <p>Under microfinance operating guidelines, a field officer who collects cash CANNOT self-verify the credit. Cash must be surrendered at the branch and authorized by the Branch Manager (`manager_anita`) before the borrower balance is credited.</p>
+              <p>Under microfinance operating guidelines, a field officer who collects cash CANNOT self-verify the credit. Cash must be surrendered at the branch and authorized by the Branch Manager before the borrower balance is credited.</p>
             </div>
 
             <button

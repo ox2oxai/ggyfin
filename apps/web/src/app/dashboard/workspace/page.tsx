@@ -30,17 +30,17 @@ export default function StaffWorkspacePage() {
     const raw = localStorage.getItem('nbfc_staff_session');
     if (raw) {
       try {
-        setSession(JSON.parse(raw));
+        const parsed = JSON.parse(raw);
+        setSession(parsed);
+        if (parsed.role === UserRole.SUPER_ADMIN_IT) {
+          window.location.href = '/dashboard/it-admin';
+          return;
+        }
       } catch (e) {
-        // fallback
+        window.location.href = '/login';
       }
     } else {
-      setSession({
-        userId: 'u-field_officer-001',
-        username: 'field_officer_ramesh',
-        role: UserRole.FIELD_OFFICER,
-        branchCode: 'KA-BLR-01'
-      });
+      window.location.href = '/login';
     }
   }, []);
 
@@ -282,6 +282,30 @@ export default function StaffWorkspacePage() {
                 CBS Studio &rarr;
               </Link>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ROLE 5: SUPER ADMIN IT WORKSPACE */}
+      {role === UserRole.SUPER_ADMIN_IT && (
+        <div className="space-y-6">
+          <div className="bg-sandstone-50 rounded-3xl border border-clay p-6 sm:p-8 shadow-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <div className="inline-flex items-center gap-1.5 text-xs font-bold text-terracotta-700 bg-terracotta-100 px-3 py-1 rounded-full mb-2">
+                <Shield className="w-3.5 h-3.5 text-terracotta-600" />
+                <span>Technical & IT Administration</span>
+              </div>
+              <h3 className="text-lg font-black text-forest-900">Staff Provisioning & IT Operations Center</h3>
+              <p className="text-xs text-forest-800/70 mt-1 max-w-xl">
+                Provision new bank staff accounts, configure operational roles, reset credentials, and manage technical communication channels.
+              </p>
+            </div>
+            <Link
+              href="/dashboard/it-admin"
+              className="px-5 py-3 bg-forest-800 hover:bg-forest-900 text-white rounded-xl text-xs font-bold shrink-0 shadow-md transition-all"
+            >
+              Open Super Admin IT Console &rarr;
+            </Link>
           </div>
         </div>
       )}

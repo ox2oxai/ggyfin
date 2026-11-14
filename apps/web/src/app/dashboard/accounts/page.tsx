@@ -41,84 +41,22 @@ interface AccountRecord {
   suspensionReason?: string;
 }
 
-const INITIAL_ACCOUNTS: AccountRecord[] = [
-  {
-    id: 'acc-001',
-    customerId: '1084000039',
-    accountNumber: '1084-0101-702-0039-4',
-    borrowerName: 'Smt. Lakshmi Gowda',
-    maskedAadhaar: 'XXXX-XXXX-8421',
-    phone: '9845123450',
-    taluk: 'Channapatna, Ramanagara',
-    product: 'Dairy Development Term Loan',
-    principal: 60000,
-    balance: 24500,
-    interestRate: 14.5,
-    tenureMonths: 12,
-    status: 'ACTIVE',
-    makerId: 'field_officer_ramesh',
-    checkerId: 'checker_sharma',
-    disbursedAt: '2026-04-15'
-  },
-  {
-    id: 'acc-002',
-    customerId: '1084000012',
-    accountNumber: '1084-0101-701-0012-7',
-    borrowerName: 'Sri Manjunath Hegde',
-    maskedAadhaar: 'XXXX-XXXX-3912',
-    phone: '9741298456',
-    taluk: 'Maddur, Mandya',
-    product: 'Petty Shop Working Capital',
-    principal: 40000,
-    balance: 0,
-    interestRate: 14.0,
-    tenureMonths: 6,
-    status: 'CLOSED',
-    makerId: 'field_officer_ramesh',
-    checkerId: 'checker_sharma',
-    disbursedAt: '2026-01-10',
-    closedAt: '2026-07-10'
-  },
-  {
-    id: 'acc-003',
-    customerId: '1084000042',
-    accountNumber: '1084-0101-703-0042-3',
-    borrowerName: 'Smt. Kavitha Revanna',
-    maskedAadhaar: 'XXXX-XXXX-9104',
-    phone: '9480112233',
-    taluk: 'Doddaballapura, Bangalore Rural',
-    product: 'Powerloom Artisan Working Capital',
-    principal: 80000,
-    balance: 80000,
-    interestRate: 15.0,
-    tenureMonths: 18,
-    status: 'PENDING_APPROVAL',
-    makerId: 'field_officer_ramesh'
-  },
-  {
-    id: 'acc-004',
-    customerId: '1084000018',
-    accountNumber: '1084-0101-704-0018-9',
-    borrowerName: 'Sri Basavaraj Patil',
-    maskedAadhaar: 'XXXX-XXXX-1567',
-    phone: '9611554433',
-    taluk: 'Kunigal, Tumakuru',
-    product: 'Organic Fertilizer Retail',
-    principal: 50000,
-    balance: 38200,
-    interestRate: 14.5,
-    tenureMonths: 12,
-    status: 'SUSPENDED',
-    makerId: 'field_officer_ramesh',
-    checkerId: 'checker_sharma',
-    disbursedAt: '2026-03-01',
-    suspensionReason: 'KYC Document verification flag - address re-verification pending'
-  }
-];
+const INITIAL_ACCOUNTS: AccountRecord[] = [];
 
 export default function AccountsPage() {
   const { lang } = useLanguage();
-  const [accounts, setAccounts] = useState<AccountRecord[]>(INITIAL_ACCOUNTS);
+  const [accounts, setAccounts] = useState<AccountRecord[]>(() => {
+    try {
+      const raw = localStorage.getItem('nbfc_live_accounts');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch {
+      // fallback
+    }
+    return [];
+  });
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
 
@@ -445,7 +383,18 @@ export default function AccountsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-clay/40 font-medium">
-              {filteredAccounts.map((acc) => (
+              {filteredAccounts.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-12 text-center text-slate-500">
+                    <Users className="w-10 h-10 text-slate-300 mx-auto mb-2" />
+                    <p className="font-bold text-sm text-slate-800">No Loan Accounts Found</p>
+                    <p className="text-xs text-slate-400 max-w-md mx-auto mt-1">
+                      Active borrower accounts will appear here once onboarded by Field Officers and sanctioned by Authorizers under Karnataka NBFC guidelines.
+                    </p>
+                  </td>
+                </tr>
+              ) : (
+                filteredAccounts.map((acc) => (
                 <tr key={acc.id} className="hover:bg-sandstone-100/60 transition-colors">
                   <td className="py-3.5 px-4 font-mono font-bold text-forest-900">
                     <div className="text-xs">{acc.accountNumber}</div>
@@ -563,7 +512,7 @@ export default function AccountsPage() {
                     </div>
                   </td>
                 </tr>
-              ))}
+              )))}
             </tbody>
           </table>
         </div>
