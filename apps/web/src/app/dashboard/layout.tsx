@@ -8,10 +8,7 @@ import {
   Smartphone,
   ShieldCheck,
   LogOut,
-  Building2,
-  Lock,
   FileCheck2,
-  QrCode,
   Users,
   ArrowLeftRight
 } from 'lucide-react';
@@ -21,8 +18,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
   const router = useRouter();
   const [session, setSession] = useState<UserSession | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const raw = localStorage.getItem('nbfc_staff_session');
     if (raw) {
       try {
@@ -58,14 +57,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </Link>
             <span className="text-xs text-sandstone-400 hidden sm:inline">•</span>
             <span className="text-xs bg-forest-800 text-sandstone-200 py-0.5 px-2.5 rounded-full border border-forest-700">
-              Branch: <strong>{session?.branchCode || 'KA-BLR-01'}</strong>
+              Branch: <strong>{mounted ? (session?.branchCode || 'KA-BLR-01') : 'KA-BLR-01'}</strong>
             </span>
           </div>
 
           <div className="flex items-center gap-3">
             <div className="text-right hidden sm:block">
-              <p className="text-xs font-bold text-white">{session?.username || 'Staff User'}</p>
-              <p className="text-[10px] text-terracotta-400 font-semibold">{session?.role || 'FIELD_OFFICER'}</p>
+              <p className="text-xs font-bold text-white">{mounted ? (session?.username || 'Staff User') : 'Staff User'}</p>
+              <p className="text-[10px] text-terracotta-400 font-semibold">{mounted ? (session?.role || 'FIELD_OFFICER') : 'FIELD_OFFICER'}</p>
             </div>
 
             <button

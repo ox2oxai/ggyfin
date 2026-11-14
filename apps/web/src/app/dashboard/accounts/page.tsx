@@ -6,7 +6,6 @@ import {
   Users,
   PlusCircle,
   Search,
-  Filter,
   CheckCircle2,
   AlertTriangle,
   Ban,
@@ -14,12 +13,7 @@ import {
   Download,
   Info,
   Shield,
-  X,
-  CreditCard,
-  Building,
-  Calendar,
-  IndianRupee,
-  FileText
+  X
 } from 'lucide-react';
 
 interface AccountRecord {

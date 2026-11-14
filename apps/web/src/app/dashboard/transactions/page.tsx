@@ -8,16 +8,10 @@ import {
   Banknote,
   Send,
   CheckCircle2,
-  AlertCircle,
-  FileSpreadsheet,
   Download,
   ShieldCheck,
-  Building2,
-  Clock,
   Search,
-  Filter,
-  X,
-  CreditCard
+  X
 } from 'lucide-react';
 
 interface LedgerEntry {
@@ -100,21 +94,21 @@ export default function TransactionsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [toastMsg, setToastMsg] = useState('');
 
-  // UPI Simulation Form State
+  // UPI Simulation Form State (deterministic default for SSR hydration safety)
   const [upiForm, setUpiForm] = useState({
     accountNumber: 'GGY-LN-KA-2026-0001',
     borrowerName: 'Smt. Lakshmi Gowda',
     amount: 5500,
-    utr: '2026111498' + Math.floor(1000 + Math.random() * 9000)
+    utr: '202611149814'
   });
 
-  // Cash Entry Form State
+  // Cash Entry Form State (deterministic default for SSR hydration safety)
   const [cashForm, setCashForm] = useState({
     accountNumber: 'GGY-LN-KA-2026-0001',
     borrowerName: 'Smt. Lakshmi Gowda',
     amount: 4500,
     fieldOfficer: 'field_officer_ramesh',
-    receiptNumber: 'RCPT-KA-' + Math.floor(10000 + Math.random() * 90000)
+    receiptNumber: 'RCPT-KA-45210'
   });
 
   const t = {
@@ -196,6 +190,16 @@ export default function TransactionsPage() {
   const handleSimulateUpi = (e: React.FormEvent) => {
     e.preventDefault();
     const newTxnId = `TXN-UPI-2026-00${ledger.length + 1}`;
+    
+    // Resolve dynamic prior balance for the target account
+    const priorSettledEntry = ledger.find(
+      (l) => l.accountNumber === upiForm.accountNumber && l.status === 'SETTLED'
+    );
+    const priorBalance = priorSettledEntry
+      ? priorSettledEntry.balanceAfter
+      : (upiForm.accountNumber === 'GGY-LN-KA-2026-0004' ? 38200 : 24500);
+    const calculatedBalance = Math.max(0, priorBalance - Number(upiForm.amount));
+
     const newEntry: LedgerEntry = {
       id: newTxnId,
       timestamp: new Date().toISOString().replace('T', ' ').slice(0, 16),
@@ -204,7 +208,7 @@ export default function TransactionsPage() {
       type: 'UPI_REPAYMENT',
       debit: 0,
       credit: Number(upiForm.amount),
-      balanceAfter: 24500 - Number(upiForm.amount),
+      balanceAfter: calculatedBalance,
       makerId: 'SYSTEM_NPCI_WEBHOOK',
       checkerId: 'NPCI_AUTO_SETTLED',
       referenceId: `UTR:${upiForm.utr}`,
@@ -214,12 +218,26 @@ export default function TransactionsPage() {
     setLedger([newEntry, ...ledger]);
     setActiveTab('LEDGER');
     setToastMsg(`₹${upiForm.amount} successfully credited via UPI UTR ${upiForm.utr}!`);
+    // Randomize next UTR for subsequent simulations
+    setUpiForm({
+      ...upiForm,
+      utr: '2026111498' + Math.floor(1000 + Math.random() * 9000)
+    });
     setTimeout(() => setToastMsg(''), 5000);
   };
 
   const handleRecordCash = (e: React.FormEvent) => {
     e.preventDefault();
     const newTxnId = `TXN-CASH-2026-00${ledger.length + 1}`;
+    
+    // Resolve current balance
+    const priorSettledEntry = ledger.find(
+      (l) => l.accountNumber === cashForm.accountNumber && l.status === 'SETTLED'
+    );
+    const priorBalance = priorSettledEntry
+      ? priorSettledEntry.balanceAfter
+      : (cashForm.accountNumber === 'GGY-LN-KA-2026-0004' ? 38200 : 24500);
+
     const newEntry: LedgerEntry = {
       id: newTxnId,
       timestamp: new Date().toISOString().replace('T', ' ').slice(0, 16),
@@ -228,7 +246,7 @@ export default function TransactionsPage() {
       type: 'CASH_COLLECTION',
       debit: 0,
       credit: Number(cashForm.amount),
-      balanceAfter: 24500, // Not credited until manager verifies
+      balanceAfter: priorBalance, // Not deducted until manager verifies
       makerId: cashForm.fieldOfficer,
       referenceId: cashForm.receiptNumber,
       status: 'PENDING_VERIFICATION'
@@ -237,21 +255,31 @@ export default function TransactionsPage() {
     setLedger([newEntry, ...ledger]);
     setActiveTab('LEDGER');
     setToastMsg(`Cash entry recorded for ${cashForm.borrowerName}. Pending Branch Manager verification!`);
+    // Randomize next receipt number
+    setCashForm({
+      ...cashForm,
+      receiptNumber: 'RCPT-KA-' + Math.floor(10000 + Math.random() * 90000)
+    });
     setTimeout(() => setToastMsg(''), 5000);
   };
 
   const handleVerifyCash = (item: LedgerEntry) => {
     setLedger(
-      ledger.map((l) =>
-        l.id === item.id
-          ? {
-              ...l,
-              status: 'SETTLED',
-              checkerId: 'manager_anita',
-              balanceAfter: Math.max(0, l.balanceAfter - l.credit)
-            }
-          : l
-      )
+      ledger.map((l) => {
+        if (l.id === item.id) {
+          const priorSettled = ledger.find(
+            (other) => other.accountNumber === item.accountNumber && other.status === 'SETTLED' && other.id !== item.id
+          );
+          const baseBalance = priorSettled ? priorSettled.balanceAfter : item.balanceAfter;
+          return {
+            ...l,
+            status: 'SETTLED',
+            checkerId: 'manager_anita',
+            balanceAfter: Math.max(0, baseBalance - l.credit)
+          };
+        }
+        return l;
+      })
     );
     setToastMsg(`Manager verified cash collection ${item.referenceId}. ₹${item.credit} credited to ledger!`);
     setTimeout(() => setToastMsg(''), 5000);
