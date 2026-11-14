@@ -158,3 +158,33 @@ Scraped via Prometheus at `GET /metrics`:
 * [x] **RBI Digital Lending Directions 2022:** Key Fact Statement (KFS) provided with APR, itemized fees (1.5% + 18% GST), and exact zero-residual amortization schedules.
 * [x] **TRAI DLT:** Pre-registered 6-character header `GGYFIN` and 19-digit numerical template IDs for SMS dispatch.
 * [x] **NPCI UPI:** Universal dynamic `upi://pay` intent URIs with 12-digit UTR reconciliation.
+
+---
+
+## 9. Developer Troubleshooting: Port Cleanliness & Build Recovery
+
+### Port 3000 / 4000 Conflict (`EADDRINUSE`)
+If `npm run dev:web` fails with `listen EADDRINUSE: address already in use :::3000`:
+```powershell
+# 1. Identify process holding port 3000
+netstat -ano | findstr LISTENING | findstr :3000
+
+# 2. Terminate the process (replace <PID> with the ID found)
+Stop-Process -Id <PID> -Force
+
+# 3. Verify port is completely clear
+netstat -ano | findstr LISTENING | findstr :3000
+```
+
+### Next.js Corrupted Cache / Missing Chunk (`Cannot find module './xxx.js'`)
+If Next.js throws chunk or `_document.js` module errors following an interrupted build:
+```powershell
+# 1. Stop any running Next.js or Node processes
+Get-Process node -ErrorAction SilentlyContinue | Stop-Process -Force
+
+# 2. Clean stale cache artifacts
+Remove-Item -Recurse -Force apps\web\.next
+
+# 3. Rebuild cleanly
+npm run build --workspace=@nbfc/web
+```
