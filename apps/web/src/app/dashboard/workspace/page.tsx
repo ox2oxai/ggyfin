@@ -217,7 +217,7 @@ export default function StaffWorkspacePage() {
             <div className="bg-white p-5 rounded-2xl border border-clay">
               <p className="text-[10px] font-bold uppercase text-forest-800/60">Branch Vault Cash Balance</p>
               <p className="text-2xl font-black text-forest-900 mt-1">₹1,24,500</p>
-              <p className="text-[11px] text-emerald-700 mt-1">Within RBI Insured Vault Limit</p>
+              <p className="text-[11px] text-emerald-700 mt-1">Within Insured Vault Limit</p>
             </div>
             <div className="bg-white p-5 rounded-2xl border border-clay">
               <p className="text-[10px] font-bold uppercase text-forest-800/60">Disbursements Ready to Release</p>
@@ -258,7 +258,7 @@ export default function StaffWorkspacePage() {
               <p className="text-2xl font-black text-forest-900 mt-1">42,108</p>
             </div>
             <div className="bg-white p-5 rounded-2xl border border-clay">
-              <p className="text-[10px] font-bold uppercase text-forest-800/60">Finacle CBS Readiness</p>
+              <p className="text-[10px] font-bold uppercase text-forest-800/60">Core Banking Readiness</p>
               <p className="text-2xl font-black text-saffron-600 mt-1">100%</p>
             </div>
           </div>

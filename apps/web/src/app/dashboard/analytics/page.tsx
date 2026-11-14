@@ -35,7 +35,7 @@ export default function AnalyticsPage() {
       ].join('\n');
     } else if (reportType === 'asset-quality') {
       csvContent = [
-        'GGY Finance - Monthly Asset Quality & NPA Classification Report (RBI SBR Base Layer)',
+        'GGY Finance - Monthly Asset Quality & NPA Classification Report (Micro-Lending Portfolio)',
         `Period: ${period} | Region: ${cluster}`,
         'Asset Classification,Days Past Due (DPD),Account Count,Total Exposure (INR),Portfolio Share (%),Statutory Provisioning Rate',
         'Standard (Current),0 Days,1398,47400000.00,98.34%,0.25%',
@@ -45,7 +45,7 @@ export default function AnalyticsPage() {
         'Gross NPA (Sub-Standard),> 90 Days,2,40000.00,0.08%,15.00%',
         '',
         'PAR 30 (Portfolio at Risk > 30 Days): 0.55%',
-        'Gross NPA Ratio (PAR 90+ Days): 0.08% (RBI Regulatory Cap is 5.00%)'
+        'Gross NPA Ratio (PAR 90+ Days): 0.08% (Regulatory Risk Cap is 5.00%)'
       ].join('\n');
     } else {
       csvContent = [
@@ -87,7 +87,7 @@ export default function AnalyticsPage() {
           </div>
           <h2 className="text-xl sm:text-2xl font-black text-forest-900">Portfolio Analytics & Reports</h2>
           <p className="text-xs text-forest-800/70 mt-0.5">
-            Real-time turnover, asset quality (PAR/SMA), geographic concentration, and RBI compliance reporting.
+            Real-time turnover, asset quality (PAR/SMA), geographic concentration, and compliance reporting.
           </p>
         </div>
 
@@ -161,7 +161,7 @@ export default function AnalyticsPage() {
         <div className="bg-sandstone-50 p-4 rounded-2xl border border-clay shadow-xs">
           <span className="text-[11px] font-bold text-forest-800/60 uppercase block">Gross NPA (90+ DPD)</span>
           <div className="text-xl font-black text-terracotta-600 mt-1">0.84%</div>
-          <div className="text-[10px] text-forest-800/60 mt-1">RBI Cap: &lt; 5.0%</div>
+          <div className="text-[10px] text-forest-800/60 mt-1">Risk Cap: &lt; 5.0%</div>
         </div>
 
         {/* KPI 5: Quarterly Turnover */}
@@ -181,12 +181,12 @@ export default function AnalyticsPage() {
 
       {/* Grid: 2 Columns (Asset Quality & Diversity) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Column: Asset Quality & Overdue Aging (RBI PAR & SMA Classification) */}
+        {/* Left Column: Asset Quality & Overdue Aging (PAR & SMA Classification) */}
         <div className="lg:col-span-7 bg-sandstone-50 rounded-3xl p-6 border border-clay shadow-xs space-y-4">
           <div className="flex justify-between items-center border-b border-clay/60 pb-3">
             <div>
               <h3 className="font-bold text-base text-forest-900">Asset Quality & Overdue Aging Buckets</h3>
-              <p className="text-xs text-forest-800/70">Conforming to RBI Scale-Based Regulation & SMA Framework</p>
+              <p className="text-xs text-forest-800/70">Conforming to Microfinance Standard PAR & SMA Framework</p>
             </div>
             <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
               Low Credit Risk
@@ -340,7 +340,7 @@ export default function AnalyticsPage() {
               <span>1,108 of 1,420 (78%)</span>
             </div>
             <p className="text-[11px] text-purple-800/80 leading-relaxed">
-              Exceeds the RBI financial inclusion guidance of 60% priority sector lending to women micro-entrepreneurs.
+              Exceeds the financial inclusion benchmark of 60% priority sector micro-credit to women micro-entrepreneurs.
             </p>
           </div>
         </div>
@@ -437,7 +437,7 @@ export default function AnalyticsPage() {
             <span>Statutory Report Generation & Export Center</span>
           </h3>
           <p className="text-xs text-forest-800/70">
-            One-click audit downloads for RBI inspections, Credit Bureau monthly submissions, and daily field collections.
+            One-click audit downloads for regulatory inspections, Credit Bureau monthly submissions, and daily field collections.
           </p>
         </div>
 
@@ -466,7 +466,7 @@ export default function AnalyticsPage() {
           <div className="p-4 bg-sandstone-100 rounded-2xl border border-clay flex flex-col justify-between space-y-3">
             <div>
               <span className="text-[10px] font-bold text-terracotta-700 uppercase bg-terracotta-50 px-2 py-0.5 rounded-full border border-terracotta-200">
-                RBI Statutory
+                Portfolio Audit
               </span>
               <h4 className="font-bold text-forest-900 text-sm mt-2">Monthly Asset Quality & NPA Report</h4>
               <p className="text-[11px] text-forest-800/70 mt-1">

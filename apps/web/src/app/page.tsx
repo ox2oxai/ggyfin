@@ -276,7 +276,7 @@ export default function HomePage() {
 
   const t = {
     en: {
-      heroPill: 'RBI Registered NBFC-BL • Certificate No: B-14.02981',
+      heroPill: 'Karnataka Micro-Lending Platform • Doorstep Financial Services',
       heroTitle1: 'Honest Micro Banking for',
       heroTitleAccent: 'Rural Bharat',
       heroDesc: 'Transparent reducing-balance micro-loans and accessible wealth creation for Karnataka’s village entrepreneurs, dairy farmers, and weavers.',
@@ -302,8 +302,8 @@ export default function HomePage() {
       totalPayable: 'Total Repayable Over Tenure',
       qrTitle: 'Dynamic UPI Repayment QR',
       qrDesc: 'Scan with any UPI App (PhonePe, GPay, Paytm, BHIM) to settle your monthly installment instantly.',
-      trustTitle: 'Institutional Bank-Grade Governance',
-      trustDesc: '100% Indian Data Sovereignty under DPDP Act 2023 with RBI Four-Eyes segregation of duties.',
+      trustTitle: 'Institutional Governance & Fair Practices',
+      trustDesc: '100% Indian Data Sovereignty under DPDP Act 2023 with dual-control maker-checker validation.',
       applyPwa: 'Request Doorstep Application via Field Officer',
       videoSectionBadge: 'Customer Stories',
       videoSectionTitle: 'Voices from the Field',
@@ -317,15 +317,15 @@ export default function HomePage() {
       closeVideo: 'Close Video',
       investmentBannerBadge: 'Rural Wealth Initiative',
       investmentBannerTitle: 'From Disciplined Borrowers to Confident Wealth Creators',
-      investmentBannerDesc: 'Did you know? Even ₹250 or ₹500 a month in a SEBI-regulated Mutual Fund works like your Village Milk Cooperative to build lasting family wealth.',
-      btnExploreInvestments: 'Explore Mutual Funds & FDs',
+      investmentBannerDesc: 'Disciplined wealth generation through SEBI-regulated micro-SIPs, high-yield fixed deposits, and daily doorstep Piggy savings.',
+      btnExploreInvestments: 'Explore Investments & Daily Piggy',
       btnWhatsappAdvisor: 'Chat with Investment Advisor',
       pillMf: 'SEBI & AMFI Regulated Micro-SIP',
       pillFd: 'High-Yield FDs up to 8.50% p.a.',
-      pillUpi: 'Automated UPI AutoPay Savings'
+      pillPiggy: 'Daily Doorstep Piggy Savings'
     },
     kn: {
-      heroPill: 'ಆರ್.ಬಿ.ಐ ನೋಂದಾಯಿತ ಕಿರು ಸಾಲ ಸಂಸ್ಥೆ • ಪ್ರಮಾಣಪತ್ರ: B-14.02981',
+      heroPill: 'ಕರ್ನಾಟಕ ಗ್ರಾಮೀಣ ಕಿರು ಸಾಲ ಸೇವಾ ವೇದಿಕೆ • ಮನೆಬಾಗಿಲ ಸೇವೆ',
       heroTitle1: 'ಗ್ರಾಮೀಣ ಭಾರತದ ಬೆಳವಣಿಗೆಗೆ',
       heroTitleAccent: 'ಪ್ರಾಮಾಣಿಕ ಕಿರು ಬ್ಯಾಂಕಿಂಗ್',
       heroDesc: 'ಗ್ರಾಮೀಣ ಸಣ್ಣ ವ್ಯಾಪಾರಿಗಳು, ಹೈನುಗಾರಿಕೆ ಕುಟುಂಬಗಳು ಮತ್ತು ನೇಕಾರರಿಗೆ ನೇರ ಮನೆಬಾಗಿಲ ಸಾಲ ಸೌಲಭ್ಯ ಹಾಗೂ ಸುಲಭ ಸಂಪತ್ತು ಸೃಷ್ಟಿ.',
@@ -335,8 +335,8 @@ export default function HomePage() {
       statRepayment: 'ಮರುಪಾವತಿ ದರ',
       statEmpowered: 'ಸಬಲೀಕರಣಗೊಂಡ ಕುಟುಂಬಗಳು',
       statTurnaround: 'ಮನೆಬಾಗಿಲ ಪರಿಶೀಲನೆ ವೇಗ',
-      productsSectionTitle: 'ಆರ್.ಬಿ.ಐ ನಿಯಂತ್ರಿತ ಸಾಲ ಸೌಲಭ್ಯಗಳು',
-      productsSectionDesc: 'ಗ್ರಾಮೀಣ ಸಬಲೀಕರಣ ಮತ್ತು ಪಾರದರ್ಶಕ ಸಾಲ ವಿತರಣೆಗೆ ರೂಪಿಸಲಾದ ಆರ್.ಬಿ.ಐ ನಿಯಂತ್ರಿತ ಕಿರು ಸಾಲ ಯೋಜನೆಗಳು.',
+      productsSectionTitle: 'ಪ್ರಾಮಾಣಿಕ ಕಿರು ಸಾಲ ಸೌಲಭ್ಯಗಳು',
+      productsSectionDesc: 'ಗ್ರಾಮೀಣ ಸಬಲೀಕರಣ ಮತ್ತು ಪಾರದರ್ಶಕ ಸಾಲ ವಿತರಣೆಗೆ ರೂಪಿಸಲಾದ ಕರ್ನಾಟಕ ರಾಜ್ಯ ನಿಯಮಾವಳಿ ಆಧಾರಿತ ಕಿರು ಸಾಲ ಯೋಜನೆಗಳು.',
       ratePerAnnum: '% ವಾರ್ಷಿಕ ಬಡ್ಡಿ',
       maxSanction: 'ಗರಿಷ್ಠ ಮಿತಿ:',
       calcTitle: 'ಇಎಂಐ (EMI) ಕ್ಯಾಲ್ಕುಲೇಟರ್ & ಯುಪಿಐ ಪ್ರಕ್ರಿಯೆ',
@@ -351,8 +351,8 @@ export default function HomePage() {
       totalPayable: 'ಒಟ್ಟು ಮರುಪಾವತಿಸಬೇಕಾದ ಮೊತ್ತ',
       qrTitle: 'ತ್ವರಿತ ಯುಪಿಐ (UPI) ಕ್ಯೂಆರ್ ಕೋಡ್',
       qrDesc: 'PhonePe, GPay, Paytm ಮೂಲಕ ನಿಮ್ಮ ಮಾಸಿಕ ಕಂತನ್ನು ತಕ್ಷಣವೇ ಸುಲಭವಾಗಿ ಮರುಪಾವತಿಸಿ.',
-      trustTitle: 'ಆರ್.ಬಿ.ಐ ನಿಯಮಾವಳಿಗಳ ಕಟ್ಟುನಿಟ್ಟಾದ ಅನುಸರಣೆ',
-      trustDesc: 'DPDP ಕಾಯ್ದೆ 2023 ರ ಅನ್ವಯ 100% ಭಾರತೀಯ ಸರ್ವರ್‌ಗಳಲ್ಲಿ ಎನ್‌ಕ್ರಿಪ್ಟ್ ಆದ ಡೇಟಾ ಸಂರಕ್ಷಣೆ.',
+      trustTitle: 'ಕರ್ನಾಟಕ ರಾಜ್ಯ ನಿಯಮಾವಳಿಗಳ ಕಟ್ಟುನಿಟ್ಟಾದ ಅನುಸರಣೆ',
+      trustDesc: 'DPDP ಕಾಯ್ದೆ 2023 ರ ಅನ್ವಯ 100% ಭಾರತೀಯ ಸರ್ವರ್‌ಗಳಲ್ಲಿ ಡೇಟಾ ಸಂರಕ್ಷಣೆ ಮತ್ತು ಡ್ಯುಯಲ್-ಕಂಟ್ರೋಲ್ ಪರಿಶೀಲನೆ.',
       applyPwa: 'ಕ್ಷೇತ್ರಾಧಿಕಾರಿಗಳ ಮೂಲಕ ಮನೆಬಾಗಿಲಿಗೆ ಅರ್ಜಿ ಸಲ್ಲಿಸಿ',
       videoSectionBadge: 'ನೈಜ ಪ್ರಗತಿ ಕಥೆಗಳು',
       videoSectionTitle: 'ಕ್ಷೇತ್ರದ ಅನುಭವಗಳು & ಯಶೋಗಾಥೆಗಳು',
@@ -366,12 +366,12 @@ export default function HomePage() {
       closeVideo: 'ಮುಚ್ಚಿ',
       investmentBannerBadge: 'ಹೊಸ ಗ್ರಾಮೀಣ ಸಂಪತ್ತು ಸೃಷ್ಟಿ ಯೋಜನೆ',
       investmentBannerTitle: 'ಸಾಲಗಾರರಿಂದ ಸಂಪತ್ತಿನ ಒಡೆಯರಾಗುವ ಸುವರ್ಣಾವಕಾಶ',
-      investmentBannerDesc: 'ಗ್ರಾಮೀಣ ಹಾಲಿನ ಡೇರಿ ಸಹಕಾರ ಸಂಘದಂತೆ ಕಾರ್ಯನಿರ್ವಹಿಸುವ ಮ್ಯೂಚುಯಲ್ ಫಂಡ್‌ನಲ್ಲಿ ತಿಂಗಳಿಗೆ ಕೇವಲ ₹೨೫೦ ಅಥವಾ ₹೫೦೦ ಉಳಿತಾಯ ಮಾಡಿ ನಿಮ್ಮ ಮಕ್ಕಳ ಭವಿಷ್ಯ ರೂಪಿಸಿ.',
-      btnExploreInvestments: 'ಮ್ಯೂಚುಯಲ್ ಫಂಡ್ & ಎಫ್‌ಡಿ ವಿವರಗಳು',
+      investmentBannerDesc: 'ಮ್ಯೂಚುಯಲ್ ಫಂಡ್, ಆಕರ್ಷಕ ಫಿಕ್ಸೆಡ್ ಡೆಪಾಸಿಟ್ ಹಾಗೂ ಮನೆಬಾಗಿಲ ದೈನಂದಿನ ಪಿಗ್ಗಿ ಉಳಿತಾಯದ ಮೂಲಕ ಸುಭದ್ರ ಆರ್ಥಿಕ ಭವಿಷ್ಯ ನಿರ್ಮಿಸಿ.',
+      btnExploreInvestments: 'ಹೂಡಿಕೆ & ದೈನಂದಿನ ಪಿಗ್ಗಿ ಯೋಜನೆಗಳು',
       btnWhatsappAdvisor: 'ವಾಟ್ಸಾಪ್‌ನಲ್ಲಿ ತಜ್ಞರ ಸಲಹೆ ಪಡೆಯಿರಿ',
       pillMf: 'SEBI & AMFI ನಿಯಂತ್ರಿತ ಕಿರು SIP',
       pillFd: 'ಶೇ ೮.೫೦ ವರೆಗೆ ಗರಿಷ್ಠ ಎಫ್‌ಡಿ ಬಡ್ಡಿ',
-      pillUpi: 'ಸುಲಭ ಯುಪಿಐ (UPI) ಸ್ವಯಂ ಉಳಿತಾಯ'
+      pillPiggy: 'ಮನೆಬಾಗಿಲ ದೈನಂದಿನ ಪಿಗ್ಗಿ ಕಿರು ಉಳಿತಾಯ'
     }
   }[lang];
 
@@ -456,7 +456,7 @@ export default function HomePage() {
         <div className="text-center space-y-2 max-w-2xl mx-auto">
           <div className="inline-flex items-center gap-1.5 text-xs font-extrabold text-orange-700 bg-orange-50 border border-orange-200 px-3.5 py-1 rounded-full shadow-2xs">
             <Award className="w-3.5 h-3.5 text-orange-600" />
-            <span>RBI Regulated Micro-Credit Schemes</span>
+            <span>Doorstep Micro-Credit Schemes</span>
           </div>
           <h2 className="text-2xl sm:text-4xl font-black text-slate-950 tracking-tight">
             {t.productsSectionTitle}
@@ -847,7 +847,7 @@ export default function HomePage() {
               </span>
               <span className="inline-flex items-center gap-1.5 bg-black/20 backdrop-blur-xs px-3 py-1.5 rounded-xl border border-white/20">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />
-                <span>{t.pillUpi}</span>
+                <span>{t.pillPiggy}</span>
               </span>
             </div>
 
@@ -882,7 +882,7 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 pb-6">
             <div>
               <span className="text-xs uppercase font-extrabold tracking-wider text-orange-700">
-                Reserve Bank of India Guidelines
+                Karnataka Micro-Lending Framework
               </span>
               <h3 className="text-xl sm:text-2xl font-black text-slate-950 mt-1">
                 {t.trustTitle}
@@ -890,7 +890,7 @@ export default function HomePage() {
             </div>
             <div className="flex items-center gap-2 bg-emerald-50 text-emerald-900 px-3.5 py-1.5 rounded-full border border-emerald-200 text-xs font-bold">
               <BadgeCheck className="w-4 h-4 text-emerald-700" />
-              <span>Audited Base Layer NBFC</span>
+              <span>Registered State Micro-Lending Platform</span>
             </div>
           </div>
 
@@ -898,9 +898,9 @@ export default function HomePage() {
             <div className="space-y-1.5">
               <p className="font-black text-sm text-slate-950 flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4 text-emerald-700" />
-                <span>Four-Eyes Segregation</span>
+                <span>Dual-Control Maker-Checker</span>
               </p>
-              <p>Every credit request is originated by a Field Maker and independently verified by a Checker Authorizer. Zero single-point credit approval fraud.</p>
+              <p>Every credit request is originated by a Field Maker and independently verified by a Checker Authorizer. Complete internal dual-control compliance.</p>
             </div>
 
             <div className="space-y-1.5">

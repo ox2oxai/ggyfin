@@ -115,7 +115,7 @@ export default function ContactPage() {
       emailTitle: 'Email',
       emailDesc: 'contact@ggyfinance.in • invest@ggyfinance.in',
       nodalTitle: 'Nodal Officer',
-      nodalDesc: 'Smt. Anita Deshmukh (Principal Nodal Officer). Escalation via RBI Ombudsman CMS portal.',
+      nodalDesc: 'Smt. Anita Deshmukh (Principal Nodal Officer). Dedicated Karnataka State Grievance Redressal Desk.',
       branchHeading: 'Branch Network',
       branchSubheading: 'Locate our regional Karnataka offices for doorstep documentation and financial services.',
       filterAll: 'All Branches (5)',
@@ -140,7 +140,7 @@ export default function ContactPage() {
       emailTitle: 'ಅಧಿಕೃತ ಇಮೇಲ್',
       emailDesc: 'contact@ggyfinance.in • invest@ggyfinance.in',
       nodalTitle: 'ಕುಂದುಕೊರತೆ ಅಧಿಕಾರಿ',
-      nodalDesc: 'ಶ್ರೀಮತಿ ಅನಿತಾ ದೇಶಮುಖ್. ಆರ್.ಬಿ.ಐ ಒಂಬುಡ್ಸ್‌ಮನ್ ಸಿ.ಎಂ.ಎಸ್ ಪೋರ್ಟಲ್‌ನಲ್ಲಿ ಮೇಲ್ಮನವಿ ಸೌಲಭ್ಯವಿದೆ.',
+      nodalDesc: 'ಶ್ರೀಮತಿ ಅನಿತಾ ದೇಶಮುಖ್. ಕರ್ನಾಟಕ ರಾಜ್ಯ ಕುಂದುಕೊರತೆ ನಿವಾರಣಾ ಕೋಶ ಹಾಗೂ ನೇರ ಸಹಾಯ.',
       branchHeading: 'ಶಾಖಾ ಜಾಲ',
       branchSubheading: 'ಮನೆಬಾಗಿಲ ದಾಖಲಾತಿ ಮತ್ತು ಹಣಕಾಸು ಸೇವೆಗಾಗಿ ನಿಮ್ಮ ಹತ್ತಿರದ ಶಾಖೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ.',
       filterAll: 'ಎಲ್ಲ ಶಾಖೆಗಳು (೫)',
@@ -253,13 +253,10 @@ export default function ContactPage() {
               <p className="text-slate-600 leading-relaxed mt-1 text-[11px]">{t.nodalDesc}</p>
             </div>
             <a
-              href="https://cms.rbi.org.in"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="mailto:grievance@ggyfinance.in"
               className="py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-900 border border-slate-200 rounded-xl text-[11px] font-bold text-center flex items-center justify-center gap-1 transition-all"
             >
-              <span>RBI CMS Portal</span>
-              <ExternalLink className="w-3 h-3 text-slate-500" />
+              <span>grievance@ggyfinance.in</span>
             </a>
           </div>
         </div>

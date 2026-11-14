@@ -29,14 +29,14 @@ export function PublicFooter() {
       grievanceOfficer: 'Principal Nodal Officer: Smt. Anita Deshmukh',
       tollFree: 'Toll-Free: 1800-209-4321 (9 AM - 6 PM)',
       email: 'nodal@ggyfinance.in',
-      escalation: 'Escalation: RBI Ombudsman CMS Portal (cms.rbi.org.in)',
+      escalation: 'Grievance Desk: Karnataka State Micro Lending Redressal',
       portalAccess: 'Secure Portal Access',
       borrowerLogin: 'Borrower Portal',
       staffLogin: 'Staff Portal',
       privacy: 'DPDP Privacy Notice',
       terms: 'Terms & Conditions',
       fairPractices: 'Fair Practices Code',
-      rbiReg: 'Certificate: B-14.02981',
+      rbiReg: 'Karnataka Reg: KA-ML/2024/7742',
       copyright: '© 2026 GGY Finance (Karnataka) Private Limited. All rights reserved. 100% Data Sovereignty inside Indian Data Centers.'
     },
     kn: {
@@ -58,14 +58,14 @@ export function PublicFooter() {
       grievanceOfficer: 'ಮುಖ್ಯ ಕುಂದುಕೊರತೆ ಅಧಿಕಾರಿ: ಶ್ರೀಮತಿ ಅನಿತಾ ದೇಶಮುಖ್',
       tollFree: 'ಉಚಿತ ಕರೆ: 1800-209-4321 (ಬೆಳಿಗ್ಗೆ 9 - ಸಂಜೆ 6)',
       email: 'nodal@ggyfinance.in',
-      escalation: 'ಮೇಲ್ಮನವಿ: ಆರ್.ಬಿ.ಐ ಸಿ.ಎಂ.ಎಸ್ ಪೋರ್ಟಲ್',
+      escalation: 'ಮೇಲ್ಮನವಿ: ಕರ್ನಾಟಕ ರಾಜ್ಯ ಕುಂದುಕೊರತೆ ನಿವಾರಣಾ ಕೋಶ',
       portalAccess: 'ಆಂತರಿಕ ಪೋರ್ಟಲ್ ಪ್ರವೇಶ',
       borrowerLogin: 'ಗ್ರಾಹಕರ ಪೋರ್ಟಲ್',
       staffLogin: 'ಸಿಬ್ಬಂದಿ ಪೋರ್ಟಲ್',
       privacy: 'ಗೌಪ್ಯತಾ ನೀತಿ (DPDP 2023)',
       terms: 'ನಿಯಮಗಳು & ಷರತ್ತುಗಳು',
-      fairPractices: 'ಆರ್.ಬಿ.ಐ ಪ್ರಾಮಾಣಿಕ ಸಾಲ ನೀತಿ',
-      rbiReg: 'ಆರ್.ಬಿ.ಐ ನೋಂದಣಿ: B-14.02981',
+      fairPractices: 'ಪ್ರಾಮಾಣಿಕ ಸಾಲ ನೀತಿ',
+      rbiReg: 'ಕರ್ನಾಟಕ ನೋಂದಣಿ: KA-ML/2024/7742',
       copyright: '© 2026 ಜಿಜಿವೈ ಫೈನಾನ್ಸ್ (GGY Finance Ltd). ಎಲ್ಲ ಹಕ್ಕುಗಳನ್ನು ಕಾಯ್ದಿರಿಸಲಾಗಿದೆ. ಭಾರತೀಯ ಡೇಟಾ ಕೇಂದ್ರಗಳಲ್ಲಿ ಸಂಪೂರ್ಣ ಭದ್ರತೆ.'
     }
   };
@@ -91,7 +91,7 @@ export function PublicFooter() {
           </p>
           <div className="pt-1">
             <span className="inline-block bg-emerald-950/80 text-emerald-200 border border-emerald-700/80 px-2.5 py-1 rounded-full text-[10px] font-mono">
-              RBI Reg: B-14.02981
+              Karnataka Reg: KA-ML/2024/7742
             </span>
           </div>
         </div>

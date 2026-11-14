@@ -650,9 +650,9 @@ export default function TransactionsPage() {
             <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-[11px] text-amber-800 space-y-1">
               <p className="font-bold flex items-center gap-1">
                 <ShieldCheck className="w-3.5 h-3.5 text-amber-600" />
-                <span>RBI Dual-Control Cash Rule</span>
+                <span>Dual-Control Cash Rule</span>
               </p>
-              <p>Under RBI microfinance operating guidelines, a field officer who collects cash CANNOT self-verify the credit. Cash must be surrendered at the branch and authorized by the Branch Manager (`manager_anita`) before the borrower balance is credited.</p>
+              <p>Under microfinance operating guidelines, a field officer who collects cash CANNOT self-verify the credit. Cash must be surrendered at the branch and authorized by the Branch Manager (`manager_anita`) before the borrower balance is credited.</p>
             </div>
 
             <button

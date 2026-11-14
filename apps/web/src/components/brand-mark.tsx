@@ -39,7 +39,7 @@ export function GGYBrandMark({
         xmlns="http://www.w3.org/2000/svg"
         className="relative z-10"
       >
-        {/* Foundation Arch - Stability / RBI NBFC Trust */}
+        {/* Foundation Arch - Stability / Micro-Lending Trust */}
         <path
           d="M6 24C6 24 10 26 16 26C22 26 26 24 26 24"
           stroke="#E5DECE"

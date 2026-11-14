@@ -174,7 +174,7 @@ export default function FieldOfficerPage() {
                   </div>
                   <p className="font-bold text-forest-900 mt-1">Smt. Lakshmi Gowda • Dairy Development Term Loan</p>
                   <p className="text-[11px] text-forest-800/70">Sanction: ₹60,000 • CBS A/C: <strong className="font-mono text-forest-900">1084-0101-702-0039-4</strong></p>
-                  <p className="text-[11px] text-emerald-800 mt-0.5">Approved by: checker_sharma (Sanctioned under RBI Base Layer guidelines)</p>
+                  <p className="text-[11px] text-emerald-800 mt-0.5">Approved by: checker_sharma (Sanctioned under State Micro-Lending guidelines)</p>
                 </div>
                 <div className="text-right text-[11px] text-forest-800/60 font-medium">
                   Disbursed via IMPS
@@ -211,7 +211,7 @@ export default function FieldOfficerPage() {
             <p className="font-bold text-sm">Application Drafted & Submitted to Authorizer Queue!</p>
             <p className="mt-1 text-emerald-800">
               Customer Information File (CIF) and Draft Account created. Status is set to <strong>PENDING_APPROVAL</strong>.
-              Under RBI 4-Eyes rules, the Authorizer/Checker must now audit the masked KYC before funds are disbursed.
+              Under 4-Eyes dual control rules, the Authorizer/Checker must now audit the masked KYC before funds are disbursed.
             </p>
             <button
               onClick={() => setSubmitSuccess(false)}
@@ -451,7 +451,7 @@ export default function FieldOfficerPage() {
             className="mt-1 w-4 h-4 accent-terracotta-600 rounded cursor-pointer"
           />
           <label htmlFor="dpdpConsent" className="text-xs text-forest-900 font-medium leading-relaxed">
-            <strong>DPDP Act 2023 Mandatory Declaration:</strong> Customer explicitly consents to verification of masked identity documents and loan disbursement under the RBI Fair Practices Code.
+            <strong>DPDP Act 2023 Mandatory Declaration:</strong> Customer explicitly consents to verification of masked identity documents and loan disbursement under the Fair Practices Code.
           </label>
         </div>
 
@@ -468,7 +468,7 @@ export default function FieldOfficerPage() {
           ) : (
             <>
               <Shield className="w-4 h-4 text-terracotta-400" />
-              <span>Submit for Maker-Checker Review (RBI Dual-Control)</span>
+              <span>Submit for Maker-Checker Review (Dual-Control)</span>
             </>
           )}
         </button>

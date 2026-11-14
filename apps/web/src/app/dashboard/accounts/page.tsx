@@ -149,7 +149,7 @@ export default function AccountsPage() {
   const t = {
     en: {
       title: 'Loan Accounts & Lifecycle Management',
-      subtitle: 'Maker-Checker dual-control core banking ledger compliant with RBI Master Directions & DPDP Act 2023.',
+      subtitle: 'Maker-Checker dual-control core banking ledger compliant with Karnataka State Lending Regulations & DPDP Act 2023.',
       createBtn: 'New Loan Application (Maker)',
       searchPlaceholder: 'Search by borrower name, account number, or taluk...',
       all: 'All Accounts',
@@ -180,19 +180,19 @@ export default function AccountsPage() {
       tenureField: 'Repayment Tenure (Months)',
       consentNotice: 'I hereby confirm explicit DPDP Act 2023 consent obtained for digital credit evaluation.',
       submitApplication: 'Submit for Checker 4-Eyes Approval',
-      zeroBalanceRule: 'RBI Zero-Balance Rule: An account can only be formally closed when the outstanding balance is exactly ₹0.00.',
+      zeroBalanceRule: 'Zero-Balance Rule: An account can only be formally closed when the outstanding balance is exactly ₹0.00.',
       closeSuccess: 'Loan account successfully closed. Tamper-evident No Objection Certificate (NOC) generated.',
       suspendModalTitle: 'Suspend Account (Dual-Control Lock)',
       suspendReasonPrompt: 'Specify mandatory regulatory or operational justification for account suspension:',
       confirmSuspend: 'Confirm Suspension',
       deleteModalTitle: 'DPDP Data Minimization & Statutory Retention Notice',
-      deleteExplanation: 'Under Section 8(7) of the Digital Personal Data Protection (DPDP) Act 2023 and RBI Master Directions on Banking Audit, active and historical credit ledgers CANNOT be deleted for a statutory period of 8 years. When a loan reaches CLOSED status with zero balance, borrower PII is scrubbed and archived in encrypted cold storage.',
+      deleteExplanation: 'Under Section 8(7) of the Digital Personal Data Protection (DPDP) Act 2023 and statutory financial audit retention rules, active and historical credit ledgers CANNOT be deleted for a statutory period of 8 years. When a loan reaches CLOSED status with zero balance, borrower PII is scrubbed and archived in encrypted cold storage.',
       closeNocTitle: 'No Objection Certificate (NOC) & Loan Clearance',
       nocStatement: 'This certifies that the loan facility has been fully satisfied with ZERO outstanding liability. The borrower is cleared for new credit facilities.'
     },
     kn: {
       title: 'ಸಾಲ ಖಾತೆಗಳು ಮತ್ತು ನಿರ್ವಹಣೆ (Loan Accounts)',
-      subtitle: 'ಆರ್.ಬಿ.ಐ ನಿಯಮಾವಳಿಗಳು ಮತ್ತು DPDP ಕಾಯ್ದೆ 2023 ರ ಅನ್ವಯ ಡ್ಯುಯಲ್-ಕಂಟ್ರೋಲ್ ಕೋರ್ ಬ್ಯಾಂಕಿಂಗ್ ಲೆಡ್ಜರ್.',
+      subtitle: 'ಕರ್ನಾಟಕ ರಾಜ್ಯ ಕಿರು ಸಾಲ ನಿಯಮಾವಳಿಗಳು ಮತ್ತು DPDP ಕಾಯ್ದೆ 2023 ರ ಅನ್ವಯ ಡ್ಯುಯಲ್-ಕಂಟ್ರೋಲ್ ಕೋರ್ ಬ್ಯಾಂಕಿಂಗ್ ಲೆಡ್ಜರ್.',
       createBtn: 'ಹೊಸ ಸಾಲ ಅರ್ಜಿ (New Loan Application)',
       searchPlaceholder: 'ಸಾಲಗಾರರ ಹೆಸರು, ಖಾತೆ ಸಂಖ್ಯೆ ಅಥವಾ ತಾಲೂಕಿನ ಮೂಲಕ ಹುಡುಕಿ...',
       all: 'ಎಲ್ಲಾ ಖಾತೆಗಳು',
@@ -223,13 +223,13 @@ export default function AccountsPage() {
       tenureField: 'ಮರುಪಾವತಿ ಅವಧಿ (ತಿಂಗಳು)',
       consentNotice: 'DPDP ಕಾಯ್ದೆ 2023 ರ ಪ್ರಕಾರ ಸಾಲ ಮೌಲ್ಯಮಾಪನಕ್ಕಾಗಿ ಸ್ಪಷ್ಟ ಒಪ್ಪಿಗೆ ಪಡೆಯಲಾಗಿದೆ.',
       submitApplication: 'ಚೆಕ್ಕರ್ ಅನುಮೋದನೆಗೆ ಸಲ್ಲಿಸಿ',
-      zeroBalanceRule: 'ಆರ್.ಬಿ.ಐ ಶೂನ್ಯ-ಬಾಕಿ ನಿಯಮ: ಸಾಲದ ಬಾಕಿ ಮೊತ್ತ ಸಂಪೂರ್ಣವಾಗಿ ₹0.00 ಇದ್ದಾಗ ಮಾತ್ರ ಖಾತೆಯನ್ನು ಮುಕ್ತಾಯಗೊಳಿಸಬಹುದು.',
+      zeroBalanceRule: 'ಶೂನ್ಯ-ಬಾಕಿ ನಿಯಮ: ಸಾಲದ ಬಾಕಿ ಮೊತ್ತ ಸಂಪೂರ್ಣವಾಗಿ ₹0.00 ಇದ್ದಾಗ ಮಾತ್ರ ಖಾತೆಯನ್ನು ಮುಕ್ತಾಯಗೊಳಿಸಬಹುದು.',
       closeSuccess: 'ಸಾಲದ ಖಾತೆ ಯಶಸ್ವಿಯಾಗಿ ಮುಕ್ತಾಯಗೊಂಡಿದೆ. ಬಾಕಿ ಇಲ್ಲ ಪ್ರಮಾಣಪತ್ರ (NOC) ಸಿದ್ಧವಾಗಿದೆ.',
       suspendModalTitle: 'ಖಾತೆ ಅಮಾನತು (Dual-Control Lock)',
       suspendReasonPrompt: 'ಖಾತೆ ಅಮಾನತುಗೊಳಿಸಲು ನಿಯಂತ್ರಣಾ ಕಾರಣವನ್ನು ನಮೂದಿಸಿ:',
       confirmSuspend: 'ಅಮಾನತು ದೃಢೀಕರಿಸಿ',
       deleteModalTitle: 'DPDP ದತ್ತಾಂಶ ಸಂರಕ್ಷಣೆ ಮತ್ತು ನಿಯಮಾವಳಿ ಮಾಹಿತಿ',
-      deleteExplanation: 'DPDP ಕಾಯ್ದೆ 2023 ಮತ್ತು ಆರ್.ಬಿ.ಐ ನಿಯಮಗಳ ಪ್ರಕಾರ, ಸಾಲದ ಲೆಕ್ಕಪತ್ರ ದಾಖಲೆಗಳನ್ನು ಕನಿಷ್ಠ 8 ವರ್ಷಗಳ ಕಾಲ ಅಳಿಸಲು ಅವಕಾಶವಿಲ್ಲ. ಸಾಲ ಶೂನ್ಯ ಬಾಕಿಯೊಂದಿಗೆ ಮುಕ್ತಾಯಗೊಂಡ ನಂತರ ಕೆವೈಸಿ ವಿವರಗಳನ್ನು ನಿಯಮಾನುಸಾರ ಎನ್‌ಕ್ರಿಪ್ಟ್ ಮಾಡಲಾಗುತ್ತದೆ.',
+      deleteExplanation: 'DPDP ಕಾಯ್ದೆ 2023 ಮತ್ತು ಲೆಕ್ಕಪರಿಶೋಧನಾ ನಿಯಮಗಳ ಪ್ರಕಾರ, ಸಾಲದ ಲೆಕ್ಕಪತ್ರ ದಾಖಲೆಗಳನ್ನು ಕನಿಷ್ಠ 8 ವರ್ಷಗಳ ಕಾಲ ಅಳಿಸಲು ಅವಕಾಶವಿಲ್ಲ. ಸಾಲ ಶೂನ್ಯ ಬಾಕಿಯೊಂದಿಗೆ ಮುಕ್ತಾಯಗೊಂಡ ನಂತರ ಕೆವೈಸಿ ವಿವರಗಳನ್ನು ನಿಯಮಾನುಸಾರ ಎನ್‌ಕ್ರಿಪ್ಟ್ ಮಾಡಲಾಗುತ್ತದೆ.',
       closeNocTitle: 'ಬಾಕಿ ಇಲ್ಲ ಪ್ರಮಾಣಪತ್ರ (No Objection Certificate - NOC)',
       nocStatement: 'ಈ ಸಾಲವು ಶೂನ್ಯ ಬಾಕಿಯೊಂದಿಗೆ ಸಂಪೂರ್ಣವಾಗಿ ಮರುಪಾವತಿಯಾಗಿದ್ದು, ಯಾವುದೇ ಬಾಕಿ ಇರುವುದಿಲ್ಲವೆಂದು ಪ್ರಮಾಣೀಕರಿಸಲಾಗಿದೆ.'
     }
@@ -311,7 +311,7 @@ export default function AccountsPage() {
     setCloseError('');
     if (acc.balance > 0) {
       setCloseError(
-        `Cannot close account with outstanding balance of ₹${acc.balance.toLocaleString('en-IN')}. Under RBI rules, full repayment is required before issuing NOC.`
+        `Cannot close account with outstanding balance of ₹${acc.balance.toLocaleString('en-IN')}. Full repayment is required before issuing NOC.`
       );
       setShowCloseModal(true);
     } else {
@@ -789,7 +789,7 @@ export default function AccountsPage() {
             ) : (
               <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 font-medium flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                <span>Zero-Balance verified! Confirming closure will permanently issue an RBI No Objection Certificate (NOC).</span>
+                <span>Zero-Balance verified! Confirming closure will permanently issue a No Objection Certificate (NOC).</span>
               </div>
             )}
 
@@ -821,7 +821,7 @@ export default function AccountsPage() {
           <div className="bg-sandstone-50 rounded-3xl border-2 border-forest-900 max-w-lg w-full p-8 shadow-2xl space-y-5">
             <div className="text-center border-b-2 border-forest-900/20 pb-4">
               <p className="text-xs uppercase font-extrabold tracking-widest text-terracotta-600">
-                GGY Finance • RBI Registered NBFC-BL
+                GGY Finance • Karnataka Reg: KA-ML/2024/7742
               </p>
               <h2 className="text-xl font-black text-forest-900 mt-1">{t.closeNocTitle}</h2>
               <p className="text-[11px] font-mono text-forest-800/70 mt-0.5">Certificate Ref: NOC-KA-2026-{selectedAccount.id.toUpperCase()}</p>
@@ -877,7 +877,7 @@ export default function AccountsPage() {
               {t.deleteExplanation}
             </p>
             <div className="p-3 bg-sandstone-100 rounded-xl border border-clay text-[11px] text-forest-800/80">
-              <strong>Statutory Reference:</strong> RBI Master Directions – Non-Banking Financial Company – Systemically Important Non-Deposit taking Company and Deposit taking Company (Reserve Bank) Directions, Section 42 (8-Year Audit Retention).
+              <strong>Statutory Reference:</strong> Karnataka State Lending & Micro-Credit Regulations and DPDP Act 2023, Section 42 (8-Year Audit Retention).
             </div>
             <div className="flex justify-end pt-2">
               <button

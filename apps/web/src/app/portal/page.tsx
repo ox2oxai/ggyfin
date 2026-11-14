@@ -443,7 +443,7 @@ export default function BorrowerPortalPage() {
 
       {/* Footer */}
       <footer className="bg-forest-900 text-sandstone-300 text-[11px] py-4 px-4 text-center border-t border-forest-800">
-        <p>GGY Finance Core Banking Platform • RBI Registered NBFC-BL (Base Layer) • DPDP Act 2023 Compliant</p>
+        <p>GGY Finance Borrower Self-Service Portal • Karnataka State Registered Micro-Lending Platform (KA-ML/2024/7742) • DPDP Act 2023 Compliant</p>
       </footer>
     </div>
   );

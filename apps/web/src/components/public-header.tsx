@@ -14,7 +14,7 @@ export function PublicHeader() {
 
   const labels = {
     en: {
-      topBar: 'RBI Registered NBFC-BL (Base Layer) | Reg. Certificate No: B-14.02981',
+      topBar: 'Karnataka State Registered Micro-Lending Platform • Doorstep Financial Services',
       brandName: 'GGY Finance',
       tagline: 'Micro Money Lending Platform',
       home: 'Home',
@@ -26,7 +26,7 @@ export function PublicHeader() {
       whatsappQuick: 'WhatsApp Advisory'
     },
     kn: {
-      topBar: 'ಆರ್.ಬಿ.ಐ ನೋಂದಾಯಿತ ಕಿರು ಸಾಲ ಸಂಸ್ಥೆ (NBFC-BL) | ಪ್ರಮಾಣಪತ್ರ: B-14.02981',
+      topBar: 'ಕರ್ನಾಟಕ ರಾಜ್ಯ ನೋಂದಾಯಿತ ಕಿರು ಸಾಲ ಸೇವಾ ಸಂಸ್ಥೆ • ಮನೆಬಾಗಿಲ ಆರ್ಥಿಕ ಸೇವೆ',
       brandName: 'ಜಿಜಿವೈ ಫೈನಾನ್ಸ್ (GGY Finance)',
       tagline: 'ಕಿರು ಹಣಕಾಸು ಸಾಲ ವೇದಿಕೆ (Micro Money Lending Platform)',
       home: 'ಮುಖಪುಟ',

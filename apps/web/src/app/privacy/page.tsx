@@ -14,7 +14,7 @@ export default function PrivacyPolicyPage() {
       badge: 'Statutory Data Protection Policy',
       title: 'Privacy Policy & Data Governance',
       effectiveDate: 'Effective Date: April 1, 2026 | Last Updated: November 14, 2026',
-      intro: 'GGY Finance Ltd. ("GGY Finance", "we", "our", or "the Company") is an RBI-registered Base-Layer Non-Banking Financial Company (NBFC-BL). We are committed to protecting the privacy, confidentiality, and security of our borrowers and customer applicants in strict compliance with the Digital Personal Data Protection Act, 2023 (DPDP Act), RBI Digital Lending Directions, and UIDAI regulations.',
+      intro: 'GGY Finance Ltd. ("GGY Finance", "we", "our", or "the Company") is a Karnataka State-registered micro-lending platform (Reg No: KA-ML/2024/7742). We are committed to protecting the privacy, confidentiality, and security of our borrowers and customer applicants in strict compliance with the Digital Personal Data Protection Act, 2023 (DPDP Act), Karnataka State Lending Guidelines, and UIDAI regulations.',
       s1Title: '1. Legislative Framework & Scope',
       s1Text: 'This Privacy Policy governs the collection, processing, storage, and retention of personal data collected through our field officers, web applications, and customer support channels across Karnataka.',
       s2Title: '2. Principles of Data Minimization & Consent',
@@ -56,7 +56,7 @@ export default function PrivacyPolicyPage() {
       badge: 'ಶಾಸನಬದ್ಧ ಡೇಟಾ ಸಂರಕ್ಷಣಾ ನೀತಿ',
       title: 'ಗೌಪ್ಯತಾ ನೀತಿ ಮತ್ತು ಡೇಟಾ ಆಡಳಿತ (Privacy Policy)',
       effectiveDate: 'ಜಾರಿಗೆ ಬಂದ ದಿನಾಂಕ: 1 ಏಪ್ರಿಲ್ 2026 | ನವೀಕರಿಸಿದ್ದು: 14 ನವೆಂಬರ್ 2026',
-      intro: 'ಜಿಜಿವೈ ಫೈನಾನ್ಸ್ ಸಂಸ್ಥೆಯು ಭಾರತೀಯ ರಿಸರ್ವ್ ಬ್ಯಾಂಕ್ (RBI) ನೋಂದಾಯಿತ ಕಿರು ಸಾಲ ಸಂಸ್ಥೆಯಾಗಿದ್ದು, ಭಾರತ ಸರ್ಕಾರದ ಡಿಜಿಟಲ್ ವೈಯಕ್ತಿಕ ಡೇಟಾ ಸಂರಕ್ಷಣಾ ಕಾಯ್ದೆ 2023 (DPDP Act) ಮತ್ತು ಆರ್.ಬಿ.ಐ ಡಿಜಿಟಲ್ ಲೆಂಡಿಂಗ್ ನಿಯಮಾವಳಿಗಳಿಗೆ ಬದ್ಧವಾಗಿದೆ.',
+      intro: 'ಜಿಜಿವೈ ಫೈನಾನ್ಸ್ ಸಂಸ್ಥೆಯು ಕರ್ನಾಟಕ ರಾಜ್ಯ ನೋಂದಾಯಿತ ಕಿರು ಸಾಲ ಸಂಸ್ಥೆಯಾಗಿದ್ದು (ನೋಂದಣಿ ಸಂಖ್ಯೆ: KA-ML/2024/7742), ಭಾರತ ಸರ್ಕಾರದ ಡಿಜಿಟಲ್ ವೈಯಕ್ತಿಕ ಡೇಟಾ ಸಂರಕ್ಷಣಾ ಕಾಯ್ದೆ 2023 (DPDP Act) ಮತ್ತು ರಾಜ್ಯದ ಕಿರು ಸಾಲ ನಿಯಮಾವಳಿಗಳಿಗೆ ಬದ್ಧವಾಗಿದೆ.',
       s1Title: '1. ನಿಯಂತ್ರಣ ಚೌಕಟ್ಟು ಮತ್ತು ವ್ಯಾಪ್ತಿ',
       s1Text: 'ಈ ಗೌಪ್ಯತಾ ನೀತಿಯು ನಮ್ಮ ಕ್ಷೇತ್ರಾಧಿಕಾರಿಗಳು ಮತ್ತು ಸಾಲ ಪೋರ್ಟಲ್ ಮೂಲಕ ಸಂಗ್ರಹಿಸಲಾಗುವ ಎಲ್ಲಾ ಗ್ರಾಹಕರ ಮಾಹಿತಿಯ ಸುರಕ್ಷತೆಯನ್ನು ಖಚಿತಪಡಿಸುತ್ತದೆ.',
       s2Title: '2. ಸ್ಪಷ್ಟ ಸಮ್ಮತಿ (DPDP Consent)',
@@ -71,7 +71,7 @@ export default function PrivacyPolicyPage() {
       ],
       s3NeverTitle: 'ನಾವು ಎಂದಿಗೂ ಪಡೆಯದ ಮಾಹಿತಿಗಳು (Zero Intrusion):',
       s3NeverList: [
-        'ಪೂರ್ಣ 12 ಅಂಕಿಗಳ ಅನ್‌ಮಾಸ್ಕ್ಡ್ ಆಧಾರ್ ಸಂಖ್ಯೆ (ಆರ್.ಬಿ.ಐ & ಯುಐಡಿಎಐ ನಿಷೇಧಿಸಿದೆ).',
+        'ಪೂರ್ಣ 12 ಅಂಕಿಗಳ ಅನ್‌ಮಾಸ್ಕ್ಡ್ ಆಧಾರ್ ಸಂಖ್ಯೆ (ಯುಐಡಿಎಐ ನಿಷೇಧಿಸಿದೆ).',
         'ಬಯೋಮೆಟ್ರಿಕ್ ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಅಥವಾ ಕಣ್ಣಿನ ಸ್ಕ್ಯಾನ್.',
         'ನಿಮ್ಮ ಫೋನ್ ಕಾಂಟ್ಯಾಕ್ಟ್‌ಗಳು, ಖಾಸಗಿ ಮೆಸೇಜ್‌ಗಳು ಅಥವಾ ಫೋಟೋ ಗ್ಯಾಲರಿ.',
         'ನಿರಂತರ ಜಿಪಿಎಸ್ ಲೊಕೇಶನ್ ಟ್ರ್ಯಾಕಿಂಗ್.'

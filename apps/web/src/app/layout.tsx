@@ -4,7 +4,7 @@ import { LanguageProvider } from '../components/language-context';
 
 export const metadata: Metadata = {
   title: 'GGY Finance | Micro Money Lending Platform',
-  description: 'RBI-Registered Base-Layer Micro Money Lending Platform providing transparent credit for micro-enterprises, dairy, and rural livelihoods.',
+  description: 'Karnataka State Registered Micro Money Lending Platform providing transparent credit and doorstep financial services for micro-enterprises, dairy, and rural livelihoods.',
 };
 
 export default function RootLayout({

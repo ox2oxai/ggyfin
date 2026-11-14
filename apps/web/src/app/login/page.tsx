@@ -61,7 +61,7 @@ export default function LoginPage() {
           GGY Finance Staff Portal
         </h2>
         <p className="mt-1 text-center text-xs text-forest-800/70">
-          Micro Money Lending Platform • RBI SBR Base-Layer Core Banking
+          Micro-Lending Platform • Karnataka Dual-Control Core Banking
         </p>
       </div>
 
@@ -172,7 +172,7 @@ export default function LoginPage() {
 
             <div className="p-3 bg-sandstone-100 rounded-xl border border-clay/60 text-[11px] text-forest-800/80 flex items-start gap-2">
               <Shield className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-              <span>Session protected with device fingerprinting and immutable audit logging under RBI IT Directions.</span>
+              <span>Session protected with device fingerprinting and immutable audit logging under statutory IT security guidelines.</span>
             </div>
 
             <button

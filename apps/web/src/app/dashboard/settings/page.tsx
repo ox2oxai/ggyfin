@@ -59,7 +59,7 @@ export default function CBSSettingsPage() {
         </h2>
         <p className="text-xs text-forest-800/80 max-w-3xl leading-relaxed">
           Decouples the <strong>Customer ID (CIF)</strong> from individual <strong>Loan Account Numbers</strong>. 
-          Architected for complete 1:1 forward-compatibility with RBI Scheduled Commercial Bank & Small Finance Bank (SFB) Core Banking Systems (Infosys Finacle, TCS BaNCS, Oracle Flexcube).
+          Architected for complete 1:1 forward-compatibility with modern Core Banking Systems and scheduled microfinance networks.
         </p>
       </div>
 
@@ -123,7 +123,7 @@ export default function CBSSettingsPage() {
 
               <div>
                 <label className="block font-bold text-forest-900 mb-1">
-                  Finacle / CBS Product Scheme Code
+                  CBS Product Scheme Code
                 </label>
                 <select
                   value={selectedScheme}
@@ -151,7 +151,7 @@ export default function CBSSettingsPage() {
 
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-forest-950 p-4 rounded-xl border border-forest-800">
                 <div>
-                  <p className="text-[10px] text-sandstone-400 font-bold uppercase">16-Digit RBI Standard Loan Account Number</p>
+                  <p className="text-[10px] text-sandstone-400 font-bold uppercase">16-Digit Standard Loan Account Number</p>
                   <p className="text-xl sm:text-2xl font-mono font-black text-amber-400 tracking-wider mt-0.5">
                     {generatedFormattedAcc}
                   </p>
@@ -215,12 +215,12 @@ export default function CBSSettingsPage() {
           </div>
         </div>
 
-        {/* Right Column: Finacle / BaNCS CBS Migration Matrix */}
+        {/* Right Column: CBS Migration Matrix */}
         <div className="space-y-6">
           <div className="bg-sandstone-50 p-6 rounded-3xl border border-clay shadow-xs space-y-4">
             <h3 className="font-extrabold text-sm text-forest-900 flex items-center gap-2 border-b border-clay pb-3">
               <Database className="w-4 h-4 text-terracotta-600" />
-              <span>CBS Migration Schema (Finacle / BaNCS)</span>
+              <span>Core Banking Migration Schema</span>
             </h3>
 
             <p className="text-xs text-forest-800/70">
@@ -261,7 +261,7 @@ export default function CBSSettingsPage() {
 
             <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-[11px] text-emerald-800 flex items-start gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-              <span>Zero-migration overhead: NACH e-Mandates, NPCI UPI IDs, and RBI SFMS clearing codes remain identical post-bank conversion.</span>
+              <span>Zero-migration overhead: NACH e-Mandates, NPCI UPI IDs, and clearing codes remain identical across system updates.</span>
             </div>
           </div>
         </div>

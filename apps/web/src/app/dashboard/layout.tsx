@@ -235,9 +235,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto">
               <ShieldAlert className="w-6 h-6" />
             </div>
-            <h3 className="text-lg font-black text-forest-900">Access Restricted — RBI Segregation of Duties</h3>
+            <h3 className="text-lg font-black text-forest-900">Access Restricted — Segregation of Duties</h3>
             <p className="text-xs text-forest-800/80 leading-relaxed">
-              Under RBI Four-Eyes Corporate Governance regulations, your role (<strong>{userRole}</strong>) is strictly segregated from this module. Field officers cannot authorize loans or view institutional risk analytics, and authorizers cannot execute field collections.
+              Under Four-Eyes Corporate Governance principles, your role (<strong>{userRole}</strong>) is strictly segregated from this module. Field officers cannot authorize loans or view institutional risk analytics, and authorizers cannot execute field collections.
             </p>
             <div className="pt-2">
               <Link

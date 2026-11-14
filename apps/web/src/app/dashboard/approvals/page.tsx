@@ -65,7 +65,7 @@ export default function ApprovalsPage() {
   ]);
 
   const [selectedAppId, setSelectedAppId] = useState<string>('acc-app-001');
-  const [remarks, setRemarks] = useState('KYC documents audited. Livelihood verification completed. Approved under RBI dual-control.');
+  const [remarks, setRemarks] = useState('KYC documents audited. Livelihood verification completed. Approved under dual-control Four-Eyes governance.');
   const [isProcessing, setIsProcessing] = useState(false);
   const [decisionNotice, setDecisionNotice] = useState<{ type: 'APPROVED' | 'REJECTED'; accountNo?: string } | null>(null);
 
@@ -101,7 +101,7 @@ export default function ApprovalsPage() {
         <div>
           <div className="inline-flex items-center gap-1.5 text-xs font-bold text-forest-800 bg-sandstone-200 px-2.5 py-1 rounded-full border border-clay mb-2">
             <UserCheck className="w-3.5 h-3.5 text-terracotta-600" />
-            <span>Authorizer / Checker Workstation • RBI Four-Eyes Control</span>
+            <span>Authorizer / Checker Workstation • Four-Eyes Dual Control</span>
           </div>
           <h2 className="text-xl sm:text-2xl font-black text-forest-900">Pending Approvals Queue</h2>
           <p className="text-xs text-forest-800/70 mt-0.5">
@@ -213,7 +213,7 @@ export default function ApprovalsPage() {
             {/* Checker Remarks Input */}
             <div>
               <label className="block text-xs font-bold text-forest-900 mb-1">
-                Authorizer Audit Remarks (Mandatory for RBI Compliance)
+                Authorizer Audit Remarks (Mandatory for Compliance Audit)
               </label>
               <textarea
                 rows={2}
