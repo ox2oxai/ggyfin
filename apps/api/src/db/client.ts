@@ -7,7 +7,12 @@ dotenv.config();
 
 const { Pool } = pg;
 
-const databaseUrl = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/nbfc_db';
+const databaseUrl =
+  process.env.GGYF_POSTGRES_URL_NON_POOLING ||
+  process.env.GGYF_POSTGRES_URL ||
+  process.env.GGYF_POSTGRES_PRISMA_URL ||
+  process.env.DATABASE_URL ||
+  'postgresql://postgres:postgres@localhost:5432/nbfc_db';
 
 const isCloudOrSsl =
   databaseUrl.includes('supabase.co') ||

@@ -57,7 +57,10 @@ export async function buildServer(): Promise<FastifyInstance> {
     }
   });
 
-  const jwtSecret = process.env.JWT_SECRET || 'super_secret_jwt_key_for_nbfc_banking_staff_auth_min_32_chars_long';
+  const jwtSecret =
+    process.env.GGYF_SUPABASE_JWT_SECRET ||
+    process.env.JWT_SECRET ||
+    'super_secret_jwt_key_for_nbfc_banking_staff_auth_min_32_chars_long';
   await fastify.register(jwt, {
     secret: jwtSecret
   });
