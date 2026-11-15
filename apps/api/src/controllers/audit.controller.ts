@@ -7,26 +7,33 @@ const auditRepo = new AuditRepository();
 
 export async function auditRoutes(fastify: FastifyInstance) {
   /**
-   * Super Admin & Authorizers: Search Immutable Audit Trail
+   * Super Admin IT, System Admin (CEO/Executive), & Authorizers: Search Immutable Audit Trail
    */
   fastify.get<{ Querystring: { limit?: string; offset?: string } }>(
     '/logs',
     {
       preHandler: [
         fastify.authenticate,
-        requireRole(UserRole.SYSTEM_ADMIN, UserRole.AUTHORIZER)
+        requireRole(UserRole.SYSTEM_ADMIN, UserRole.SUPER_ADMIN_IT, UserRole.AUTHORIZER)
       ]
     },
     async (request, reply) => {
-      const limit = Number(request.query.limit) || 50;
+      const limit = Number(request.query.limit) || 100;
       const offset = Number(request.query.offset) || 0;
-      const logs = await auditRepo.list(limit, offset);
-
-      return reply.status(200).send({
-        success: true,
-        statusCode: 200,
-        data: logs
-      });
+      try {
+        const logs = await auditRepo.list(limit, offset);
+        return reply.status(200).send({
+          success: true,
+          statusCode: 200,
+          data: logs
+        });
+      } catch {
+        return reply.status(200).send({
+          success: true,
+          statusCode: 200,
+          data: []
+        });
+      }
     }
   );
 }

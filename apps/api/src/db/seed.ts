@@ -24,9 +24,11 @@ export async function seedDatabase() {
 
     const staffProfiles = [
       {
+        staffNumber: 'EMP-1084-001',
         username: 'it_superadmin',
+        fullName: 'System Administrator',
         email: 'it.admin@ggyfinance.in',
-        phone: '9800000001',
+        phone: '9800000000',
         passwordHash: superAdminPasswordHash,
         role: 'SUPER_ADMIN_IT' as const,
         branchCode: 'KA-HQ-IT'

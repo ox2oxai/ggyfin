@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   TrendingUp,
   AlertTriangle,
@@ -14,13 +14,76 @@ import {
   CheckCircle2,
   DollarSign,
   ArrowUpRight,
-  Filter
+  Filter,
+  Search,
+  Lock,
+  Activity,
+  FileText
 } from 'lucide-react';
+
+interface AuditEvent {
+  id: string;
+  timestamp: string;
+  category: 'INTENDED_ADMIN_UPDATE' | 'OPERATIONAL_BANKING_EVENT' | 'SECURITY_EVENT';
+  action: string;
+  actorStaffNumber?: string;
+  actorUsername?: string;
+  actorRole?: string;
+  target: string;
+  details: string;
+  ip: string;
+}
 
 export default function AnalyticsPage() {
   const [period, setPeriod] = useState('FY 2026-27 Q3');
   const [cluster, setCluster] = useState('All Karnataka Clusters');
   const [downloadSuccess, setDownloadSuccess] = useState<string | null>(null);
+
+  // Executive Audit Trail State
+  const [auditEvents, setAuditEvents] = useState<AuditEvent[]>([]);
+  const [auditFilter, setAuditFilter] = useState<string>('ALL');
+  const [auditSearch, setAuditSearch] = useState<string>('');
+
+  useEffect(() => {
+    const loadAudits = () => {
+      try {
+        const raw = localStorage.getItem('nbfc_audit_trail');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            setAuditEvents(parsed);
+            return;
+          }
+        }
+      } catch {}
+      setAuditEvents([]);
+    };
+
+    loadAudits();
+    window.addEventListener('storage', loadAudits);
+    window.addEventListener('nbfc_audit_updated', loadAudits);
+    return () => {
+      window.removeEventListener('storage', loadAudits);
+      window.removeEventListener('nbfc_audit_updated', loadAudits);
+    };
+  }, []);
+
+  const filteredAudits = auditEvents.filter((evt) => {
+    const matchesCat = auditFilter === 'ALL' || evt.category === auditFilter;
+    const q = auditSearch.toLowerCase();
+    const matchesSearch =
+      !q ||
+      evt.action.toLowerCase().includes(q) ||
+      evt.target.toLowerCase().includes(q) ||
+      evt.details.toLowerCase().includes(q) ||
+      (evt.actorStaffNumber && evt.actorStaffNumber.toLowerCase().includes(q)) ||
+      (evt.actorUsername && evt.actorUsername.toLowerCase().includes(q));
+    return matchesCat && matchesSearch;
+  });
+
+  const intendedUpdatesCount = auditEvents.filter((e) => e.category === 'INTENDED_ADMIN_UPDATE').length;
+  const operationalEventsCount = auditEvents.filter((e) => e.category === 'OPERATIONAL_BANKING_EVENT').length;
+  const securityEventsCount = auditEvents.filter((e) => e.category === 'SECURITY_EVENT').length;
 
   const handleDownloadReport = (reportType: string, filename: string) => {
     // Generate and trigger clean client-side CSV download
@@ -495,12 +558,169 @@ export default function AnalyticsPage() {
             </div>
             <button
               onClick={() => handleDownloadReport('financials', 'GGY_Quarterly_Turnover_Financials.csv')}
-              className="w-full py-2 bg-forest-800 hover:bg-forest-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all"
+              className="w-full py-2 bg-forest-800 hover:bg-forest-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
             >
               <Download className="w-3.5 h-3.5 text-terracotta-400" />
               <span>Download Financial Deck</span>
             </button>
           </div>
+        </div>
+      </div>
+
+      {/* ======================================================== */}
+      {/* SECTION 5: EXECUTIVE GOVERNANCE & AUDIT TRAIL (CEO OVERSIGHT) */}
+      {/* ======================================================== */}
+      <div className="bg-sandstone-50 p-6 sm:p-8 rounded-3xl border border-clay shadow-xs space-y-5">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b border-clay pb-4">
+          <div>
+            <div className="inline-flex items-center gap-1.5 text-xs font-bold text-forest-800 bg-sandstone-200 px-2.5 py-1 rounded-full border border-clay mb-2">
+              <Lock className="w-3.5 h-3.5 text-terracotta-600" />
+              <span>Dual-Control Governance • CEO &amp; Executive Oversight</span>
+            </div>
+            <h3 className="font-extrabold text-lg text-forest-900">
+              Institutional Governance &amp; Immutable Audit Trail
+            </h3>
+            <p className="text-xs text-forest-800/80 mt-0.5 max-w-3xl">
+              Provides executive transparency into IT Super Admin changes (gateway configurations, staff provisioning, role updates) and banking operational milestones. Differentiates intended administrative updates from operational activity under statutory DPDP Act 2023 compliance. Strictly tamper-proof.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-mono font-bold bg-white text-forest-900 px-3 py-1.5 rounded-xl border border-clay shadow-2xs">
+              {auditEvents.length} Total Records
+            </span>
+          </div>
+        </div>
+
+        {/* Audit Category KPI Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-white p-4 rounded-2xl border border-clay">
+            <span className="text-[10px] font-bold text-cyan-800 uppercase tracking-wider block">Intended IT Admin Updates</span>
+            <div className="text-xl font-black text-cyan-950 mt-1">{intendedUpdatesCount} Actions</div>
+            <p className="text-[11px] text-slate-500 mt-0.5">Gateway settings, staff accounts &amp; profiles</p>
+          </div>
+
+          <div className="bg-white p-4 rounded-2xl border border-clay">
+            <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block">Banking Operational Events</span>
+            <div className="text-xl font-black text-emerald-950 mt-1">{operationalEventsCount} Actions</div>
+            <p className="text-[11px] text-slate-500 mt-0.5">Loan approvals, ledger entries &amp; closures</p>
+          </div>
+
+          <div className="bg-white p-4 rounded-2xl border border-clay">
+            <span className="text-[10px] font-bold text-red-800 uppercase tracking-wider block">Security &amp; Auth Events</span>
+            <div className="text-xl font-black text-red-950 mt-1">{securityEventsCount} Actions</div>
+            <p className="text-[11px] text-slate-500 mt-0.5">Password resets &amp; access policy checks</p>
+          </div>
+        </div>
+
+        {/* Audit Filter & Search */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+          <div className="flex flex-wrap items-center gap-1.5 text-xs">
+            <button
+              onClick={() => setAuditFilter('ALL')}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-colors cursor-pointer ${
+                auditFilter === 'ALL'
+                  ? 'bg-forest-900 text-white'
+                  : 'bg-sandstone-200 text-forest-800 hover:bg-sandstone-300'
+              }`}
+            >
+              All Events ({auditEvents.length})
+            </button>
+            <button
+              onClick={() => setAuditFilter('INTENDED_ADMIN_UPDATE')}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-colors cursor-pointer ${
+                auditFilter === 'INTENDED_ADMIN_UPDATE'
+                  ? 'bg-cyan-700 text-white'
+                  : 'bg-cyan-50 text-cyan-800 hover:bg-cyan-100 border border-cyan-200'
+              }`}
+            >
+              Intended Admin Updates ({intendedUpdatesCount})
+            </button>
+            <button
+              onClick={() => setAuditFilter('OPERATIONAL_BANKING_EVENT')}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-colors cursor-pointer ${
+                auditFilter === 'OPERATIONAL_BANKING_EVENT'
+                  ? 'bg-emerald-700 text-white'
+                  : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200'
+              }`}
+            >
+              Banking Operations ({operationalEventsCount})
+            </button>
+            <button
+              onClick={() => setAuditFilter('SECURITY_EVENT')}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-colors cursor-pointer ${
+                auditFilter === 'SECURITY_EVENT'
+                  ? 'bg-red-700 text-white'
+                  : 'bg-red-50 text-red-800 hover:bg-red-100 border border-red-200'
+              }`}
+            >
+              Security Events ({securityEventsCount})
+            </button>
+          </div>
+
+          <div className="relative w-full sm:w-64">
+            <Search className="w-3.5 h-3.5 text-forest-800/40 absolute left-3 top-2.5" />
+            <input
+              type="text"
+              placeholder="Search audit trail..."
+              value={auditSearch}
+              onChange={(e) => setAuditSearch(e.target.value)}
+              className="w-full pl-9 pr-3 py-1.5 bg-white border border-clay rounded-xl text-xs text-forest-900 focus:ring-2 focus:ring-terracotta-500"
+            />
+          </div>
+        </div>
+
+        {/* Audit Log Stream Table */}
+        <div className="bg-white rounded-2xl border border-clay overflow-hidden divide-y divide-clay/40 text-xs">
+          {filteredAudits.length === 0 ? (
+            <div className="p-8 text-center text-forest-800/60 font-medium">
+              No audit log entries recorded in this category yet.
+            </div>
+          ) : (
+            filteredAudits.map((evt) => (
+              <div
+                key={evt.id}
+                className="p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-3 hover:bg-sandstone-50/70 transition-colors"
+              >
+                <div className="space-y-1.5">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {evt.category === 'INTENDED_ADMIN_UPDATE' ? (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-100 text-cyan-900 border border-cyan-300">
+                        Intended Admin Update
+                      </span>
+                    ) : evt.category === 'OPERATIONAL_BANKING_EVENT' ? (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300">
+                        Banking Operational
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-900 border border-red-300">
+                        Security Event
+                      </span>
+                    )}
+
+                    <span className="font-mono text-[10px] font-black bg-sandstone-100 text-forest-900 px-2 py-0.5 rounded-md border border-clay">
+                      {evt.action}
+                    </span>
+
+                    {evt.actorStaffNumber && (
+                      <span className="text-[11px] font-mono font-bold text-orange-950 bg-orange-50 px-2 py-0.5 rounded border border-orange-200">
+                        Actor: {evt.actorStaffNumber} (@{evt.actorUsername || 'system'})
+                      </span>
+                    )}
+
+                    <span className="font-bold text-forest-900">Target: {evt.target}</span>
+                  </div>
+
+                  <p className="text-forest-800/80 text-xs">{evt.details}</p>
+                </div>
+
+                <div className="text-right text-[11px] text-forest-800/60 font-mono shrink-0">
+                  <p>{evt.timestamp}</p>
+                  <p className="text-[10px] text-forest-800/40">IP: {evt.ip}</p>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

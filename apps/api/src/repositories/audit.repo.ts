@@ -9,6 +9,7 @@ export class AuditRepository {
       .insert(auditLogs)
       .values({
         userId: entry.userId,
+        category: entry.category || 'OPERATIONAL_BANKING_EVENT',
         action: entry.action,
         entityType: entry.entityType,
         entityId: entry.entityId,

@@ -19,6 +19,7 @@ import { GGYBrandMark } from '../../components/brand-mark';
 
 interface StoredStaffUser {
   id: string;
+  staffNumber: string;
   username: string;
   fullName: string;
   email: string;
@@ -32,10 +33,11 @@ interface StoredStaffUser {
 
 const DEFAULT_SUPER_ADMIN: StoredStaffUser = {
   id: 'u-superadmin-it-001',
+  staffNumber: 'EMP-1084-001',
   username: 'it_superadmin',
-  fullName: 'Sri Chethan Gowda (IT Lead)',
+  fullName: 'System Administrator',
   email: 'it.admin@ggyfinance.in',
-  phone: '9800000001',
+  phone: '9800000000',
   password: 'GGY#SuperAdminIT@2026!',
   role: UserRole.SUPER_ADMIN_IT,
   branchCode: 'KA-HQ-IT',
@@ -62,11 +64,31 @@ export default function LoginPage() {
     try {
       const raw = localStorage.getItem('nbfc_staff_directory');
       if (raw) {
-        const parsed = JSON.parse(raw);
+        let parsed = JSON.parse(raw);
         if (Array.isArray(parsed) && parsed.length > 0) {
+          // Migration: remove legacy mock names and assign staff numbers
+          let needsUpdate = false;
+          parsed = parsed.map((u: any, idx: number) => {
+            let updatedUser = { ...u };
+            if (!updatedUser.staffNumber) {
+              updatedUser.staffNumber = `EMP-1084-${String(idx + 1).padStart(3, '0')}`;
+              needsUpdate = true;
+            }
+            if (updatedUser.fullName && updatedUser.fullName.includes('Chethan Gowda')) {
+              updatedUser.fullName = 'System Administrator';
+              needsUpdate = true;
+            }
+            return updatedUser;
+          });
+
           // Ensure it_superadmin is always present
           if (!parsed.some((u: StoredStaffUser) => u.username === 'it_superadmin')) {
             parsed.unshift(DEFAULT_SUPER_ADMIN);
+            needsUpdate = true;
+          }
+
+          if (needsUpdate) {
+            localStorage.setItem('nbfc_staff_directory', JSON.stringify(parsed));
           }
           return parsed;
         }
@@ -144,8 +166,11 @@ export default function LoginPage() {
         'nbfc_staff_session',
         JSON.stringify({
           userId: user.id,
+          staffNumber: user.staffNumber || 'EMP-1084-001',
           username: user.username,
           fullName: user.fullName,
+          email: user.email,
+          phone: user.phone,
           role: user.role,
           branchCode: user.branchCode
         })
@@ -195,8 +220,11 @@ export default function LoginPage() {
         'nbfc_staff_session',
         JSON.stringify({
           userId: pendingUser.id,
+          staffNumber: pendingUser.staffNumber || 'EMP-1084-001',
           username: pendingUser.username,
           fullName: pendingUser.fullName,
+          email: pendingUser.email,
+          phone: pendingUser.phone,
           role: pendingUser.role,
           branchCode: pendingUser.branchCode
         })

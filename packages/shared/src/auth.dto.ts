@@ -11,6 +11,10 @@ export enum UserRole {
 export interface UserSession {
   userId: string;
   username: string;
+  staffNumber?: string;
+  fullName?: string;
+  email?: string;
+  phone?: string;
   role: UserRole;
   branchCode: string;
 }
@@ -22,12 +26,30 @@ export const LoginRequestSchema = z.object({
 
 export type LoginRequest = z.infer<typeof LoginRequestSchema>;
 
+export const UpdateProfileRequestSchema = z.object({
+  fullName: z.string().min(2).max(150).optional(),
+  email: z.string().email(),
+  phone: z.string().min(10).max(15)
+});
+
+export type UpdateProfileRequest = z.infer<typeof UpdateProfileRequestSchema>;
+
+export const ChangePasswordRequestSchema = z.object({
+  currentPassword: z.string().min(8).max(100),
+  newPassword: z.string().min(8).max(100)
+});
+
+export type ChangePasswordRequest = z.infer<typeof ChangePasswordRequestSchema>;
+
 export const AuthResponseSchema = z.object({
   accessToken: z.string(),
   user: z.object({
     id: z.string().uuid(),
     username: z.string(),
+    staffNumber: z.string().optional(),
+    fullName: z.string().optional(),
     email: z.string().email(),
+    phone: z.string().optional(),
     role: z.nativeEnum(UserRole),
     branchCode: z.string()
   })

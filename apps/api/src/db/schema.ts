@@ -25,7 +25,9 @@ export const userRoleEnum = pgEnum('user_role', [
 
 export const users = pgTable('users', {
   id: uuid('id').defaultRandom().primaryKey(),
+  staffNumber: varchar('staff_number', { length: 30 }).unique(),
   username: varchar('username', { length: 50 }).notNull().unique(),
+  fullName: varchar('full_name', { length: 150 }).default('System Administrator').notNull(),
   email: varchar('email', { length: 100 }).notNull().unique(),
   phone: varchar('phone', { length: 15 }).notNull(),
   passwordHash: varchar('password_hash', { length: 255 }).notNull(),
@@ -183,6 +185,7 @@ export const cashReceipts = pgTable('cash_receipts', {
 export const auditLogs = pgTable('audit_logs', {
   id: bigserial('id', { mode: 'number' }).primaryKey(),
   userId: uuid('user_id').references(() => users.id),
+  category: varchar('category', { length: 50 }).default('OPERATIONAL_BANKING_EVENT').notNull(),
   action: varchar('action', { length: 100 }).notNull(),
   entityType: varchar('entity_type', { length: 50 }).notNull(),
   entityId: varchar('entity_id', { length: 50 }).notNull(),

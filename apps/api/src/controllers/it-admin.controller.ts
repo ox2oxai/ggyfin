@@ -1,15 +1,18 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
-import { UserRole } from '@nbfc/shared';
+import { UserRole, AuditAction, AuditCategory } from '@nbfc/shared';
 import { UserRepository } from '../repositories/user.repo.js';
+import { AuditRepository } from '../repositories/audit.repo.js';
 import { requireRole } from '../middleware/auth.js';
 import { pool } from '../db/client.js';
 
 const userRepo = new UserRepository();
+const auditRepo = new AuditRepository();
 
 const ProvisionStaffSchema = z.object({
   username: z.string().min(3).max(50).regex(/^[a-zA-Z0-9_.-]+$/, 'Username must be alphanumeric with dots, dashes or underscores'),
+  fullName: z.string().min(2).max(150).optional(),
   email: z.string().email(),
   phone: z.string().min(10).max(15),
   role: z.nativeEnum(UserRole),
@@ -23,6 +26,13 @@ const UpdateRoleSchema = z.object({
 
 const UpdateStatusSchema = z.object({
   isActive: z.boolean()
+});
+
+const UpdateStaffProfileSchema = z.object({
+  fullName: z.string().min(2).max(150).optional(),
+  email: z.string().email().optional(),
+  phone: z.string().min(10).max(15).optional(),
+  branchCode: z.string().min(2).max(20).optional()
 });
 
 const GatewayConfigSchema = z.object({
@@ -102,7 +112,7 @@ export async function itAdminRoutes(fastify: FastifyInstance) {
     }
   });
 
-  // POST /api/v1/it-admin/staff - Provision new staff member
+  // POST /api/v1/it-admin/staff - Provision new staff member with unique Staff ID
   fastify.post('/staff', async (request: FastifyRequest, reply: FastifyReply) => {
     const parseResult = ProvisionStaffSchema.safeParse(request.body);
     if (!parseResult.success) {
@@ -113,7 +123,7 @@ export async function itAdminRoutes(fastify: FastifyInstance) {
       });
     }
 
-    const { username, email, phone, role, branchCode, password } = parseResult.data;
+    const { username, fullName, email, phone, role, branchCode, password } = parseResult.data;
 
     const existingUser = await userRepo.findByUsername(username);
     if (existingUser) {
@@ -123,9 +133,15 @@ export async function itAdminRoutes(fastify: FastifyInstance) {
       });
     }
 
+    const currentStaff = await userRepo.findAll();
+    const nextSeq = currentStaff.length + 1;
+    const staffNumber = `EMP-1084-${String(nextSeq).padStart(3, '0')}`;
+
     const passwordHash = await bcrypt.hash(password, 10);
     const createdUser = await userRepo.create({
+      staffNumber,
       username,
+      fullName: fullName || 'Institutional Staff',
       email,
       phone,
       role,
@@ -133,12 +149,34 @@ export async function itAdminRoutes(fastify: FastifyInstance) {
       passwordHash
     });
 
+    // Record immutable audit entry (Intended Admin Update)
+    await auditRepo.append({
+      userId: request.userSession?.userId || '00000000-0000-0000-0000-000000000000',
+      category: AuditCategory.INTENDED_ADMIN_UPDATE,
+      action: AuditAction.STAFF_PROVISIONED,
+      entityType: 'STAFF_ACCOUNT',
+      entityId: staffNumber,
+      ipAddress: request.ip || '127.0.0.1',
+      userAgent: request.headers['user-agent'] || null,
+      payloadBefore: null,
+      payloadAfter: {
+        staffNumber,
+        username: createdUser.username,
+        fullName: createdUser.fullName,
+        role: createdUser.role,
+        branch: createdUser.branchCode
+      },
+      createdAt: new Date().toISOString()
+    }).catch(() => {});
+
     return reply.status(201).send({
       success: true,
-      message: `Staff account '${username}' successfully provisioned as ${role}.`,
+      message: `Staff account '${username}' (${staffNumber}) successfully provisioned as ${role}.`,
       user: {
         id: createdUser.id,
+        staffNumber: createdUser.staffNumber,
         username: createdUser.username,
+        fullName: createdUser.fullName,
         email: createdUser.email,
         phone: createdUser.phone,
         role: createdUser.role,
@@ -146,6 +184,46 @@ export async function itAdminRoutes(fastify: FastifyInstance) {
         isActive: createdUser.isActive,
         createdAt: createdUser.createdAt
       }
+    });
+  });
+
+  // PATCH /api/v1/it-admin/staff/:id/profile - Update staff member profile
+  fastify.patch('/staff/:id/profile', async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
+    const { id } = request.params;
+    const parseResult = UpdateStaffProfileSchema.safeParse(request.body);
+    if (!parseResult.success) {
+      return reply.status(400).send({
+        success: false,
+        message: 'Invalid profile update payload',
+        errors: parseResult.error.format()
+      });
+    }
+
+    const targetUser = await userRepo.findById(id);
+    if (!targetUser) {
+      return reply.status(404).send({ success: false, message: 'Staff user not found.' });
+    }
+
+    const updated = await userRepo.updateProfile(id, parseResult.data);
+
+    // Record audit event
+    await auditRepo.append({
+      userId: request.userSession?.userId || '00000000-0000-0000-0000-000000000000',
+      category: AuditCategory.INTENDED_ADMIN_UPDATE,
+      action: AuditAction.PROFILE_UPDATED,
+      entityType: 'STAFF_ACCOUNT',
+      entityId: targetUser.staffNumber || targetUser.username,
+      ipAddress: request.ip || '127.0.0.1',
+      userAgent: request.headers['user-agent'] || null,
+      payloadBefore: { fullName: targetUser.fullName, email: targetUser.email, phone: targetUser.phone },
+      payloadAfter: parseResult.data,
+      createdAt: new Date().toISOString()
+    }).catch(() => {});
+
+    return reply.status(200).send({
+      success: true,
+      message: `Profile details for '${targetUser.username}' updated.`,
+      user: updated
     });
   });
 
@@ -175,6 +253,21 @@ export async function itAdminRoutes(fastify: FastifyInstance) {
     }
 
     const updated = await userRepo.updateRole(id, parseResult.data.role);
+
+    // Record audit event
+    await auditRepo.append({
+      userId: request.userSession?.userId || '00000000-0000-0000-0000-000000000000',
+      category: AuditCategory.INTENDED_ADMIN_UPDATE,
+      action: AuditAction.ROLE_MUTATED,
+      entityType: 'STAFF_ACCOUNT',
+      entityId: targetUser.staffNumber || targetUser.username,
+      ipAddress: request.ip || '127.0.0.1',
+      userAgent: request.headers['user-agent'] || null,
+      payloadBefore: { role: targetUser.role },
+      payloadAfter: { role: parseResult.data.role },
+      createdAt: new Date().toISOString()
+    }).catch(() => {});
+
     return reply.status(200).send({
       success: true,
       message: `Role for '${targetUser.username}' changed from ${targetUser.role} to ${parseResult.data.role}.`,
@@ -208,6 +301,21 @@ export async function itAdminRoutes(fastify: FastifyInstance) {
     }
 
     const updated = await userRepo.updateActiveStatus(id, parseResult.data.isActive);
+
+    // Record audit event
+    await auditRepo.append({
+      userId: request.userSession?.userId || '00000000-0000-0000-0000-000000000000',
+      category: AuditCategory.INTENDED_ADMIN_UPDATE,
+      action: AuditAction.STAFF_STATUS_TOGGLED,
+      entityType: 'STAFF_ACCOUNT',
+      entityId: targetUser.staffNumber || targetUser.username,
+      ipAddress: request.ip || '127.0.0.1',
+      userAgent: request.headers['user-agent'] || null,
+      payloadBefore: { isActive: targetUser.isActive },
+      payloadAfter: { isActive: parseResult.data.isActive },
+      createdAt: new Date().toISOString()
+    }).catch(() => {});
+
     return reply.status(200).send({
       success: true,
       message: `Account status for '${targetUser.username}' set to ${parseResult.data.isActive ? 'ACTIVE' : 'SUSPENDED'}.`,
@@ -233,6 +341,21 @@ export async function itAdminRoutes(fastify: FastifyInstance) {
     }
 
     await userRepo.delete(id);
+
+    // Record audit event
+    await auditRepo.append({
+      userId: request.userSession?.userId || '00000000-0000-0000-0000-000000000000',
+      category: AuditCategory.INTENDED_ADMIN_UPDATE,
+      action: AuditAction.STAFF_DEPROVISIONED,
+      entityType: 'STAFF_ACCOUNT',
+      entityId: targetUser.staffNumber || targetUser.username,
+      ipAddress: request.ip || '127.0.0.1',
+      userAgent: request.headers['user-agent'] || null,
+      payloadBefore: { username: targetUser.username, role: targetUser.role },
+      payloadAfter: null,
+      createdAt: new Date().toISOString()
+    }).catch(() => {});
+
     return reply.status(200).send({
       success: true,
       message: `Staff account '${targetUser.username}' has been successfully deprovisioned.`
@@ -270,6 +393,20 @@ export async function itAdminRoutes(fastify: FastifyInstance) {
     if (whatsapp) gatewaySettings.whatsapp = { ...gatewaySettings.whatsapp, ...whatsapp };
     if (sms) gatewaySettings.sms = { ...gatewaySettings.sms, ...sms };
     if (storage) gatewaySettings.storage = { ...gatewaySettings.storage, ...storage };
+
+    // Record audit event
+    await auditRepo.append({
+      userId: request.userSession?.userId || '00000000-0000-0000-0000-000000000000',
+      category: AuditCategory.INTENDED_ADMIN_UPDATE,
+      action: AuditAction.GATEWAY_CONFIG_UPDATED,
+      entityType: 'GATEWAY_SETTINGS',
+      entityId: 'SYSTEM_GATEWAYS',
+      ipAddress: request.ip || '127.0.0.1',
+      userAgent: request.headers['user-agent'] || null,
+      payloadBefore: null,
+      payloadAfter: parseResult.data,
+      createdAt: new Date().toISOString()
+    }).catch(() => {});
 
     return reply.status(200).send({
       success: true,

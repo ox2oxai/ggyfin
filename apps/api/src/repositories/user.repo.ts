@@ -4,7 +4,9 @@ import { eq, desc } from 'drizzle-orm';
 import { UserRole } from '@nbfc/shared';
 
 export interface CreateUserData {
+  staffNumber?: string;
   username: string;
+  fullName?: string;
   email: string;
   phone: string;
   passwordHash: string;
@@ -17,7 +19,9 @@ export class UserRepository {
     return db
       .select({
         id: users.id,
+        staffNumber: users.staffNumber,
         username: users.username,
+        fullName: users.fullName,
         email: users.email,
         phone: users.phone,
         role: users.role,
@@ -52,8 +56,49 @@ export class UserRepository {
       .where(eq(users.id, id))
       .returning({
         id: users.id,
+        staffNumber: users.staffNumber,
         username: users.username,
+        fullName: users.fullName,
         role: users.role,
+        updatedAt: users.updatedAt
+      });
+    return results[0] || null;
+  }
+
+  async updateProfile(id: string, data: { fullName?: string; email?: string; phone?: string; branchCode?: string }) {
+    const updatePayload: Record<string, unknown> = { updatedAt: new Date() };
+    if (data.fullName !== undefined) updatePayload.fullName = data.fullName;
+    if (data.email !== undefined) updatePayload.email = data.email;
+    if (data.phone !== undefined) updatePayload.phone = data.phone;
+    if (data.branchCode !== undefined) updatePayload.branchCode = data.branchCode;
+
+    const results = await db
+      .update(users)
+      .set(updatePayload)
+      .where(eq(users.id, id))
+      .returning({
+        id: users.id,
+        staffNumber: users.staffNumber,
+        username: users.username,
+        fullName: users.fullName,
+        email: users.email,
+        phone: users.phone,
+        role: users.role,
+        branchCode: users.branchCode,
+        isActive: users.isActive,
+        updatedAt: users.updatedAt
+      });
+    return results[0] || null;
+  }
+
+  async updatePassword(id: string, passwordHash: string) {
+    const results = await db
+      .update(users)
+      .set({ passwordHash, updatedAt: new Date() })
+      .where(eq(users.id, id))
+      .returning({
+        id: users.id,
+        username: users.username,
         updatedAt: users.updatedAt
       });
     return results[0] || null;
@@ -66,6 +111,7 @@ export class UserRepository {
       .where(eq(users.id, id))
       .returning({
         id: users.id,
+        staffNumber: users.staffNumber,
         username: users.username,
         isActive: users.isActive,
         updatedAt: users.updatedAt
