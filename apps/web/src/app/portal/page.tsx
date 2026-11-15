@@ -18,9 +18,16 @@ import {
   Calendar,
   AlertCircle,
   HelpCircle,
-  Phone
+  Phone,
+  Copy,
+  Check
 } from 'lucide-react';
 import { generateUpiUri } from '@nbfc/shared';
+import {
+  InstitutionConfig,
+  getInstitutionConfigSync,
+  getInstitutionConfigAsync
+} from '../../lib/institution';
 
 interface BorrowerAccountSummary {
   accountNumber: string;
@@ -50,6 +57,17 @@ export default function BorrowerPortalPage() {
   const [selectedAcc, setSelectedAcc] = useState<BorrowerAccountSummary | null>(null);
   const [showQrModal, setShowQrModal] = useState(false);
   const [showNocModal, setShowNocModal] = useState(false);
+  const [instConfig, setInstConfig] = useState<InstitutionConfig>(getInstitutionConfigSync());
+  const [copiedPortalUpi, setCopiedPortalUpi] = useState(false);
+
+  React.useEffect(() => {
+    const handleConfigUpdate = () => {
+      setInstConfig(getInstitutionConfigSync());
+    };
+    window.addEventListener('nbfc_config_updated', handleConfigUpdate);
+    getInstitutionConfigAsync().then(setInstConfig).catch(() => {});
+    return () => window.removeEventListener('nbfc_config_updated', handleConfigUpdate);
+  }, []);
 
   const t = {
     en: {
@@ -164,8 +182,8 @@ export default function BorrowerPortalPage() {
 
   const activeLoan = selectedAcc || (currentBorrower.accounts.length > 0 ? currentBorrower.accounts[0] : null);
   const upiUri = activeLoan ? generateUpiUri({
-    vpa: 'ggycollect@icici',
-    payeeName: 'GGY Finance',
+    vpa: instConfig.upiVpa || 'ggycollect@icici',
+    payeeName: instConfig.upiPayeeName || instConfig.organizationName || 'GGY Finance Ltd',
     amount: activeLoan.monthlyEmi || 5000,
     transactionRef: `EMI-${activeLoan.accountNumber.slice(-6)}`,
     accountNumber: activeLoan.accountNumber
@@ -411,9 +429,38 @@ export default function BorrowerPortalPage() {
               Scan with PhonePe, Google Pay, Paytm, or BHIM to instantly credit your installment.
             </p>
 
-            <div className="p-4 bg-white rounded-2xl border-2 border-forest-900 flex flex-col items-center">
-              <QrCode className="w-36 h-36 text-forest-900" />
-              <p className="text-[10px] font-mono text-forest-800/60 mt-2 break-all">{upiUri}</p>
+            <div className="p-4 bg-white rounded-2xl border-2 border-forest-900 flex flex-col items-center space-y-3">
+              <div className="w-36 h-36 flex items-center justify-center p-1 border border-slate-200 rounded-xl overflow-hidden bg-slate-50">
+                {instConfig.qrImageUrl ? (
+                  <img src={instConfig.qrImageUrl} alt="Merchant Collection QR" className="w-full h-full object-contain" />
+                ) : (
+                  <QrCode className="w-32 h-32 text-forest-900" />
+                )}
+              </div>
+              <div className="text-center space-y-1">
+                <p className="text-xs font-black text-forest-900">
+                  {instConfig.upiPayeeName || instConfig.organizationName || 'GGY Finance Ltd'}
+                </p>
+                <div className="flex items-center justify-center gap-1.5">
+                  <span className="text-xs font-mono font-bold text-forest-800 bg-sandstone-100 px-2 py-0.5 rounded-md border border-clay">
+                    {instConfig.upiVpa || 'ggycollect@icici'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+                        navigator.clipboard.writeText(instConfig.upiVpa || 'ggycollect@icici');
+                        setCopiedPortalUpi(true);
+                        setTimeout(() => setCopiedPortalUpi(false), 2000);
+                      }
+                    }}
+                    className="p-1 rounded-md bg-forest-100 text-forest-800 hover:bg-forest-200 cursor-pointer"
+                    title="Copy UPI ID"
+                  >
+                    {copiedPortalUpi ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
+              </div>
             </div>
 
             <div className="p-3 bg-sandstone-100 rounded-xl text-xs font-bold text-forest-900">

@@ -73,7 +73,9 @@ import {
   Plus,
   Percent,
   RefreshCw,
-  FileText
+  FileText,
+  QrCode,
+  Smartphone
 } from 'lucide-react';
 
 interface StaffUser {
@@ -149,6 +151,7 @@ export default function SuperAdminItDashboard() {
   // Institution Profile & Dynamic Branding State
   const [instConfig, setInstConfig] = useState<InstitutionConfig>(DEFAULT_INSTITUTION_CONFIG);
   const [logoPreview, setLogoPreview] = useState<string>('');
+  const [qrPreview, setQrPreview] = useState<string>('');
   const [isSavingInst, setIsSavingInst] = useState(false);
 
   // Credit Schemes State
@@ -209,10 +212,12 @@ export default function SuperAdminItDashboard() {
       getInstitutionConfigAsync().then((c) => {
         setInstConfig(c);
         if (c.logoUrl) setLogoPreview(c.logoUrl);
+        if (c.qrImageUrl) setQrPreview(c.qrImageUrl);
       }).catch(() => {
         const c = getInstitutionConfigSync();
         setInstConfig(c);
         if (c.logoUrl) setLogoPreview(c.logoUrl);
+        if (c.qrImageUrl) setQrPreview(c.qrImageUrl);
       });
 
       getCreditSchemesAsync().then((s) => {
@@ -406,6 +411,31 @@ export default function SuperAdminItDashboard() {
     notifySuccess('Custom logo removed. Default SVG emblem will be used.');
   };
 
+  const handleQrFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      notifyError('Image size exceeds 2MB limit. Please upload a smaller QR image.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      setQrPreview(dataUrl);
+      setInstConfig((prev) => ({ ...prev, qrImageUrl: dataUrl }));
+      notifySuccess('Official merchant QR image uploaded! Click "Save Institution Profile & Branding" to publish platform-wide.');
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveQr = () => {
+    setQrPreview('');
+    setInstConfig((prev) => ({ ...prev, qrImageUrl: '' }));
+    notifySuccess('Custom QR code removed. Default dynamic QR generator will be used.');
+  };
+
   const handleSaveInstitutionProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSavingInst(true);
@@ -418,9 +448,9 @@ export default function SuperAdminItDashboard() {
         actorUsername: activeSession?.username || 'it_superadmin',
         actorRole: 'SUPER_ADMIN_IT',
         target: instConfig.organizationName,
-        details: `Institution profile and branding updated by ${activeSession?.username || 'it_superadmin'}`
+        details: `Institution profile, branding, and UPI collection QR configuration updated by ${activeSession?.username || 'it_superadmin'}`
       });
-      notifySuccess('Institution profile, branding, and registration details successfully saved.');
+      notifySuccess('Institution profile, branding, and UPI collection QR settings successfully saved.');
     } catch {
       notifyError('Failed to save institution profile. Please retry.');
     } finally {
@@ -1418,6 +1448,177 @@ export default function SuperAdminItDashboard() {
                     onChange={(e) => setInstConfig({ ...instConfig, headOfficeAddress: e.target.value })}
                     className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:ring-2 focus:ring-orange-500"
                   />
+                </div>
+              </div>
+
+              {/* NPCI UPI & Doorstep Collection QR Publishing Hub */}
+              <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-br from-emerald-50/70 via-slate-50 to-amber-50/40 border border-emerald-200/80 space-y-5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-emerald-200/60">
+                  <div>
+                    <h4 className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-2">
+                      <QrCode className="w-4 h-4 text-emerald-700" />
+                      <span>NPCI UPI &amp; Digital Collection QR Publishing Hub</span>
+                    </h4>
+                    <p className="text-[11px] text-slate-600 mt-0.5">
+                      Configure and publish the official collection QR code and UPI VPA across the public homepage, repayment reminders, and borrower dashboards.
+                    </p>
+                  </div>
+                  
+                  {/* Public Display Toggle */}
+                  <label className="inline-flex items-center gap-2 cursor-pointer bg-white px-3.5 py-2 rounded-xl border border-emerald-200 shadow-2xs shrink-0">
+                    <input
+                      type="checkbox"
+                      checked={instConfig.enablePublicQr ?? true}
+                      onChange={(e) => setInstConfig({ ...instConfig, enablePublicQr: e.target.checked })}
+                      className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 accent-emerald-600 cursor-pointer"
+                    />
+                    <span className="text-xs font-bold text-slate-800">
+                      {(instConfig.enablePublicQr ?? true) ? 'Public Display Enabled' : 'Public Display Hidden'}
+                    </span>
+                  </label>
+                </div>
+
+                {/* QR Code Upload & Live Verification Card */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                  {/* Left: Live Visual Preview Card */}
+                  <div className="lg:col-span-4 bg-white p-4 rounded-2xl border border-emerald-200 shadow-xs space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-md">
+                        Official Merchant QR
+                      </span>
+                      <span className="text-[10px] font-mono text-slate-400">
+                        {instConfig.upiMerchantCode || '6012'} • NPCI Verified
+                      </span>
+                    </div>
+
+                    <div className="w-full aspect-square max-w-[190px] mx-auto bg-slate-50 border-2 border-dashed border-emerald-300 rounded-2xl flex items-center justify-center p-2 overflow-hidden shadow-2xs relative group">
+                      {qrPreview ? (
+                        <img
+                          src={qrPreview}
+                          alt="Merchant QR Preview"
+                          className="w-full h-full object-contain"
+                        />
+                      ) : (
+                        <div className="text-center p-3 space-y-1">
+                          <QrCode className="w-16 h-16 mx-auto text-emerald-800" />
+                          <p className="text-[10px] font-bold text-slate-700">Default Dynamic QR</p>
+                          <p className="text-[9px] text-slate-400">Upload bank merchant QR image</p>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="text-center space-y-1">
+                      <p className="text-xs font-black text-slate-900 truncate">
+                        {instConfig.upiPayeeName || instConfig.organizationName || 'GGY Finance Ltd'}
+                      </p>
+                      <p className="text-[11px] font-mono font-bold text-emerald-800 bg-emerald-50 py-0.5 px-2 rounded-md inline-block border border-emerald-200">
+                        {instConfig.upiVpa || 'ggycollect@icici'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Right: Upload controls and UPI metadata inputs */}
+                  <div className="lg:col-span-8 space-y-4">
+                    <div className="p-3.5 bg-white rounded-xl border border-slate-200 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="block text-xs font-bold text-slate-800">
+                          Upload Merchant Collection QR Image (PNG / SVG / JPG, max 2MB)
+                        </label>
+                        {qrPreview && (
+                          <button
+                            type="button"
+                            onClick={handleRemoveQr}
+                            className="text-[11px] font-bold text-red-600 hover:text-red-700 cursor-pointer"
+                          >
+                            Remove Custom QR
+                          </button>
+                        )}
+                      </div>
+                      <input
+                        type="file"
+                        accept="image/png, image/jpeg, image/svg+xml, image/webp"
+                        onChange={handleQrFileUpload}
+                        className="block w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-emerald-50 file:text-emerald-800 hover:file:bg-emerald-100 cursor-pointer"
+                      />
+                      <p className="text-[10px] text-slate-400">
+                        Upload the official settlement QR code issued by your current account bank (ICICI, HDFC, SBI, Axis) or merchant provider (PhonePe, Paytm, BharatPe).
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1">
+                          Official UPI VPA / ID
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          maxLength={50}
+                          value={instConfig.upiVpa || ''}
+                          onChange={(e) => setInstConfig({ ...instConfig, upiVpa: e.target.value })}
+                          placeholder="e.g. ggycollect@icici"
+                          className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-mono text-xs font-bold text-slate-900 focus:ring-2 focus:ring-orange-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1">
+                          Official Payee Legal Name
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          maxLength={70}
+                          value={instConfig.upiPayeeName || ''}
+                          onChange={(e) => setInstConfig({ ...instConfig, upiPayeeName: e.target.value })}
+                          placeholder="e.g. GGY Finance Ltd"
+                          className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:ring-2 focus:ring-orange-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1">
+                          Merchant Category Code (MCC)
+                        </label>
+                        <input
+                          type="text"
+                          maxLength={10}
+                          value={instConfig.upiMerchantCode || '6012'}
+                          onChange={(e) => setInstConfig({ ...instConfig, upiMerchantCode: e.target.value })}
+                          placeholder="6012 (Loan / NBFC)"
+                          className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-mono text-xs text-slate-900 focus:ring-2 focus:ring-orange-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1">
+                          Collection Settlement Account
+                        </label>
+                        <input
+                          type="text"
+                          maxLength={30}
+                          value={instConfig.upiAccountNumber || ''}
+                          onChange={(e) => setInstConfig({ ...instConfig, upiAccountNumber: e.target.value })}
+                          placeholder="e.g. 1084-0101-702-0039-4"
+                          className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-mono text-xs text-slate-900 focus:ring-2 focus:ring-orange-500"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-800 mb-1">
+                        Borrower Instructions &amp; Remarks Guidance
+                      </label>
+                      <textarea
+                        rows={2}
+                        maxLength={250}
+                        value={instConfig.collectionInstructions || ''}
+                        onChange={(e) => setInstConfig({ ...instConfig, collectionInstructions: e.target.value })}
+                        placeholder="Guidance displayed to borrowers when making repayments..."
+                        className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs text-slate-800 focus:ring-2 focus:ring-orange-500"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 

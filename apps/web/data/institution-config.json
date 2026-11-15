@@ -1,5 +1,5 @@
 {
-  "organizationName": "GGY Finance ",
+  "organizationName": "GGY Finance Ltd.",
   "platformTagline": "National Micro-Lending Platform • Direct Doorstep Credit",
   "registrationNumber": "NBFC-ND/2026/7742",
   "supportEmail": "support@ggyfinance.in",
@@ -7,5 +7,12 @@
   "nodalOfficerName": "Smt. Anita Deshmukh",
   "nodalOfficerContact": "grievance@ggyfinance.in • 080-28491001",
   "headOfficeAddress": "Dhavaleshwar, Rabakavi-Banahatti, Bagalkote, Karnataka 587312",
-  "logoUrl": ""
+  "logoUrl": "",
+  "upiVpa": "ggycollect@icici",
+  "upiPayeeName": "GGY Finance Ltd",
+  "upiMerchantCode": "6012",
+  "upiAccountNumber": "1084-0101-702-0039-4",
+  "qrImageUrl": "",
+  "enablePublicQr": true,
+  "collectionInstructions": "Scan using BHIM UPI, Google Pay, PhonePe, or Paytm. Specify your 10-digit Loan Account Number in remarks for instant automated ledger credit."
 }

@@ -22,8 +22,15 @@ import {
   Clock,
   FileCheck2,
   Lock,
-  UserCheck
+  UserCheck,
+  Copy,
+  Check
 } from 'lucide-react';
+import {
+  InstitutionConfig,
+  getInstitutionConfigSync,
+  getInstitutionConfigAsync
+} from '../../../lib/institution';
 
 export default function FieldOfficerPage() {
   const [activeSubTab, setActiveSubTab] = useState<'ONBOARDING' | 'TRACKER'>('ONBOARDING');
@@ -49,6 +56,17 @@ export default function FieldOfficerPage() {
   const [showQrModal, setShowQrModal] = useState(false);
   const [qrAmount, setQrAmount] = useState<number>(4650);
   const [activeUpiUri, setActiveUpiUri] = useState('');
+  const [instConfig, setInstConfig] = useState<InstitutionConfig>(getInstitutionConfigSync());
+  const [copiedFieldUpi, setCopiedFieldUpi] = useState(false);
+
+  React.useEffect(() => {
+    const handleConfigUpdate = () => {
+      setInstConfig(getInstitutionConfigSync());
+    };
+    window.addEventListener('nbfc_config_updated', handleConfigUpdate);
+    getInstitutionConfigAsync().then(setInstConfig).catch(() => {});
+    return () => window.removeEventListener('nbfc_config_updated', handleConfigUpdate);
+  }, []);
 
   const currentLoanConfig = LoanPurposeLabels[loanPurpose];
   const calculatedEmi = calculateEMI(principalAmount, currentLoanConfig.defaultRate, tenureMonths);
@@ -95,8 +113,8 @@ export default function FieldOfficerPage() {
 
   const handleOpenUpiQr = () => {
     const uri = generateUpiUri({
-      vpa: 'ggycollect@icici',
-      payeeName: 'GGY Finance',
+      vpa: instConfig.upiVpa || 'ggycollect@icici',
+      payeeName: instConfig.upiPayeeName || instConfig.organizationName || 'GGY Finance Ltd',
       amount: qrAmount,
       transactionRef: `UPI${Date.now().toString().slice(-8)}`,
       accountNumber: 'ACC-8921-DEMO'
@@ -532,17 +550,44 @@ export default function FieldOfficerPage() {
             <div className="p-3 bg-sandstone-100 rounded-xl border border-clay">
               <div className="text-xs text-forest-800/70">Repayment Amount:</div>
               <div className="text-2xl font-black text-terracotta-600">₹{qrAmount.toLocaleString('en-IN')}</div>
-              <div className="text-[10px] text-forest-800/60 mt-1">Beneficiary: GGY Finance</div>
+              <div className="text-[10px] text-forest-800/60 mt-1">
+                Beneficiary: {instConfig.upiPayeeName || instConfig.organizationName || 'GGY Finance Ltd'}
+              </div>
             </div>
 
-            {/* Simulated Live QR Code Visual Box */}
-            <div className="p-6 bg-white rounded-2xl border-2 border-forest-800 shadow-inner flex flex-col items-center justify-center space-y-2">
-              <div className="w-40 h-40 bg-sandstone-100 border border-clay rounded-xl flex items-center justify-center p-2">
-                <QrCode className="w-36 h-36 text-forest-900" />
+            {/* Merchant / Dynamic QR Code Box */}
+            <div className="p-5 bg-white rounded-2xl border-2 border-forest-800 shadow-inner flex flex-col items-center justify-center space-y-3">
+              <div className="w-40 h-40 bg-sandstone-100 border border-clay rounded-xl flex items-center justify-center p-2 overflow-hidden">
+                {instConfig.qrImageUrl ? (
+                  <img src={instConfig.qrImageUrl} alt="Official Merchant QR" className="w-full h-full object-contain" />
+                ) : (
+                  <QrCode className="w-36 h-36 text-forest-900" />
+                )}
               </div>
-              <p className="text-[10px] font-mono text-forest-800/60 break-all px-2">
-                {activeUpiUri}
-              </p>
+              <div className="text-center space-y-1">
+                <p className="text-xs font-black text-forest-900">
+                  {instConfig.upiPayeeName || instConfig.organizationName || 'GGY Finance Ltd'}
+                </p>
+                <div className="flex items-center justify-center gap-1.5">
+                  <span className="text-xs font-mono font-bold text-forest-800 bg-sandstone-100 px-2 py-0.5 rounded-md border border-clay">
+                    {instConfig.upiVpa || 'ggycollect@icici'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+                        navigator.clipboard.writeText(instConfig.upiVpa || 'ggycollect@icici');
+                        setCopiedFieldUpi(true);
+                        setTimeout(() => setCopiedFieldUpi(false), 2000);
+                      }
+                    }}
+                    className="p-1 rounded-md bg-forest-100 text-forest-800 hover:bg-forest-200 cursor-pointer"
+                    title="Copy UPI ID"
+                  >
+                    {copiedFieldUpi ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
+              </div>
             </div>
 
             <button

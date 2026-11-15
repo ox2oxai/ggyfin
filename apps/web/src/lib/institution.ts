@@ -8,6 +8,14 @@ export interface InstitutionConfig {
   nodalOfficerContact: string;
   headOfficeAddress: string;
   logoUrl?: string;
+  // Dynamic NPCI UPI & Collection QR publishing parameters
+  upiVpa?: string;
+  upiPayeeName?: string;
+  upiMerchantCode?: string;
+  upiAccountNumber?: string;
+  qrImageUrl?: string;
+  enablePublicQr?: boolean;
+  collectionInstructions?: string;
 }
 
 export interface CreditScheme {
@@ -46,7 +54,14 @@ export const DEFAULT_INSTITUTION_CONFIG: InstitutionConfig = {
   nodalOfficerName: 'Smt. Anita Deshmukh',
   nodalOfficerContact: 'grievance@ggyfinance.in • 080-28491001',
   headOfficeAddress: '#104, Institutional Financial Zone, Outer Ring Road, Bengaluru - 560001',
-  logoUrl: ''
+  logoUrl: '',
+  upiVpa: 'ggycollect@icici',
+  upiPayeeName: 'GGY Finance Ltd',
+  upiMerchantCode: '6012',
+  upiAccountNumber: '1084-0101-702-0039-4',
+  qrImageUrl: '',
+  enablePublicQr: true,
+  collectionInstructions: 'Scan using BHIM UPI, Google Pay, PhonePe, or Paytm. Specify your Loan Account Number in remarks for instant automated ledger credit.'
 };
 
 export const DEFAULT_CREDIT_SCHEMES: CreditScheme[] = [

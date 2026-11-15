@@ -3,8 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
-  calculateEMI,
-  generateUpiUri
+  calculateEMI
 } from '@nbfc/shared';
 import {
   Store,
@@ -29,6 +28,7 @@ import {
   IndianRupee,
   PhoneCall,
   Check,
+  Copy,
   Play,
   Video,
   MessageCircle,
@@ -39,7 +39,14 @@ import { GGYBrandMark } from '../components/brand-mark';
 import { PublicHeader } from '../components/public-header';
 import { PublicFooter } from '../components/public-footer';
 import { useLanguage } from '../components/language-context';
-import { getCreditSchemesSync, CreditScheme } from '../lib/institution';
+import {
+  getCreditSchemesSync,
+  CreditScheme,
+  InstitutionConfig,
+  getInstitutionConfigSync,
+  getInstitutionConfigAsync,
+  DEFAULT_INSTITUTION_CONFIG
+} from '../lib/institution';
 
 interface ProductItem {
   id: string;
@@ -170,13 +177,36 @@ export default function HomePage() {
   // Dynamic Credit Schemes from Admin Store
   const [creditSchemes, setCreditSchemes] = useState<CreditScheme[]>(getCreditSchemesSync());
 
+  // Dynamic Institution Configuration (for Admin-Published UPI / QR Details)
+  const [instConfig, setInstConfig] = useState<InstitutionConfig>(getInstitutionConfigSync());
+  const [copiedUpi, setCopiedUpi] = useState<boolean>(false);
+
   useEffect(() => {
     const handleSchemesUpdate = () => {
       setCreditSchemes(getCreditSchemesSync());
     };
+    const handleConfigUpdate = () => {
+      setInstConfig(getInstitutionConfigSync());
+    };
     window.addEventListener('nbfc_schemes_updated', handleSchemesUpdate);
-    return () => window.removeEventListener('nbfc_schemes_updated', handleSchemesUpdate);
+    window.addEventListener('nbfc_config_updated', handleConfigUpdate);
+
+    getInstitutionConfigAsync().then(setInstConfig).catch(() => {});
+
+    return () => {
+      window.removeEventListener('nbfc_schemes_updated', handleSchemesUpdate);
+      window.removeEventListener('nbfc_config_updated', handleConfigUpdate);
+    };
   }, []);
+
+  const handleCopyUpi = () => {
+    const vpa = instConfig.upiVpa || 'ggycollect@icici';
+    if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(vpa);
+      setCopiedUpi(true);
+      setTimeout(() => setCopiedUpi(false), 2500);
+    }
+  };
 
   // Hero Carousel Auto-Advance Timer (every 6 seconds unless hovered/touched)
   useEffect(() => {
@@ -210,14 +240,6 @@ export default function HomePage() {
   const totalAmount = monthlyEmi * tenure;
   const totalInterest = Math.max(0, totalAmount - loanAmount);
   const principalPercentage = totalAmount > 0 ? Math.round((loanAmount / totalAmount) * 100) : 100;
-
-  const specimenUpiUri = generateUpiUri({
-    vpa: 'ggycollect@icici',
-    payeeName: 'GGY Finance',
-    amount: monthlyEmi,
-    transactionRef: 'EMI-SPECIMEN',
-    accountNumber: '1084-0101-702-0039-4'
-  });
 
   const handleSelectProduct = (prod: ProductItem) => {
     setSelectedProduct(prod.id);
@@ -298,6 +320,8 @@ export default function HomePage() {
       totalPayable: 'Total Repayable Over Tenure',
       qrTitle: 'Dynamic UPI Repayment QR',
       qrDesc: 'Scan with any UPI App (PhonePe, GPay, Paytm, BHIM) to settle your monthly installment instantly.',
+      copyUpi: 'Copy UPI ID',
+      copiedUpi: 'Copied!',
       trustTitle: 'Institutional Governance & Fair Practices',
       trustDesc: '100% Indian Data Sovereignty under DPDP Act 2023 with dual-control maker-checker validation.',
       applyPwa: 'Request Doorstep Application via Field Officer',
@@ -390,6 +414,8 @@ export default function HomePage() {
       totalPayable: 'ಒಟ್ಟು ಮರುಪಾವತಿಸಬೇಕಾದ ಮೊತ್ತ',
       qrTitle: 'ತ್ವರಿತ ಯುಪಿಐ (UPI) ಕ್ಯೂಆರ್ ಕೋಡ್',
       qrDesc: 'PhonePe, GPay, Paytm ಮೂಲಕ ನಿಮ್ಮ ಮಾಸಿಕ ಕಂತನ್ನು ತಕ್ಷಣವೇ ಸುಲಭವಾಗಿ ಮರುಪಾವತಿಸಿ.',
+      copyUpi: 'ಯುಪಿಐ ಐಡಿ ಕಾಪಿ ಮಾಡಿ',
+      copiedUpi: 'ಕಾಪಿ ಮಾಡಲಾಗಿದೆ!',
       trustTitle: 'ನಿಯಮಾವಳಿಗಳ ಕಟ್ಟುನಿಟ್ಟಾದ ಅನುಸರಣೆ & ಆಡಳಿತ',
       trustDesc: 'DPDP ಕಾಯ್ದೆ 2023 ರ ಅನ್ವಯ 100% ಭಾರತೀಯ ಸರ್ವರ್‌ಗಳಲ್ಲಿ ಡೇಟಾ ಸಂರಕ್ಷಣೆ ಮತ್ತು ಡ್ಯುಯಲ್-ಕಂಟ್ರೋಲ್ ಪರಿಶೀಲನೆ.',
       applyPwa: 'ಕ್ಷೇತ್ರಾಧಿಕಾರಿಗಳ ಮೂಲಕ ಮನೆಬಾಗಿಲಿಗೆ ಅರ್ಜಿ ಸಲ್ಲಿಸಿ',
@@ -976,26 +1002,95 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Simulated NPCI Dynamic UPI QR Code */}
-              <div className="p-4 bg-emerald-950/80 rounded-2xl border border-emerald-800 space-y-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-16 h-16 bg-white p-1 rounded-xl shrink-0 flex items-center justify-center">
-                    <QrCode className="w-14 h-14 text-slate-900" />
-                  </div>
-                  <div className="space-y-1 text-xs">
-                    <p className="font-black text-white flex items-center gap-1.5">
-                      <span>{t.qrTitle}</span>
-                      <span className="text-[9px] bg-orange-600 px-1.5 py-0.2 rounded text-white font-mono uppercase">
-                        Specimen
+              {/* NPCI Verified Merchant UPI Repayment Card (Published by Sysadmin) */}
+              {(instConfig.enablePublicQr ?? true) ? (
+                <div className="p-4 sm:p-5 bg-emerald-950/90 rounded-2xl border border-emerald-700/80 space-y-4 shadow-inner">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                      <span className="text-[10px] font-black uppercase tracking-wider text-emerald-200">
+                        {t.qrTitle}
                       </span>
-                    </p>
-                    <p className="text-[11px] text-emerald-200 leading-snug">{t.qrDesc}</p>
+                    </div>
+                    <span className="text-[9px] bg-emerald-800/80 text-emerald-100 font-bold px-2 py-0.5 rounded-full border border-emerald-600/50">
+                      NPCI / BHIM UPI Verified
+                    </span>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row items-center gap-4">
+                    {/* Visual QR Card: Displays admin-uploaded merchant QR or high-res vector */}
+                    <div className="w-28 h-28 sm:w-32 sm:h-32 bg-white p-2 rounded-2xl shrink-0 flex items-center justify-center border-2 border-white shadow-lg relative group">
+                      {instConfig.qrImageUrl ? (
+                        <img
+                          src={instConfig.qrImageUrl}
+                          alt="Official Collection QR"
+                          className="w-full h-full object-contain"
+                        />
+                      ) : (
+                        <div className="text-center p-1 space-y-1">
+                          <QrCode className="w-20 h-20 mx-auto text-emerald-950" />
+                          <p className="text-[9px] font-mono font-bold text-slate-700">Scan to Pay</p>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="space-y-2 text-center sm:text-left flex-1 min-w-0">
+                      <div>
+                        <p className="text-xs font-black text-white truncate">
+                          {instConfig.upiPayeeName || instConfig.organizationName || 'GGY Finance Ltd'}
+                        </p>
+                        <p className="text-[11px] text-emerald-200/90 font-medium">
+                          {t.qrDesc}
+                        </p>
+                      </div>
+
+                      {/* Clean VPA Badge + One-Click Copy */}
+                      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1">
+                        <span className="text-xs font-mono font-bold text-amber-300 bg-emerald-900/90 px-2.5 py-1 rounded-lg border border-emerald-700/80 truncate max-w-[200px]">
+                          {instConfig.upiVpa || 'ggycollect@icici'}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={handleCopyUpi}
+                          className="inline-flex items-center gap-1 text-[11px] font-bold text-white bg-orange-600 hover:bg-orange-700 px-2.5 py-1 rounded-lg transition-all cursor-pointer shadow-xs"
+                        >
+                          {copiedUpi ? (
+                            <>
+                              <Check className="w-3.5 h-3.5 text-emerald-300" />
+                              <span>{t.copiedUpi}</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-3.5 h-3.5" />
+                              <span>{t.copyUpi}</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+
+                      <p className="text-[10px] text-emerald-300/80 font-medium pt-0.5">
+                        {instConfig.collectionInstructions || 'Mention your Loan Account Number in remarks. Zero transaction charges.'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-emerald-800/80 flex items-center justify-between text-[10px] text-emerald-300/80">
+                    <span>Supported Apps: BHIM • PhonePe • GPay • Paytm</span>
+                    <span className="font-bold text-emerald-200">Zero Foreclosure Fee</span>
                   </div>
                 </div>
-                <div className="p-2 bg-emerald-900/60 rounded-lg text-[10px] font-mono text-emerald-300 break-all border border-emerald-800/80">
-                  {specimenUpiUri}
+              ) : (
+                /* When Admin disables public QR, show a clean doorstep assistance card */
+                <div className="p-4 bg-emerald-950/80 rounded-2xl border border-emerald-800 space-y-2 text-white">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                    <p className="text-xs font-extrabold text-white">Doorstep &amp; Branch Repayment Settle</p>
+                  </div>
+                  <p className="text-[11px] text-emerald-200/90 leading-relaxed">
+                    Repayments are collected directly at your village center by authorized Field Officers with biometric handheld devices and instant digital SMS receipts, or via our primary branch counter.
+                  </p>
                 </div>
-              </div>
+              )}
 
               <Link
                 href="/contact"
