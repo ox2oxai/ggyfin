@@ -128,6 +128,12 @@ export function PublicFooter() {
                 <span>&rarr;</span>
               </Link>
             </li>
+            <li className="pt-1">
+              <Link href="/gallery" className="text-emerald-200 hover:text-white font-medium flex items-center gap-1">
+                <span>{lang === 'kn' ? 'ಮಾಧ್ಯಮ & ನೈಜ ಯಶೋಗಾಥೆಗಳು' : 'Media & Field Story Gallery'}</span>
+                <span>&rarr;</span>
+              </Link>
+            </li>
           </ul>
         </div>
 

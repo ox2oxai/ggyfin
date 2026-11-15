@@ -340,6 +340,34 @@ export default function LoginPage() {
               </div>
             </div>
 
+            <div className="pt-1 pb-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">
+                Quick Fill Test Staff:
+              </span>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUsername('ngyaragatti');
+                    setPassword('GGYSecurePassword@2026');
+                  }}
+                  className="px-2.5 py-1.5 rounded-lg bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200 text-[11px] font-bold transition-all cursor-pointer"
+                >
+                  System Admin: @ngyaragatti (202011)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUsername('it_superadmin');
+                    setPassword('GGY#SuperAdminIT@2026!');
+                  }}
+                  className="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-[11px] font-bold transition-all cursor-pointer"
+                >
+                  IT Superadmin: @it_superadmin (202010)
+                </button>
+              </div>
+            </div>
+
             <div className="p-3 bg-emerald-50/70 rounded-2xl border border-emerald-200/80 text-[11px] text-emerald-900 flex items-start gap-2">
               <Shield className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
               <span>

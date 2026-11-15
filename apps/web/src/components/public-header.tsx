@@ -48,6 +48,7 @@ export function PublicHeader() {
       home: 'Home',
       about: 'About Us',
       investments: 'Investments',
+      gallery: 'Gallery',
       contact: 'Contact Us',
       tollFree: `Helpline: ${config.supportPhone || '1800-889-2020'}`,
       dpdp: 'DPDP Act 2023 Compliant',
@@ -60,6 +61,7 @@ export function PublicHeader() {
       home: 'ಮುಖಪುಟ',
       about: 'ನಮ್ಮ ಬಗ್ಗೆ',
       investments: 'ಹೂಡಿಕೆಗಳು',
+      gallery: 'ಗ್ಯಾಲರಿ',
       contact: 'ಸಂಪರ್ಕಿಸಿ',
       tollFree: `ಸಹಾಯವಾಣಿ: ${config.supportPhone || '1800-889-2020'}`,
       dpdp: 'DPDP ಕಾಯ್ದೆ 2023 ಅನುಸರಣೆ',
@@ -145,6 +147,16 @@ export function PublicHeader() {
                 }`}
               >
                 {t.investments}
+              </Link>
+              <Link
+                href="/gallery"
+                className={`px-3.5 py-1.5 rounded-lg transition-all ${
+                  pathname === '/gallery'
+                    ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-xs font-extrabold'
+                    : 'text-slate-700 hover:text-orange-600 hover:bg-white'
+                }`}
+              >
+                {t.gallery}
               </Link>
               <Link
                 href="/contact"
@@ -247,9 +259,18 @@ export function PublicHeader() {
                 {t.investments}
               </Link>
               <Link
-                href="/contact"
+                href="/gallery"
                 onClick={() => setIsMobileMenuOpen(false)}
                 className={`p-3 rounded-xl border text-center transition-all min-h-[44px] flex items-center justify-center ${
+                  pathname === '/gallery' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white border-orange-600 shadow-xs' : 'bg-slate-50 text-slate-800 border-slate-200'
+                }`}
+              >
+                {t.gallery}
+              </Link>
+              <Link
+                href="/contact"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`col-span-2 p-3 rounded-xl border text-center transition-all min-h-[44px] flex items-center justify-center ${
                   pathname === '/contact' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white border-orange-600 shadow-xs' : 'bg-slate-50 text-slate-800 border-slate-200'
                 }`}
               >
