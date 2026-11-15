@@ -139,7 +139,17 @@ export function getInstitutionConfigSync(): InstitutionConfig {
   if (typeof window === 'undefined') return DEFAULT_INSTITUTION_CONFIG;
   try {
     const raw = localStorage.getItem('nbfc_institution_config');
-    if (raw) return { ...DEFAULT_INSTITUTION_CONFIG, ...JSON.parse(raw) };
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      // Auto-migrate legacy instructions to prevent hydration text divergence
+      if (parsed && typeof parsed.collectionInstructions === 'string' && parsed.collectionInstructions.includes('10-digit')) {
+        parsed.collectionInstructions = DEFAULT_INSTITUTION_CONFIG.collectionInstructions;
+        try {
+          localStorage.setItem('nbfc_institution_config', JSON.stringify({ ...DEFAULT_INSTITUTION_CONFIG, ...parsed }));
+        } catch {}
+      }
+      return { ...DEFAULT_INSTITUTION_CONFIG, ...parsed };
+    }
   } catch {}
   return DEFAULT_INSTITUTION_CONFIG;
 }

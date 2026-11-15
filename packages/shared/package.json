@@ -5,6 +5,13 @@
   "description": "Shared Zod schemas, DTOs, and financial validation utilities for NBFC Platform",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "source": "src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
   "scripts": {
     "build": "tsc -b",
     "test": "node --test dist/**/*.test.js"
