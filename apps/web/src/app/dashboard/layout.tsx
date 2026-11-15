@@ -285,6 +285,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       return;
     }
 
+    if (newPassword === currentPassword) {
+      setProfileError('Your new confidential password must be different from your current password.');
+      return;
+    }
+
     if (!session) return;
 
     try {

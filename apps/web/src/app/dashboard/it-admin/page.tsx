@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { UserRole } from '@nbfc/shared';
+import { recordAuditLog, getNextStaffNumber } from '../../../lib/audit';
 import {
   Shield,
   Users,
@@ -135,10 +136,17 @@ export default function SuperAdminItDashboard() {
   const [auditEvents, setAuditEvents] = useState<AuditEvent[]>([]);
   const [auditCategoryFilter, setAuditCategoryFilter] = useState<string>('ALL');
   const [auditSearchQuery, setAuditSearchQuery] = useState('');
+  const [activeSession, setActiveSession] = useState<{ username: string; userId: string; staffNumber: string } | null>(null);
 
-  // Sync staff directory from localStorage with clean migration
-  useEffect(() => {
+  // Sync staff directory from localStorage with clean migration and real-time reactivity
+  const syncStaffDirectory = () => {
     try {
+      const rawSession = localStorage.getItem('nbfc_staff_session');
+      if (rawSession) {
+        const s = JSON.parse(rawSession);
+        setActiveSession({ username: s.username, userId: s.userId, staffNumber: s.staffNumber });
+      }
+
       const raw = localStorage.getItem('nbfc_staff_directory');
       if (raw) {
         let parsed = JSON.parse(raw);
@@ -174,6 +182,16 @@ export default function SuperAdminItDashboard() {
     }
     setStaffList(DEFAULT_SUPER_ADMIN_STAFF);
     localStorage.setItem('nbfc_staff_directory', JSON.stringify(DEFAULT_SUPER_ADMIN_STAFF));
+  };
+
+  useEffect(() => {
+    syncStaffDirectory();
+    window.addEventListener('storage', syncStaffDirectory);
+    window.addEventListener('nbfc_session_updated', syncStaffDirectory);
+    return () => {
+      window.removeEventListener('storage', syncStaffDirectory);
+      window.removeEventListener('nbfc_session_updated', syncStaffDirectory);
+    };
   }, []);
 
   // Sync immutable audit trail
@@ -311,6 +329,12 @@ export default function SuperAdminItDashboard() {
     const user = staffList.find((u) => u.id === userId);
     if (!user) return;
 
+    const isSelf = activeSession?.username === user.username || activeSession?.userId === user.id;
+    if (isSelf && targetRole !== UserRole.SUPER_ADMIN_IT) {
+      notifyError('Security Guard: You cannot demote your own active administrator account.');
+      return;
+    }
+
     if (user.username === 'it_superadmin' && targetRole !== UserRole.SUPER_ADMIN_IT) {
       notifyError('Security Guard: Cannot demote the primary Super Admin IT account.');
       return;
@@ -322,11 +346,11 @@ export default function SuperAdminItDashboard() {
     appendAuditEvent({
       category: 'INTENDED_ADMIN_UPDATE',
       action: 'ROLE_MUTATED',
-      actorStaffNumber: 'EMP-1084-001',
-      actorUsername: 'it_superadmin',
+      actorStaffNumber: activeSession?.staffNumber || 'EMP-1084-001',
+      actorUsername: activeSession?.username || 'it_superadmin',
       actorRole: 'SUPER_ADMIN_IT',
       target: user.staffNumber || user.username,
-      details: `Role updated from ${user.role} to ${targetRole} by it_superadmin`
+      details: `Role updated from ${user.role} to ${targetRole} by ${activeSession?.username || 'it_superadmin'}`
     });
 
     notifySuccess(`Role for '${user.username}' successfully changed to ${targetRole}.`);
@@ -335,6 +359,12 @@ export default function SuperAdminItDashboard() {
   const handleToggleStatus = (userId: string) => {
     const user = staffList.find((u) => u.id === userId);
     if (!user) return;
+
+    const isSelf = activeSession?.username === user.username || activeSession?.userId === user.id;
+    if (isSelf) {
+      notifyError('Security Guard: You cannot suspend your own active session.');
+      return;
+    }
 
     if (user.username === 'it_superadmin') {
       notifyError('Security Guard: Super Admin IT cannot suspend their own active account.');
@@ -348,11 +378,11 @@ export default function SuperAdminItDashboard() {
     appendAuditEvent({
       category: 'INTENDED_ADMIN_UPDATE',
       action: nextState ? 'ACCESS_RESTORED' : 'ACCESS_REVOKED',
-      actorStaffNumber: 'EMP-1084-001',
-      actorUsername: 'it_superadmin',
+      actorStaffNumber: activeSession?.staffNumber || 'EMP-1084-001',
+      actorUsername: activeSession?.username || 'it_superadmin',
       actorRole: 'SUPER_ADMIN_IT',
       target: user.staffNumber || user.username,
-      details: `Account access ${nextState ? 'restored to ACTIVE' : 'REVOKED (Suspended)'} by it_superadmin`
+      details: `Account access ${nextState ? 'restored to ACTIVE' : 'REVOKED (Suspended)'} by ${activeSession?.username || 'it_superadmin'}`
     });
 
     notifySuccess(
@@ -363,6 +393,12 @@ export default function SuperAdminItDashboard() {
   const handleDeleteStaff = (userId: string) => {
     const user = staffList.find((u) => u.id === userId);
     if (!user) return;
+
+    const isSelf = activeSession?.username === user.username || activeSession?.userId === user.id;
+    if (isSelf) {
+      notifyError('Security Guard: You cannot deprovision your own active administrator profile.');
+      return;
+    }
 
     if (user.username === 'it_superadmin') {
       notifyError('Security Guard: Primary Super Admin IT profile cannot be deleted.');
@@ -379,8 +415,8 @@ export default function SuperAdminItDashboard() {
     appendAuditEvent({
       category: 'INTENDED_ADMIN_UPDATE',
       action: 'STAFF_DEPROVISIONED',
-      actorStaffNumber: 'EMP-1084-001',
-      actorUsername: 'it_superadmin',
+      actorStaffNumber: activeSession?.staffNumber || 'EMP-1084-001',
+      actorUsername: activeSession?.username || 'it_superadmin',
       actorRole: 'SUPER_ADMIN_IT',
       target: user.staffNumber || user.username,
       details: `Account ${user.username} (${user.role}) permanently deprovisioned from ${user.branchCode}`
@@ -492,7 +528,7 @@ export default function SuperAdminItDashboard() {
     notifySuccess(`Profile details for '${editingStaff.username}' updated.`);
   };
 
-  const nextStaffNumber = `EMP-1084-${String(staffList.length + 1).padStart(3, '0')}`;
+  const nextStaffNumber = getNextStaffNumber(staffList);
 
   const handleProvisionSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -849,6 +885,11 @@ export default function SuperAdminItDashboard() {
                             {user.username === 'it_superadmin' && (
                               <span className="text-[10px] bg-orange-100 text-orange-800 font-black px-1.5 rounded-sm">
                                 ROOT IT
+                              </span>
+                            )}
+                            {user.username === activeSession?.username && (
+                              <span className="text-[10px] bg-amber-100 text-amber-900 font-black px-1.5 rounded-sm">
+                                YOU
                               </span>
                             )}
                           </p>

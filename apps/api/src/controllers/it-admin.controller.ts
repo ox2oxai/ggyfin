@@ -134,8 +134,17 @@ export async function itAdminRoutes(fastify: FastifyInstance) {
     }
 
     const currentStaff = await userRepo.findAll();
-    const nextSeq = currentStaff.length + 1;
-    const staffNumber = `EMP-1084-${String(nextSeq).padStart(3, '0')}`;
+    let maxSeq = 0;
+    for (const s of currentStaff) {
+      if (s.staffNumber && s.staffNumber.startsWith('EMP-1084-')) {
+        const numPart = s.staffNumber.replace('EMP-1084-', '');
+        const parsed = parseInt(numPart, 10);
+        if (!isNaN(parsed) && parsed > maxSeq) {
+          maxSeq = parsed;
+        }
+      }
+    }
+    const staffNumber = `EMP-1084-${String(maxSeq + 1).padStart(3, '0')}`;
 
     const passwordHash = await bcrypt.hash(password, 10);
     const createdUser = await userRepo.create({

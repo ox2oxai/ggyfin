@@ -16,6 +16,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { GGYBrandMark } from '../../components/brand-mark';
+import { recordAuditLog } from '../../lib/audit';
 
 interface StoredStaffUser {
   id: string;
@@ -142,12 +143,30 @@ export default function LoginPage() {
       }
 
       if (!user.isActive) {
+        recordAuditLog({
+          category: 'SECURITY_EVENT',
+          action: 'SUSPENDED_LOGIN_BLOCKED',
+          actorStaffNumber: user.staffNumber || 'EMP-1084-001',
+          actorUsername: user.username,
+          actorRole: user.role,
+          target: user.username,
+          details: `Blocked login attempt by suspended staff account @${user.username}`
+        });
         setErrorMessage('Your account access has been suspended by the Super IT Admin. Please contact IT support.');
         setIsLoading(false);
         return;
       }
 
       if (user.password !== password) {
+        recordAuditLog({
+          category: 'SECURITY_EVENT',
+          action: 'FAILED_LOGIN_ATTEMPT',
+          actorStaffNumber: user.staffNumber || 'EMP-1084-001',
+          actorUsername: user.username,
+          actorRole: user.role,
+          target: user.username,
+          details: `Failed authentication attempt for @${user.username}: Invalid password`
+        });
         setErrorMessage('Invalid password. Please verify your credentials.');
         setIsLoading(false);
         return;
@@ -175,6 +194,16 @@ export default function LoginPage() {
           branchCode: user.branchCode
         })
       );
+
+      recordAuditLog({
+        category: user.role === UserRole.SUPER_ADMIN_IT ? 'INTENDED_ADMIN_UPDATE' : 'OPERATIONAL_BANKING_EVENT',
+        action: 'USER_LOGIN',
+        actorStaffNumber: user.staffNumber || 'EMP-1084-001',
+        actorUsername: user.username,
+        actorRole: user.role,
+        target: user.branchCode,
+        details: `Staff user @${user.username} (${user.fullName}) authenticated into ${user.role} workspace`
+      });
 
       routeByRole(user.role);
     } catch {
@@ -229,6 +258,16 @@ export default function LoginPage() {
           branchCode: pendingUser.branchCode
         })
       );
+
+      recordAuditLog({
+        category: 'INTENDED_ADMIN_UPDATE',
+        action: 'PASSWORD_RESET_COMPLETED',
+        actorStaffNumber: pendingUser.staffNumber || 'EMP-1084-001',
+        actorUsername: pendingUser.username,
+        actorRole: pendingUser.role,
+        target: pendingUser.username,
+        details: `Initial temporary password rotated and first-login password established by @${pendingUser.username}`
+      });
 
       setIsResetModalOpen(false);
       routeByRole(pendingUser.role);

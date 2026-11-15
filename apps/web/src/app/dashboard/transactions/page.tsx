@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useLanguage } from '../../../components/language-context';
+import { recordAuditLog } from '../../../lib/audit';
 import {
   ArrowLeftRight,
   QrCode,
@@ -221,6 +222,13 @@ export default function TransactionsPage() {
       );
       setLiveAccounts(updatedAccounts);
       localStorage.setItem('nbfc_live_accounts', JSON.stringify(updatedAccounts));
+
+      recordAuditLog({
+        category: 'OPERATIONAL_BANKING_EVENT',
+        action: 'UPI_PAYMENT_CONFIRMED',
+        target: upiForm.accountNumber,
+        details: `Repayment credit of ₹${Number(upiForm.amount).toLocaleString('en-IN')} settled via UPI UTR ${upiForm.utr} for ${upiForm.borrowerName}`
+      });
     } catch {}
     setActiveTab('LEDGER');
     setToastMsg(`₹${upiForm.amount} successfully credited via UPI UTR ${upiForm.utr}!`);
@@ -269,6 +277,12 @@ export default function TransactionsPage() {
     setLedger(updated);
     try {
       localStorage.setItem('nbfc_ledger_transactions', JSON.stringify(updated));
+      recordAuditLog({
+        category: 'OPERATIONAL_BANKING_EVENT',
+        action: 'CASH_RECEIPT_RECORDED',
+        target: cashForm.accountNumber,
+        details: `Field Officer recorded doorstep cash receipt ${cashForm.receiptNumber} for ₹${Number(cashForm.amount).toLocaleString('en-IN')} (Pending Manager Verification)`
+      });
     } catch {}
     setActiveTab('LEDGER');
     setToastMsg(`Cash entry recorded for ${cashForm.borrowerName}. Pending Branch Manager verification!`);
@@ -310,6 +324,13 @@ export default function TransactionsPage() {
       );
       setLiveAccounts(updatedAccounts);
       localStorage.setItem('nbfc_live_accounts', JSON.stringify(updatedAccounts));
+
+      recordAuditLog({
+        category: 'OPERATIONAL_BANKING_EVENT',
+        action: 'CASH_RECEIPT_VERIFIED',
+        target: item.accountNumber,
+        details: `Branch Manager verified cash collection ${item.referenceId}. ₹${item.credit.toLocaleString('en-IN')} credited to ledger for ${item.borrowerName}`
+      });
     } catch {}
     setToastMsg(`Manager verified cash collection ${item.referenceId}. ₹${item.credit} credited to ledger!`);
     setTimeout(() => setToastMsg(''), 5000);

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { recordAuditLog } from '../../../lib/audit';
 import {
   ShieldCheck,
   FileCheck2,
@@ -104,6 +105,13 @@ export default function ApprovalsPage() {
           status: 'SETTLED'
         });
         localStorage.setItem('nbfc_ledger_transactions', JSON.stringify(ledgerList));
+
+        recordAuditLog({
+          category: 'OPERATIONAL_BANKING_EVENT',
+          action: 'LOAN_APPROVED',
+          target: generatedAccountNo,
+          details: `Four-Eyes approval sanctioned by Authorizer for ${activeApp.customerName} (₹${activeApp.principalAmount.toLocaleString('en-IN')}) - CBS Account Issued: ${generatedAccountNo}`
+        });
       } catch (e) {}
 
       setIsProcessing(false);
@@ -120,6 +128,12 @@ export default function ApprovalsPage() {
       setApplications(updatedApps);
       try {
         localStorage.setItem('nbfc_pending_applications', JSON.stringify(updatedApps));
+        recordAuditLog({
+          category: 'OPERATIONAL_BANKING_EVENT',
+          action: 'LOAN_REJECTED',
+          target: activeApp.cifNumber,
+          details: `Application rejected by Authorizer for ${activeApp.customerName} (${activeApp.loanPurpose})`
+        });
       } catch (e) {}
       setIsProcessing(false);
       setDecisionNotice({ type: 'REJECTED' });

@@ -6,6 +6,7 @@ import {
   generateCustomerId,
   generateCBSAccountNumber
 } from '@nbfc/shared';
+import { recordAuditLog } from '../../../lib/audit';
 import {
   Users,
   PlusCircle,
@@ -231,6 +232,12 @@ export default function AccountsPage() {
     };
 
     persistAccounts([record, ...accounts]);
+    recordAuditLog({
+      category: 'OPERATIONAL_BANKING_EVENT',
+      action: 'LOAN_APPLICATION_SUBMITTED',
+      target: record.accountNumber,
+      details: `New credit application submitted for ${record.borrowerName} (Principal: ₹${record.principal.toLocaleString('en-IN')}) into Checker Queue`
+    });
     setShowCreateModal(false);
     setSuccessToast(`Application for ${record.borrowerName} submitted into Checker Approval Queue! Assigned CIF: ${newCif}, CBS A/C: ${newAccNum}`);
     setTimeout(() => setSuccessToast(''), 4000);
@@ -244,6 +251,12 @@ export default function AccountsPage() {
         : a
     );
     persistAccounts(updated);
+    recordAuditLog({
+      category: 'OPERATIONAL_BANKING_EVENT',
+      action: 'ACCOUNT_SUSPENDED',
+      target: selectedAccount.accountNumber,
+      details: `Account ${selectedAccount.accountNumber} suspended. Reason: ${suspensionReason || 'Manager audit flag'}`
+    });
     setShowSuspendModal(false);
     setSuccessToast(`Account ${selectedAccount.accountNumber} has been SUSPENDED.`);
     setTimeout(() => setSuccessToast(''), 4000);
@@ -254,6 +267,12 @@ export default function AccountsPage() {
       a.id === acc.id ? { ...a, status: 'ACTIVE' as const, suspensionReason: undefined } : a
     );
     persistAccounts(updated);
+    recordAuditLog({
+      category: 'OPERATIONAL_BANKING_EVENT',
+      action: 'ACCOUNT_REACTIVATED',
+      target: acc.accountNumber,
+      details: `Account ${acc.accountNumber} reactivated to ACTIVE status`
+    });
     setSuccessToast(`Account ${acc.accountNumber} has been REACTIVATED to Active status.`);
     setTimeout(() => setSuccessToast(''), 4000);
   };
@@ -279,6 +298,12 @@ export default function AccountsPage() {
         : a
     );
     persistAccounts(updated);
+    recordAuditLog({
+      category: 'OPERATIONAL_BANKING_EVENT',
+      action: 'ACCOUNT_CLOSED',
+      target: selectedAccount.accountNumber,
+      details: `Zero-balance loan account ${selectedAccount.accountNumber} closed and statutory NOC issued for ${selectedAccount.borrowerName}`
+    });
     setShowCloseModal(false);
     setShowNocModal(true);
   };
