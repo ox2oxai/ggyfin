@@ -27,6 +27,30 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable} scroll-smooth`}>
+      <head>
+        {/* Pre-hydration Self-Healing ChunkLoadError Interceptor */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                var reloadKey = 'ggy_chunk_reload_ts';
+                function handleChunkError(e) {
+                  var msg = (e && (e.message || (e.reason && e.reason.message))) || '';
+                  if (/ChunkLoadError|Loading chunk|timeout:.*chunk/i.test(msg)) {
+                    var lastReload = parseInt(sessionStorage.getItem(reloadKey) || '0', 10);
+                    if (Date.now() - lastReload > 8000) {
+                      sessionStorage.setItem(reloadKey, String(Date.now()));
+                      window.location.reload();
+                    }
+                  }
+                }
+                window.addEventListener('error', handleChunkError, true);
+                window.addEventListener('unhandledrejection', handleChunkError);
+              })();
+            `
+          }}
+        />
+      </head>
       <body className="min-h-screen bg-[#FDFBF7] text-slate-900 font-sans antialiased selection:bg-orange-500 selection:text-white">
         <LanguageProvider>
           {children}
