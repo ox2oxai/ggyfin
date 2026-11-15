@@ -150,15 +150,26 @@ export async function saveInstitutionConfig(config: InstitutionConfig): Promise<
   if (typeof window !== 'undefined') {
     try {
       localStorage.setItem('nbfc_institution_config', JSON.stringify(config));
-      window.dispatchEvent(new Event('nbfc_config_updated'));
-      await fetch('/api/config', {
+    } catch {}
+
+    try {
+      const res = await fetch('/api/config', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ config })
       });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.config) {
+          localStorage.setItem('nbfc_institution_config', JSON.stringify(data.config));
+        }
+      }
     } catch (err) {
       console.error('[Institution] Failed to persist config:', err);
     }
+
+    // Dispatch update AFTER server disk write completes
+    window.dispatchEvent(new Event('nbfc_config_updated'));
   }
 }
 
@@ -196,15 +207,26 @@ export async function saveCreditSchemes(schemes: CreditScheme[]): Promise<void> 
   if (typeof window !== 'undefined') {
     try {
       localStorage.setItem('nbfc_credit_schemes', JSON.stringify(schemes));
-      window.dispatchEvent(new Event('nbfc_schemes_updated'));
-      await fetch('/api/schemes', {
+    } catch {}
+
+    try {
+      const res = await fetch('/api/schemes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ schemes })
       });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.schemes)) {
+          localStorage.setItem('nbfc_credit_schemes', JSON.stringify(data.schemes));
+        }
+      }
     } catch (err) {
       console.error('[Institution] Failed to persist schemes:', err);
     }
+
+    // Dispatch update AFTER server disk write completes
+    window.dispatchEvent(new Event('nbfc_schemes_updated'));
   }
 }
 
@@ -242,14 +264,25 @@ export async function saveBranches(branches: BranchRecord[]): Promise<void> {
   if (typeof window !== 'undefined') {
     try {
       localStorage.setItem('nbfc_branches', JSON.stringify(branches));
-      window.dispatchEvent(new Event('nbfc_branches_updated'));
-      await fetch('/api/branches', {
+    } catch {}
+
+    try {
+      const res = await fetch('/api/branches', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ branches })
       });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.branches)) {
+          localStorage.setItem('nbfc_branches', JSON.stringify(data.branches));
+        }
+      }
     } catch (err) {
       console.error('[Institution] Failed to persist branches:', err);
     }
+
+    // Dispatch update AFTER server disk write completes
+    window.dispatchEvent(new Event('nbfc_branches_updated'));
   }
 }

@@ -2,6 +2,14 @@ import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 
+export const dynamic = 'force-dynamic';
+
+const NO_CACHE_HEADERS = {
+  'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+  Pragma: 'no-cache',
+  Expires: '0'
+};
+
 const DEFAULT_SCHEMES = [
   {
     schemeCode: 'SCHM-701',
@@ -72,14 +80,20 @@ export async function GET() {
       const content = fs.readFileSync(filePath, 'utf-8');
       const parsed = JSON.parse(content);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return NextResponse.json({ success: true, schemes: parsed });
+        return NextResponse.json(
+          { success: true, schemes: parsed },
+          { headers: NO_CACHE_HEADERS }
+        );
       }
     }
   } catch (err) {
     console.error('[API /api/schemes] Read error:', err);
   }
 
-  return NextResponse.json({ success: true, schemes: DEFAULT_SCHEMES });
+  return NextResponse.json(
+    { success: true, schemes: DEFAULT_SCHEMES },
+    { headers: NO_CACHE_HEADERS }
+  );
 }
 
 export async function POST(request: Request) {
@@ -88,7 +102,10 @@ export async function POST(request: Request) {
     const schemes = body.schemes;
 
     if (!Array.isArray(schemes)) {
-      return NextResponse.json({ success: false, message: 'Invalid payload: schemes must be an array' }, { status: 400 });
+      return NextResponse.json(
+        { success: false, message: 'Invalid schemes payload: must be an array' },
+        { status: 400, headers: NO_CACHE_HEADERS }
+      );
     }
 
     const filePath = resolvePath();
@@ -99,13 +116,20 @@ export async function POST(request: Request) {
 
     fs.writeFileSync(filePath, JSON.stringify(schemes, null, 2), 'utf-8');
 
-    return NextResponse.json({
-      success: true,
-      message: 'Credit schemes updated successfully',
-      count: schemes.length
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        message: 'Credit schemes updated successfully',
+        schemes,
+        count: schemes.length
+      },
+      { headers: NO_CACHE_HEADERS }
+    );
   } catch (err: any) {
     console.error('[API /api/schemes] POST error:', err);
-    return NextResponse.json({ success: false, message: err?.message || 'Failed to update schemes' }, { status: 500 });
+    return NextResponse.json(
+      { success: false, message: err?.message || 'Failed to update schemes' },
+      { status: 500, headers: NO_CACHE_HEADERS }
+    );
   }
 }

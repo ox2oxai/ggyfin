@@ -654,7 +654,7 @@ export default function SuperAdminItDashboard() {
     setIsEditModalOpen(true);
   };
 
-  const handleSaveStaffEdit = (e: React.FormEvent) => {
+  const handleSaveStaffEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingStaff) return;
 
@@ -668,7 +668,7 @@ export default function SuperAdminItDashboard() {
       return;
     }
 
-    if (editingStaff.role === UserRole.SUPER_ADMIN_IT && !isValidLegalName(editFullName)) {
+    if (!isValidLegalName(editFullName)) {
       notifyError('Full legal name must be 2-70 characters and contain only letters, spaces, dots, single quotes, or hyphens.');
       return;
     }
@@ -686,14 +686,15 @@ export default function SuperAdminItDashboard() {
       return u;
     });
 
-    persistStaffList(updated);
+    setStaffList(updated);
+    await saveStaffDirectory(updated as any);
 
-    // If editing oneself, also update session
+    // If editing oneself, also update session immediately
     try {
       const rawSession = localStorage.getItem('nbfc_staff_session');
       if (rawSession) {
         const s = JSON.parse(rawSession);
-        if (s.username === editingStaff.username) {
+        if (s.username === editingStaff.username || s.userId === editingStaff.id) {
           const updatedSession = {
             ...s,
             fullName: editFullName.trim(),

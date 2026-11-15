@@ -53,6 +53,13 @@ export function recordAuditLog(payload: AuditLogPayload): void {
 
     localStorage.setItem('nbfc_audit_trail', JSON.stringify([newEntry, ...existing]));
     window.dispatchEvent(new Event('nbfc_audit_updated'));
+
+    // Asynchronously persist to server audit trail endpoint
+    fetch('/api/audit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event: newEntry })
+    }).catch(() => {});
   } catch (err) {
     console.error('[Audit] Failed to append audit record:', err);
   }

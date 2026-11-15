@@ -27,7 +27,7 @@ export async function seedDatabase() {
       {
         staffNumber: '202010',
         username: 'it_superadmin',
-        fullName: 'Sri Chethan Gowda (IT Lead)',
+        fullName: 'Shiv Yaragatti',
         email: 'it.admin@ggyfinance.in',
         phone: '9800000001',
         passwordHash: superAdminPasswordHash,

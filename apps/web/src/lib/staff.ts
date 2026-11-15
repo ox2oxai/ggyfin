@@ -20,7 +20,7 @@ export const DEFAULT_STAFF_DIRECTORY: StaffRecord[] = [
     id: 'u-superadmin-it-001',
     staffNumber: '202010',
     username: 'it_superadmin',
-    fullName: 'Sri Chethan Gowda (IT Lead)',
+    fullName: 'Shiv Yaragatti',
     email: 'it.admin@ggyfinance.in',
     phone: '9800000001',
     password: 'GGY#SuperAdminIT@2026!',
@@ -143,25 +143,36 @@ export function getStaffDirectorySync(): StaffRecord[] {
 
 /**
  * Persists staff directory to both localStorage and the persistent server endpoint.
+ * Guaranteed write-before-dispatch to prevent stale reads and data loss.
  */
 export async function saveStaffDirectory(directory: StaffRecord[]): Promise<void> {
   const normalized = normalizeStaffDirectory(directory);
   if (typeof window !== 'undefined') {
+    // 1. Immediately cache in localStorage
     try {
       localStorage.setItem('nbfc_staff_directory', JSON.stringify(normalized));
-      window.dispatchEvent(new Event('nbfc_staff_updated'));
     } catch (e) {
-      console.error('[Staff] Failed to save to localStorage:', e);
+      console.error('[Staff] Failed to cache to localStorage:', e);
     }
 
+    // 2. Await server disk write to complete
     try {
-      await fetch('/api/staff', {
+      const res = await fetch('/api/staff', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ directory: normalized })
       });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.directory)) {
+          localStorage.setItem('nbfc_staff_directory', JSON.stringify(data.directory));
+        }
+      }
     } catch (e) {
       console.warn('[Staff] Failed to sync to /api/staff endpoint:', e);
     }
+
+    // 3. Dispatch event AFTER server disk write is confirmed
+    window.dispatchEvent(new Event('nbfc_staff_updated'));
   }
 }

@@ -2,12 +2,20 @@ import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 
+export const dynamic = 'force-dynamic';
+
+const NO_CACHE_HEADERS = {
+  'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+  Pragma: 'no-cache',
+  Expires: '0'
+};
+
 const DEFAULT_STAFF_DATA = [
   {
     id: 'u-superadmin-it-001',
     staffNumber: '202010',
     username: 'it_superadmin',
-    fullName: 'Sri Chethan Gowda (IT Lead)',
+    fullName: 'Shiv Yaragatti',
     email: 'it.admin@ggyfinance.in',
     phone: '9800000001',
     password: 'GGY#SuperAdminIT@2026!',
@@ -34,13 +42,16 @@ const DEFAULT_STAFF_DATA = [
 ];
 
 function resolveFilePath(): string {
-  // Option 1: running from repo root
-  const p1 = path.join(process.cwd(), 'apps', 'web', 'data', 'staff-directory.json');
-  if (fs.existsSync(p1) || fs.existsSync(path.join(process.cwd(), 'apps', 'web'))) {
-    return p1;
+  const fromRoot = path.join(process.cwd(), 'apps', 'web', 'data', 'staff-directory.json');
+  if (fs.existsSync(fromRoot)) return fromRoot;
+
+  const fromWeb = path.join(process.cwd(), 'data', 'staff-directory.json');
+  if (fs.existsSync(fromWeb)) return fromWeb;
+
+  if (fs.existsSync(path.join(process.cwd(), 'apps', 'web'))) {
+    return fromRoot;
   }
-  // Option 2: running from apps/web directory
-  return path.join(process.cwd(), 'data', 'staff-directory.json');
+  return fromWeb;
 }
 
 function readDirectoryFromFile(): any[] {
@@ -73,10 +84,13 @@ function readDirectoryFromFile(): any[] {
 
 export async function GET() {
   const directory = readDirectoryFromFile();
-  return NextResponse.json({
-    success: true,
-    directory
-  });
+  return NextResponse.json(
+    {
+      success: true,
+      directory
+    },
+    { headers: NO_CACHE_HEADERS }
+  );
 }
 
 export async function POST(request: Request) {
@@ -87,7 +101,7 @@ export async function POST(request: Request) {
     if (!Array.isArray(directory)) {
       return NextResponse.json(
         { success: false, message: 'Invalid payload: directory must be an array' },
-        { status: 400 }
+        { status: 400, headers: NO_CACHE_HEADERS }
       );
     }
 
@@ -99,16 +113,20 @@ export async function POST(request: Request) {
 
     fs.writeFileSync(filePath, JSON.stringify(directory, null, 2), 'utf-8');
 
-    return NextResponse.json({
-      success: true,
-      message: 'Staff directory persisted successfully',
-      count: directory.length
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        message: 'Staff directory persisted successfully',
+        directory,
+        count: directory.length
+      },
+      { headers: NO_CACHE_HEADERS }
+    );
   } catch (err: any) {
     console.error('[API /api/staff] POST error:', err);
     return NextResponse.json(
       { success: false, message: err?.message || 'Failed to update directory' },
-      { status: 500 }
+      { status: 500, headers: NO_CACHE_HEADERS }
     );
   }
 }

@@ -158,8 +158,9 @@ export async function authRoutes(fastify: FastifyInstance) {
 
     const { fullName, email, phone } = parseResult.data;
 
-    // Strict Rule: Staffers cannot change their name. Only SUPER_ADMIN_IT can change their own name.
-    if (role !== UserRole.SUPER_ADMIN_IT && fullName) {
+    // Strict Rule: Staffers cannot change their name. Only administrators (SUPER_ADMIN_IT or SYSTEM_ADMIN) can update their own administrative name.
+    const isAdministrator = role === UserRole.SUPER_ADMIN_IT || role === UserRole.SYSTEM_ADMIN;
+    if (!isAdministrator && fullName) {
       if (!currentUser || fullName.trim() !== currentUser.fullName.trim()) {
         return reply.status(403).send({
           success: false,
@@ -172,7 +173,7 @@ export async function authRoutes(fastify: FastifyInstance) {
     let updated = null;
     try {
       updated = await userRepo.updateProfile(userId, {
-        fullName: role === UserRole.SUPER_ADMIN_IT && fullName ? fullName.trim() : (currentUser?.fullName || 'System Administrator'),
+        fullName: isAdministrator && fullName ? fullName.trim() : (currentUser?.fullName || 'System Administrator'),
         email: email.trim(),
         phone: phone.trim()
       });

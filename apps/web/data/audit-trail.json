@@ -1,0 +1,26 @@
+[
+  {
+    "id": "aud-001",
+    "timestamp": "2026-11-15 02:30:12",
+    "category": "INTENDED_ADMIN_UPDATE",
+    "action": "SYSTEM_BOOT",
+    "actorStaffNumber": "202010",
+    "actorUsername": "it_superadmin",
+    "actorRole": "SUPER_ADMIN_IT",
+    "target": "2020",
+    "details": "Institutional core banking server instance initialized for Branch 2020",
+    "ip": "127.0.0.1"
+  },
+  {
+    "id": "aud-002",
+    "timestamp": "2026-11-15 02:31:00",
+    "category": "INTENDED_ADMIN_UPDATE",
+    "action": "ACCOUNT_SEEDED",
+    "actorStaffNumber": "202010",
+    "actorUsername": "it_superadmin",
+    "actorRole": "SUPER_ADMIN_IT",
+    "target": "202011",
+    "details": "Provisioned initial System Administrator account @ngyaragatti",
+    "ip": "127.0.0.1"
+  }
+]

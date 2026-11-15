@@ -125,19 +125,33 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     if (raw) {
       try {
         const parsed = JSON.parse(raw);
-        setSession(parsed);
 
-        // Security check: verify account is still active in directory
+        // Security check: verify account is still active in directory AND sync updated profile info
         const rawDir = localStorage.getItem('nbfc_staff_directory');
         if (rawDir) {
           const dir = JSON.parse(rawDir);
           const userInDir = dir.find((u: any) => u.username === parsed.username);
-          if (userInDir && !userInDir.isActive) {
-            localStorage.removeItem('nbfc_staff_session');
-            router.push('/login');
-            return;
+          if (userInDir) {
+            if (!userInDir.isActive) {
+              localStorage.removeItem('nbfc_staff_session');
+              router.push('/login');
+              return;
+            }
+            // Symmetrically synchronize any profile modifications (name, email, phone) into active session
+            if (
+              (userInDir.fullName && userInDir.fullName !== parsed.fullName) ||
+              (userInDir.email && userInDir.email !== parsed.email) ||
+              (userInDir.phone && userInDir.phone !== parsed.phone)
+            ) {
+              parsed.fullName = userInDir.fullName;
+              parsed.email = userInDir.email;
+              parsed.phone = userInDir.phone;
+              localStorage.setItem('nbfc_staff_session', JSON.stringify(parsed));
+            }
           }
         }
+
+        setSession(parsed);
 
         // Automatic redirect if SUPER_ADMIN_IT lands on /dashboard or /dashboard/workspace
         if (parsed.role === UserRole.SUPER_ADMIN_IT && (pathname === '/dashboard' || pathname === '/dashboard/workspace')) {
@@ -175,12 +189,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     window.addEventListener('storage', syncMailboxCount);
     window.addEventListener('storage', syncActiveSession);
     window.addEventListener('nbfc_session_updated', syncActiveSession);
+    window.addEventListener('nbfc_staff_updated', syncActiveSession);
     window.addEventListener('nbfc_messages_updated', syncMailboxCount);
 
     return () => {
       window.removeEventListener('storage', syncMailboxCount);
       window.removeEventListener('storage', syncActiveSession);
       window.removeEventListener('nbfc_session_updated', syncActiveSession);
+      window.removeEventListener('nbfc_staff_updated', syncActiveSession);
       window.removeEventListener('nbfc_messages_updated', syncMailboxCount);
     };
   }, [pathname, router]);
@@ -203,7 +219,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     setIsProfileModalOpen(true);
   };
 
-  const handleSaveProfileDetails = (e: React.FormEvent) => {
+  const handleSaveProfileDetails = async (e: React.FormEvent) => {
     e.preventDefault();
     setProfileError('');
     setProfileSuccess('');
@@ -218,7 +234,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       return;
     }
 
-    if (session?.role === UserRole.SUPER_ADMIN_IT && !isValidLegalName(editFullName)) {
+    const canEditName = session?.role === UserRole.SUPER_ADMIN_IT || session?.role === UserRole.SYSTEM_ADMIN;
+
+    if (canEditName && !isValidLegalName(editFullName)) {
       setProfileError('Full legal name must be 2-70 characters (letters, spaces, dots, single quotes, hyphens only).');
       return;
     }
@@ -230,12 +248,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       const dir = rawDir ? JSON.parse(rawDir) : [];
 
       // Determine full name
-      const isSuperAdmin = session.role === UserRole.SUPER_ADMIN_IT;
-      const finalFullName = isSuperAdmin && editFullName.trim() ? editFullName.trim() : (session.fullName || 'System Administrator');
+      const finalFullName = canEditName && editFullName.trim() ? editFullName.trim() : (session.fullName || 'System Administrator');
 
       // Update directory
       const updatedDir = dir.map((u: any) => {
-        if (u.username === session.username) {
+        if (u.username === session.username || u.id === session.userId) {
           return {
             ...u,
             fullName: finalFullName,
@@ -245,9 +262,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         }
         return u;
       });
-      saveStaffDirectory(updatedDir);
 
-      // Update session
+      // Update session immediately in state and storage
       const updatedSession = {
         ...session,
         fullName: finalFullName,
@@ -257,21 +273,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       localStorage.setItem('nbfc_staff_session', JSON.stringify(updatedSession));
       setSession(updatedSession);
 
+      // Await disk write to complete
+      await saveStaffDirectory(updatedDir);
+
       // Append immutable audit log
       const rawAudit = localStorage.getItem('nbfc_audit_trail');
       const audits = rawAudit ? JSON.parse(rawAudit) : [];
       const newAudit = {
         id: `aud-${Date.now()}`,
         timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
-        category: isSuperAdmin ? 'INTENDED_ADMIN_UPDATE' : 'OPERATIONAL_BANKING_EVENT',
+        category: canEditName ? 'INTENDED_ADMIN_UPDATE' : 'OPERATIONAL_BANKING_EVENT',
         action: 'PROFILE_UPDATED',
         actorStaffNumber: session.staffNumber || '202010',
         actorUsername: session.username,
         actorRole: session.role,
         target: session.staffNumber || session.username,
-        details: isSuperAdmin
-          ? `Super Admin IT updated their personal identity (Name: ${finalFullName}, Email: ${editEmail})`
-          : `Staff user ${session.username} updated contact details (Email: ${editEmail}, Phone: ${editPhone})`,
+        details: canEditName
+          ? `Administrator ${session.username} updated profile identity (Name: ${finalFullName}, Email: ${editEmail.trim()})`
+          : `Staff user ${session.username} updated contact details (Email: ${editEmail.trim()}, Phone: ${editPhone.trim()})`,
         ip: '127.0.0.1'
       };
       localStorage.setItem('nbfc_audit_trail', JSON.stringify([newAudit, ...audits]));
@@ -283,13 +302,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       setProfileSuccess('Profile details successfully updated and synchronized!');
       setTimeout(() => {
         setIsProfileModalOpen(false);
-      }, 1500);
+      }, 1200);
     } catch {
       setProfileError('Failed to save profile updates.');
     }
   };
 
-  const handleSavePassword = (e: React.FormEvent) => {
+  const handleSavePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setProfileError('');
     setProfileSuccess('');
@@ -343,7 +362,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       const updatedDir = dir.map((u: any) =>
         u.username === session.username ? { ...u, password: newPassword, mustResetPassword: false } : u
       );
-      saveStaffDirectory(updatedDir);
+      await saveStaffDirectory(updatedDir);
 
       // Append immutable audit log
       const rawAudit = localStorage.getItem('nbfc_audit_trail');
@@ -615,25 +634,25 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <div>
                   <label className="block font-bold text-slate-700 mb-1 flex items-center justify-between">
                     <span>Full Legal Name</span>
-                    {userRole !== UserRole.SUPER_ADMIN_IT && (
+                    {userRole !== UserRole.SUPER_ADMIN_IT && userRole !== UserRole.SYSTEM_ADMIN && (
                       <span className="text-[10px] text-amber-700 font-semibold flex items-center gap-1">
                         <Lock className="w-3 h-3" />
                         Locked (Set by IT Admin)
                       </span>
                     )}
                   </label>
-                  {userRole === UserRole.SUPER_ADMIN_IT ? (
+                  {userRole === UserRole.SUPER_ADMIN_IT || userRole === UserRole.SYSTEM_ADMIN ? (
                     <div>
                       <input
                         type="text"
                         value={editFullName}
                         maxLength={70}
                         onChange={(e) => setEditFullName(sanitizeLegalName(e.target.value))}
-                        placeholder="Enter your system administrator name"
+                        placeholder="Enter your administrative name"
                         className="w-full px-3 py-2 border border-slate-200 rounded-xl text-slate-900 font-bold focus:ring-2 focus:ring-orange-500 outline-hidden"
                       />
                       <p className="text-[10px] text-slate-500 mt-1">
-                        Super Admin IT can customize their administrative identity.
+                        Administrators can customize their institutional profile identity.
                       </p>
                     </div>
                   ) : (
