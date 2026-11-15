@@ -125,45 +125,45 @@ export default function BorrowerPortalPage() {
     }
   }[lang];
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError('');
 
     try {
-      const rawAccounts = localStorage.getItem('nbfc_live_accounts');
-      const accountsList = rawAccounts ? JSON.parse(rawAccounts) : [];
-      const matched = accountsList.filter(
-        (a: any) =>
-          a.customerId?.toLowerCase() === customerId.trim().toLowerCase() ||
-          a.accountNumber?.toLowerCase() === customerId.trim().toLowerCase() ||
-          (a.phone && a.phone.includes(customerId.trim()))
-      );
+      const res = await fetch('/api/portal/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier: customerId.trim() })
+      });
 
-      if (matched.length > 0) {
-        const primary = matched[0];
+      const data = await res.json();
+      if (data.success && data.profile) {
+        const p = data.profile;
         setBorrowerData({
-          customerId: primary.customerId,
-          fullName: primary.borrowerName,
-          maskedAadhaar: primary.maskedAadhaar || 'XXXX-XXXX-8421',
-          phone: primary.phone || '9845000000',
-          taluk: primary.taluk || 'Primary Cluster',
-          dpdpConsentDate: '2026-04-10',
-          accounts: matched.map((a: any) => ({
-            accountNumber: a.accountNumber,
-            product: a.product,
-            sanctionAmount: a.principal,
-            balance: a.balance,
-            monthlyEmi: Math.round(a.principal / (a.tenureMonths || 12)),
+          customerId: p.cifNumber,
+          fullName: p.fullName,
+          maskedAadhaar: 'XXXX-XXXX-8421',
+          phone: p.phone,
+          taluk: p.taluk || p.address || 'Karnataka Operational Cluster',
+          dpdpConsentDate: p.joinedAt ? new Date(p.joinedAt).toISOString().slice(0, 10) : '2026-04-10',
+          accounts: p.accounts && p.accounts.length > 0 ? p.accounts : (p.activeAccount ? [{
+            accountNumber: p.activeAccount.accountNumber,
+            product: p.activeAccount.loanPurpose,
+            sanctionAmount: p.activeAccount.principal,
+            balance: p.activeAccount.currentBalance,
+            monthlyEmi: p.activeAccount.emiAmount,
             nextDueDate: '2026-12-05',
-            status: a.status === 'CLOSED' ? 'CLOSED' : 'ACTIVE'
-          }))
+            status: p.activeAccount.status === 'CLOSED' ? 'CLOSED' : 'ACTIVE'
+          }] : [])
         });
         setIsLoggedIn(true);
         return;
+      } else {
+        setLoginError(data.message || 'No borrower record found for this Customer ID (CIF) or Account Number. Please verify your details or contact your branch.');
       }
-    } catch {}
-
-    setLoginError('No borrower record found for this Customer ID (CIF) or Account Number. Please verify your details or contact your branch.');
+    } catch {
+      setLoginError('Unable to connect to verification server. Please verify your network and retry.');
+    }
   };
 
   const handleOpenUpi = (acc: BorrowerAccountSummary) => {

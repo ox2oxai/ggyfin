@@ -18,7 +18,7 @@ export async function GET() {
 
     if (!error && Array.isArray(data)) {
       const audits = data.map((log) => ({
-        id: log.id,
+        id: String(log.id),
         timestamp: log.created_at,
         actor: log.user_role || 'SYSTEM',
         userId: log.user_id,
@@ -26,16 +26,21 @@ export async function GET() {
         resource: log.entity_type,
         resourceId: log.entity_id,
         category: log.category,
+        actorStaffNumber: log.user_role || '202010',
+        actorUsername: log.user_role || 'system',
+        actorRole: log.user_role || 'SYSTEM',
+        target: log.entity_id || log.entity_type || 'SYSTEM',
         details: typeof log.details === 'string' ? log.details : JSON.stringify(log.details || {}),
+        ip: log.ip_address || '127.0.0.1',
         severity: 'INFO'
       }));
-      return NextResponse.json({ success: true, audits }, { headers: NO_CACHE_HEADERS });
+      return NextResponse.json({ success: true, audits, events: audits }, { headers: NO_CACHE_HEADERS });
     }
   } catch (err) {
     console.error('[API /api/audit] Supabase read error:', err);
   }
 
-  return NextResponse.json({ success: true, audits: [] }, { headers: NO_CACHE_HEADERS });
+  return NextResponse.json({ success: true, audits: [], events: [] }, { headers: NO_CACHE_HEADERS });
 }
 
 export async function POST(request: Request) {

@@ -51,20 +51,29 @@ const INITIAL_ACCOUNTS: AccountRecord[] = [];
 
 export default function AccountsPage() {
   const { lang } = useLanguage();
-  const [accounts, setAccounts] = useState<AccountRecord[]>(() => {
-    try {
-      const raw = localStorage.getItem('nbfc_live_accounts');
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) return parsed;
-      }
-    } catch {
-      // fallback
-    }
-    return [];
-  });
+  const [accounts, setAccounts] = useState<AccountRecord[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
+
+  const fetchAccounts = async () => {
+    try {
+      setIsLoading(true);
+      const res = await fetch('/api/accounts');
+      const data = await res.json();
+      if (data.success && Array.isArray(data.accounts)) {
+        setAccounts(data.accounts);
+      }
+    } catch (err) {
+      console.error('Failed to fetch CBS accounts:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchAccounts();
+  }, []);
 
   // Modal states
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -189,14 +198,7 @@ export default function AccountsPage() {
     return matchesSearch && matchesStatus;
   });
 
-  const persistAccounts = (updated: AccountRecord[]) => {
-    setAccounts(updated);
-    try {
-      localStorage.setItem('nbfc_live_accounts', JSON.stringify(updated));
-    } catch {}
-  };
-
-  const handleCreateSubmit = (e: React.FormEvent) => {
+  const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!isValidLegalName(newBorrower.name)) {
@@ -220,88 +222,110 @@ export default function AccountsPage() {
       return;
     }
 
-    const newSeq = accounts.length + 1;
-    const newId = `acc-00${newSeq}`;
-    const newCif = generateCustomerId('1084', newSeq + 42);
-    const schemeCode = newBorrower.product.includes('Dairy')
-      ? '702'
-      : newBorrower.product.includes('Shop')
-      ? '701'
-      : newBorrower.product.includes('Powerloom')
-      ? '703'
-      : '704';
-    const newAccNum = generateCBSAccountNumber('1084', '0101', schemeCode, newSeq + 42, true);
-
-    let activeMaker = 'staff_officer';
+    let activeMaker = '202010';
     try {
       const rawSession = localStorage.getItem('nbfc_staff_session');
       if (rawSession) {
         const s = JSON.parse(rawSession);
-        if (s.username) activeMaker = s.username;
+        if (s.staffNumber) activeMaker = s.staffNumber;
       }
     } catch {}
 
-    const record: AccountRecord = {
-      id: newId,
-      customerId: newCif,
-      accountNumber: newAccNum,
-      borrowerName: newBorrower.name,
-      maskedAadhaar: newBorrower.aadhaarMasked || 'XXXX-XXXX-9999',
-      phone: newBorrower.phone,
-      taluk: newBorrower.taluk,
-      product: newBorrower.product,
-      principal: Number(newBorrower.principal),
-      balance: Number(newBorrower.principal),
-      interestRate: Number(newBorrower.interestRate),
-      tenureMonths: Number(newBorrower.tenureMonths),
-      status: 'PENDING_APPROVAL',
-      makerId: activeMaker
-    };
+    try {
+      const res = await fetch('/api/accounts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'CREATE_APPLICATION',
+          borrowerName: newBorrower.name.trim(),
+          phone: newBorrower.phone.trim(),
+          taluk: newBorrower.taluk,
+          product: newBorrower.product,
+          principal: principalNum,
+          interestRate: Number(newBorrower.interestRate),
+          tenureMonths: Number(newBorrower.tenureMonths),
+          makerId: activeMaker
+        })
+      });
 
-    persistAccounts([record, ...accounts]);
-    recordAuditLog({
-      category: 'OPERATIONAL_BANKING_EVENT',
-      action: 'LOAN_APPLICATION_SUBMITTED',
-      target: record.accountNumber,
-      details: `New credit application submitted for ${record.borrowerName} (Principal: ₹${record.principal.toLocaleString('en-IN')}) into Checker Queue`
-    });
-    setShowCreateModal(false);
-    setSuccessToast(`Application for ${record.borrowerName} submitted into Checker Approval Queue! Assigned CIF: ${newCif}, CBS A/C: ${newAccNum}`);
-    setTimeout(() => setSuccessToast(''), 4000);
+      const data = await res.json();
+      if (data.success) {
+        recordAuditLog({
+          category: 'OPERATIONAL_BANKING_EVENT',
+          action: 'LOAN_APPLICATION_SUBMITTED',
+          target: data.account?.accountNumber || newBorrower.name,
+          details: `New credit application submitted for ${newBorrower.name} (Principal: ₹${principalNum.toLocaleString('en-IN')}) into Checker Queue`
+        });
+        await fetchAccounts();
+        setShowCreateModal(false);
+        setSuccessToast(`Application for ${newBorrower.name} submitted into Checker Approval Queue! Assigned CBS A/C: ${data.account?.accountNumber || 'Generated'}`);
+        setTimeout(() => setSuccessToast(''), 4000);
+      } else {
+        setSuccessToast(data.message || 'Failed to submit application');
+      }
+    } catch (err) {
+      console.error(err);
+      setSuccessToast('Network error submitting loan application');
+    }
   };
 
-  const handleSuspendConfirm = () => {
+  const handleSuspendConfirm = async () => {
     if (!selectedAccount) return;
-    const updated = accounts.map((a) =>
-      a.id === selectedAccount.id
-        ? { ...a, status: 'SUSPENDED' as const, suspensionReason: suspensionReason || 'Manager audit flag' }
-        : a
-    );
-    persistAccounts(updated);
-    recordAuditLog({
-      category: 'OPERATIONAL_BANKING_EVENT',
-      action: 'ACCOUNT_SUSPENDED',
-      target: selectedAccount.accountNumber,
-      details: `Account ${selectedAccount.accountNumber} suspended. Reason: ${suspensionReason || 'Manager audit flag'}`
-    });
-    setShowSuspendModal(false);
-    setSuccessToast(`Account ${selectedAccount.accountNumber} has been SUSPENDED.`);
-    setTimeout(() => setSuccessToast(''), 4000);
+    try {
+      const res = await fetch('/api/accounts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'UPDATE_STATUS',
+          accountId: selectedAccount.id,
+          status: 'SUSPENDED',
+          reason: suspensionReason || 'Manager audit flag'
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        await fetchAccounts();
+        recordAuditLog({
+          category: 'OPERATIONAL_BANKING_EVENT',
+          action: 'ACCOUNT_SUSPENDED',
+          target: selectedAccount.accountNumber,
+          details: `Account ${selectedAccount.accountNumber} suspended. Reason: ${suspensionReason || 'Manager audit flag'}`
+        });
+        setShowSuspendModal(false);
+        setSuccessToast(`Account ${selectedAccount.accountNumber} has been SUSPENDED.`);
+        setTimeout(() => setSuccessToast(''), 4000);
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const handleReactivate = (acc: AccountRecord) => {
-    const updated = accounts.map((a) =>
-      a.id === acc.id ? { ...a, status: 'ACTIVE' as const, suspensionReason: undefined } : a
-    );
-    persistAccounts(updated);
-    recordAuditLog({
-      category: 'OPERATIONAL_BANKING_EVENT',
-      action: 'ACCOUNT_REACTIVATED',
-      target: acc.accountNumber,
-      details: `Account ${acc.accountNumber} reactivated to ACTIVE status`
-    });
-    setSuccessToast(`Account ${acc.accountNumber} has been REACTIVATED to Active status.`);
-    setTimeout(() => setSuccessToast(''), 4000);
+  const handleReactivate = async (acc: AccountRecord) => {
+    try {
+      const res = await fetch('/api/accounts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'UPDATE_STATUS',
+          accountId: acc.id,
+          status: 'ACTIVE'
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        await fetchAccounts();
+        recordAuditLog({
+          category: 'OPERATIONAL_BANKING_EVENT',
+          action: 'ACCOUNT_REACTIVATED',
+          target: acc.accountNumber,
+          details: `Account ${acc.accountNumber} reactivated to ACTIVE status`
+        });
+        setSuccessToast(`Account ${acc.accountNumber} has been REACTIVATED to Active status.`);
+        setTimeout(() => setSuccessToast(''), 4000);
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleCloseAttempt = (acc: AccountRecord) => {
@@ -317,22 +341,33 @@ export default function AccountsPage() {
     }
   };
 
-  const handleConfirmClose = () => {
+  const handleConfirmClose = async () => {
     if (!selectedAccount || selectedAccount.balance > 0) return;
-    const updated = accounts.map((a) =>
-      a.id === selectedAccount.id
-        ? { ...a, status: 'CLOSED' as const, closedAt: new Date().toISOString().slice(0, 10) }
-        : a
-    );
-    persistAccounts(updated);
-    recordAuditLog({
-      category: 'OPERATIONAL_BANKING_EVENT',
-      action: 'ACCOUNT_CLOSED',
-      target: selectedAccount.accountNumber,
-      details: `Zero-balance loan account ${selectedAccount.accountNumber} closed and statutory NOC issued for ${selectedAccount.borrowerName}`
-    });
-    setShowCloseModal(false);
-    setShowNocModal(true);
+    try {
+      const res = await fetch('/api/accounts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'UPDATE_STATUS',
+          accountId: selectedAccount.id,
+          status: 'CLOSED'
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        await fetchAccounts();
+        recordAuditLog({
+          category: 'OPERATIONAL_BANKING_EVENT',
+          action: 'ACCOUNT_CLOSED',
+          target: selectedAccount.accountNumber,
+          details: `Zero-balance loan account ${selectedAccount.accountNumber} closed and statutory NOC issued for ${selectedAccount.borrowerName}`
+        });
+        setShowCloseModal(false);
+        setShowNocModal(true);
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (

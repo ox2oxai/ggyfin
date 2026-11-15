@@ -32,112 +32,141 @@ interface PendingApplication {
 }
 
 export default function ApprovalsPage() {
-  const [applications, setApplications] = useState<PendingApplication[]>(() => {
-    try {
-      const raw = localStorage.getItem('nbfc_pending_applications');
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) return parsed;
-      }
-    } catch {
-      // fallback
-    }
-    return [];
-  });
-
+  const [applications, setApplications] = useState<PendingApplication[]>([]);
   const [selectedAppId, setSelectedAppId] = useState<string>('');
   const [remarks, setRemarks] = useState('KYC documents audited. Livelihood verification completed. Approved under dual-control Four-Eyes governance.');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [decisionNotice, setDecisionNotice] = useState<{ type: 'APPROVED' | 'REJECTED'; accountNo?: string } | null>(null);
+
+  const fetchPending = async () => {
+    try {
+      setIsLoading(true);
+      const res = await fetch('/api/accounts?status=PENDING_APPROVAL');
+      const data = await res.json();
+      if (data.success && Array.isArray(data.accounts)) {
+        const mapped: PendingApplication[] = data.accounts.map((acc: any) => ({
+          id: acc.id,
+          cifNumber: acc.customerId,
+          customerName: acc.borrowerName,
+          phone: acc.phone,
+          address: acc.address || acc.taluk,
+          maskedAadhaar: acc.maskedAadhaar || 'XXXX-XXXX-8421',
+          loanPurpose: acc.product,
+          principalAmount: acc.principal,
+          interestRate: acc.interestRate,
+          tenureMonths: acc.tenureMonths,
+          emiAmount: acc.emiAmount,
+          makerName: acc.makerId || 'Field Officer',
+          submittedAt: acc.createdAt ? new Date(acc.createdAt).toISOString().replace('T', ' ').slice(0, 16) : 'Today'
+        }));
+        setApplications(mapped);
+        if (mapped.length > 0) {
+          setSelectedAppId((prev) => (mapped.some((m) => m.id === prev) ? prev : mapped[0].id));
+        } else {
+          setSelectedAppId('');
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch pending applications:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchPending();
+  }, []);
 
   const activeApp = applications.find((a) => a.id === selectedAppId);
 
-  const handleApprove = () => {
+  const handleApprove = async () => {
     if (!activeApp) return;
     setIsProcessing(true);
 
-    setTimeout(() => {
-      const generatedAccountNo = `GGY-2026-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-      const updatedApps = applications.filter((a) => a.id !== activeApp.id);
-      setApplications(updatedApps);
-      try {
-        localStorage.setItem('nbfc_pending_applications', JSON.stringify(updatedApps));
+    let currentChecker = '202012';
+    try {
+      const rawSession = localStorage.getItem('nbfc_staff_session');
+      if (rawSession) {
+        const s = JSON.parse(rawSession);
+        if (s.staffNumber) currentChecker = s.staffNumber;
+      }
+    } catch {}
 
-        // Add to active accounts
-        const rawAccounts = localStorage.getItem('nbfc_live_accounts');
-        const accList = rawAccounts ? JSON.parse(rawAccounts) : [];
-        accList.unshift({
-          id: `acc-${Date.now()}`,
-          customerId: activeApp.cifNumber,
-          accountNumber: generatedAccountNo,
-          borrowerName: activeApp.customerName,
-          maskedAadhaar: activeApp.maskedAadhaar,
-          phone: activeApp.phone,
-          taluk: activeApp.address,
-          product: activeApp.loanPurpose,
-          principal: activeApp.principalAmount,
-          balance: activeApp.principalAmount,
-          interestRate: activeApp.interestRate,
-          tenureMonths: activeApp.tenureMonths,
-          status: 'ACTIVE',
-          makerId: activeApp.makerName,
-          checkerId: 'checker_authorizer',
-          disbursedAt: new Date().toISOString().replace('T', ' ').slice(0, 16)
-        });
-        localStorage.setItem('nbfc_live_accounts', JSON.stringify(accList));
+    try {
+      const res = await fetch('/api/accounts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'DECIDE_APPROVAL',
+          accountId: activeApp.id,
+          decision: 'APPROVED',
+          checkerId: currentChecker,
+          remarks
+        })
+      });
 
-        // Add initial disbursement entry into ledger
-        const rawLedger = localStorage.getItem('nbfc_ledger_transactions');
-        const ledgerList = rawLedger ? JSON.parse(rawLedger) : [];
-        ledgerList.unshift({
-          id: `TXN-DISB-${Date.now().toString().slice(-6)}`,
-          timestamp: new Date().toISOString().replace('T', ' ').slice(0, 16),
-          customerId: activeApp.cifNumber,
-          accountNumber: generatedAccountNo,
-          borrowerName: activeApp.customerName,
-          type: 'DISBURSEMENT',
-          debit: activeApp.principalAmount,
-          credit: 0,
-          balanceAfter: activeApp.principalAmount,
-          makerId: activeApp.makerName,
-          checkerId: 'checker_authorizer',
-          referenceId: `SANCTION-${generatedAccountNo}`,
-          status: 'SETTLED'
-        });
-        localStorage.setItem('nbfc_ledger_transactions', JSON.stringify(ledgerList));
-
+      const data = await res.json();
+      if (data.success) {
+        const accountNo = data.account?.account_number || activeApp.cifNumber;
         recordAuditLog({
           category: 'OPERATIONAL_BANKING_EVENT',
           action: 'LOAN_APPROVED',
-          target: generatedAccountNo,
-          details: `Four-Eyes approval sanctioned by Authorizer for ${activeApp.customerName} (₹${activeApp.principalAmount.toLocaleString('en-IN')}) - CBS Account Issued: ${generatedAccountNo}`
+          target: accountNo,
+          details: `Four-Eyes approval sanctioned by Authorizer for ${activeApp.customerName} (₹${activeApp.principalAmount.toLocaleString('en-IN')}) - CBS Account Issued: ${accountNo}`
         });
-      } catch (e) {}
-
+        setDecisionNotice({ type: 'APPROVED', accountNo });
+        await fetchPending();
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
       setIsProcessing(false);
-      setDecisionNotice({ type: 'APPROVED', accountNo: generatedAccountNo });
-    }, 700);
+    }
   };
 
-  const handleReject = () => {
+  const handleReject = async () => {
     if (!activeApp) return;
     setIsProcessing(true);
 
-    setTimeout(() => {
-      const updatedApps = applications.filter((a) => a.id !== activeApp.id);
-      setApplications(updatedApps);
-      try {
-        localStorage.setItem('nbfc_pending_applications', JSON.stringify(updatedApps));
+    let currentChecker = '202012';
+    try {
+      const rawSession = localStorage.getItem('nbfc_staff_session');
+      if (rawSession) {
+        const s = JSON.parse(rawSession);
+        if (s.staffNumber) currentChecker = s.staffNumber;
+      }
+    } catch {}
+
+    try {
+      const res = await fetch('/api/accounts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'DECIDE_APPROVAL',
+          accountId: activeApp.id,
+          decision: 'REJECTED',
+          checkerId: currentChecker,
+          remarks
+        })
+      });
+
+      const data = await res.json();
+      if (data.success) {
         recordAuditLog({
           category: 'OPERATIONAL_BANKING_EVENT',
           action: 'LOAN_REJECTED',
           target: activeApp.cifNumber,
           details: `Application rejected by Authorizer for ${activeApp.customerName} (${activeApp.loanPurpose})`
         });
-      } catch (e) {}
+        setDecisionNotice({ type: 'REJECTED' });
+        await fetchPending();
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
       setIsProcessing(false);
-      setDecisionNotice({ type: 'REJECTED' });
-    }, 700);
+    }
   };
 
   return (

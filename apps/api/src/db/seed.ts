@@ -20,11 +20,10 @@ export async function seedDatabase() {
   console.log('[Seed] Starting GGY Finance Karnataka Operations database seeding...');
 
   try {
-    // 1. Seed Initial Super Admin IT (Bcrypt salt rounds: 10)
-    console.log('[Seed] Seeding initial Super Admin IT...');
-    const superAdminPassword = 'GGY#SuperAdminIT@2026!';
-    const superAdminPasswordHash = await bcrypt.hash(superAdminPassword, 10);
-    const ngyPasswordHash = await bcrypt.hash('GGYSecurePassword@2026', 10);
+    // 1. Seed Institutional Staff Roster (Pure-numeric IDs: 202010 - 202016)
+    console.log('[Seed] Seeding institutional staff roster...');
+    const defaultPasswordHash = await bcrypt.hash('GGYSecurePassword@2026', 10);
+    const superAdminPasswordHash = await bcrypt.hash('GGY#SuperAdminIT@2026!', 10);
 
     const staffProfiles = [
       {
@@ -43,9 +42,59 @@ export async function seedDatabase() {
         fullName: 'N. G. Yaragatti',
         email: 'ng.yaragatti@ggyfinance.in',
         phone: '9845012399',
-        passwordHash: ngyPasswordHash,
+        passwordHash: defaultPasswordHash,
         role: 'SYSTEM_ADMIN' as const,
         branchCode: '2020'
+      },
+      {
+        staffNumber: '202012',
+        username: 'suresh_hegde',
+        fullName: 'Suresh Hegde',
+        email: 'suresh.hegde@ggyfinance.in',
+        phone: '9845012312',
+        passwordHash: defaultPasswordHash,
+        role: 'BRANCH_MANAGER' as const,
+        branchCode: '2020'
+      },
+      {
+        staffNumber: '202013',
+        username: 'roopa_k',
+        fullName: 'Roopa K.',
+        email: 'roopa.k@ggyfinance.in',
+        phone: '9845012313',
+        passwordHash: defaultPasswordHash,
+        role: 'BRANCH_MANAGER' as const,
+        branchCode: '2021'
+      },
+      {
+        staffNumber: '202014',
+        username: 'manjunath_s',
+        fullName: 'Manjunath Swamy',
+        email: 'manjunath.s@ggyfinance.in',
+        phone: '9845012314',
+        passwordHash: defaultPasswordHash,
+        role: 'BRANCH_MANAGER' as const,
+        branchCode: '2022'
+      },
+      {
+        staffNumber: '202015',
+        username: 'ramesh_kumar',
+        fullName: 'Ramesh Kumar',
+        email: 'ramesh.k@ggyfinance.in',
+        phone: '9845012315',
+        passwordHash: defaultPasswordHash,
+        role: 'FIELD_OFFICER' as const,
+        branchCode: '2021'
+      },
+      {
+        staffNumber: '202016',
+        username: 'suresh_naik',
+        fullName: 'Suresh Naik',
+        email: 'suresh.n@ggyfinance.in',
+        phone: '9845012316',
+        passwordHash: defaultPasswordHash,
+        role: 'FIELD_OFFICER' as const,
+        branchCode: '2022'
       }
     ];
 
@@ -56,18 +105,19 @@ export async function seedDatabase() {
       if (existing.length === 0) {
         const [inserted] = await db.insert(users).values(staff).returning();
         seededUsers[staff.username] = inserted.id;
-        console.log(`  + Created user: ${staff.username} (${staff.role})`);
+        console.log(`  + Created user: ${staff.username} (${staff.staffNumber} - ${staff.role})`);
       } else {
         seededUsers[staff.username] = existing[0].id;
-        console.log(`  * User exists: ${staff.username}`);
+        console.log(`  * User exists: ${staff.username} (${existing[0].id})`);
       }
     }
 
-    const fieldOfficerId = seededUsers['it_superadmin'];
-    const authorizerId = seededUsers['it_superadmin'];
+    const superAdminId = seededUsers['it_superadmin'];
+    const fieldOfficerId = seededUsers['ramesh_kumar'] || superAdminId;
+    const authorizerId = seededUsers['suresh_hegde'] || superAdminId;
 
-    // 2. Seed Customer Profiles (Mandya & Ramanagara Clusters)
-    console.log('[Seed] Seeding sample rural borrowers with DPDP consent...');
+    // 2. Seed Customer Profiles (Mandya, Ramanagara & Bengaluru Rural)
+    console.log('[Seed] Seeding production rural borrowers with DPDP consent...');
     const customerProfiles = [
       {
         cifNumber: 'CIF-2026-M48101',
@@ -107,6 +157,32 @@ export async function seedDatabase() {
         state: 'Karnataka',
         consentGranted: true,
         createdByUserId: fieldOfficerId
+      },
+      {
+        cifNumber: 'CIF-2026-B10101',
+        fullName: 'Basavaraju M.',
+        phone: '9845012347',
+        email: 'basavaraju.m@example.com',
+        dob: '1982-08-19',
+        gender: 'MALE',
+        addressLine: 'Varthur Main Road, Bengaluru',
+        pincode: '560087',
+        state: 'Karnataka',
+        consentGranted: true,
+        createdByUserId: fieldOfficerId
+      },
+      {
+        cifNumber: 'CIF-2026-B10102',
+        fullName: 'Chennappa Gowda',
+        phone: '9845012348',
+        email: null,
+        dob: '1975-03-14',
+        gender: 'MALE',
+        addressLine: 'Nelamangala Rural Cluster, Bengaluru Rural',
+        pincode: '562123',
+        state: 'Karnataka',
+        consentGranted: true,
+        createdByUserId: fieldOfficerId
       }
     ];
 
@@ -124,38 +200,83 @@ export async function seedDatabase() {
       }
     }
 
-    // 3. Seed Micro Loan Accounts
-    console.log('[Seed] Seeding micro-lending accounts...');
+    // 3. Seed Micro Loan Accounts & Real Ledger
+    console.log('[Seed] Seeding CBS micro-lending accounts and transactions...');
     const loanSeedData = [
       {
         accountNumber: 'GGY-2026-M48101',
         cif: 'CIF-2026-M48101',
-        purpose: LoanPurpose.DAIRY_LIVESTOCK,
+        purpose: 'Dairy Development & Livestock Term Loan',
         principal: 75000,
         rate: 13.0,
         tenure: 18,
         status: AccountStatus.ACTIVE,
-        balance: '68000.00'
+        balance: '68000.00',
+        repayment: {
+          ref: 'UPI20261101984501',
+          amount: 7000,
+          mode: PaymentMode.UPI,
+          notes: 'November Monthly EMI via Google Pay (Ref: UPI20261101984501)'
+        }
       },
       {
         accountNumber: 'GGY-2026-M48102',
         cif: 'CIF-2026-M48102',
-        purpose: LoanPurpose.KIRANA_STORE,
+        purpose: 'Kirana & Retail Working Capital',
         principal: 50000,
         rate: 14.5,
         tenure: 12,
         status: AccountStatus.ACTIVE,
-        balance: '42000.00'
+        balance: '42000.00',
+        repayment: {
+          ref: 'RCPT20261102984502',
+          amount: 8000,
+          mode: PaymentMode.CASH,
+          notes: 'Maddur field doorstep cash collection by Field Officer Ramesh Kumar'
+        }
       },
       {
         accountNumber: 'DRAFT-R56201',
         cif: 'CIF-2026-R56201',
-        purpose: LoanPurpose.MICRO_ENTERPRISE,
+        purpose: 'Rural Artisan & Weaver Term Facility',
         principal: 60000,
         rate: 16.0,
         tenure: 12,
         status: AccountStatus.PENDING_APPROVAL,
-        balance: '60000.00'
+        balance: '60000.00',
+        repayment: null
+      },
+      {
+        accountNumber: 'GGY-2026-B10101',
+        cif: 'CIF-2026-B10101',
+        purpose: 'Kirana & Retail Working Capital',
+        principal: 40000,
+        rate: 11.5,
+        tenure: 12,
+        status: AccountStatus.ACTIVE,
+        balance: '36000.00',
+        repayment: {
+          ref: 'UPI20261105984503',
+          amount: 4000,
+          mode: PaymentMode.UPI,
+          notes: 'PhonePe UPI QR repayment for Varthur retail store'
+        }
+      },
+      {
+        accountNumber: 'GGY-2026-B10102',
+        cif: 'CIF-2026-B10102',
+        purpose: 'Dairy Development & Livestock Term Loan',
+        principal: 95000,
+        rate: 12.0,
+        tenure: 24,
+        status: AccountStatus.ACTIVE,
+        balance: '88000.00',
+        repayment: {
+          ref: 'UPI20261108984504',
+          amount: 7000,
+          mode: PaymentMode.UPI,
+          notes: 'Direct BHIM UPI EMI credit from Nelamangala borrower'
+        }
       }
     ];
 
@@ -164,6 +285,8 @@ export async function seedDatabase() {
       if (!custId) continue;
 
       const existing = await db.select().from(accounts).where(eq(accounts.accountNumber, item.accountNumber)).limit(1);
+      let accountRecordId = '';
+
       if (existing.length === 0) {
         const emi = calculateEMI(item.principal, item.rate, item.tenure);
         const [acc] = await db.insert(accounts).values({
@@ -177,6 +300,8 @@ export async function seedDatabase() {
           approvedAt: item.status === AccountStatus.ACTIVE ? new Date() : null
         }).returning();
 
+        accountRecordId = acc.id;
+
         await db.insert(loanDetails).values({
           accountId: acc.id,
           loanPurpose: item.purpose,
@@ -189,8 +314,66 @@ export async function seedDatabase() {
         });
 
         console.log(`  + Created loan account: ${item.accountNumber} (${item.status}, ₹${item.principal})`);
+
+        // Record initial ledger entries if active
+        if (item.status === AccountStatus.ACTIVE) {
+          // 1. Initial Disbursement (DEBIT)
+          const disbRef = `DISB-${item.accountNumber.replace(/[^A-Za-z0-9]/g, '')}`;
+          await db.insert(transactions).values({
+            accountId: acc.id,
+            txnRefNumber: disbRef,
+            amount: item.principal.toFixed(2),
+            txnType: TransactionType.DEBIT,
+            mode: PaymentMode.BANK_TRANSFER,
+            balanceAfter: item.principal.toFixed(2),
+            notes: `Initial principal disbursement for ${item.purpose}`
+          });
+
+          // 2. Sample Repayment (CREDIT)
+          if (item.repayment) {
+            await db.insert(transactions).values({
+              accountId: acc.id,
+              txnRefNumber: item.repayment.ref,
+              amount: item.repayment.amount.toFixed(2),
+              txnType: TransactionType.CREDIT,
+              mode: item.repayment.mode,
+              balanceAfter: item.balance,
+              notes: item.repayment.notes
+            });
+          }
+        }
       } else {
+        accountRecordId = existing[0].id;
         console.log(`  * Account exists: ${item.accountNumber}`);
+
+        if (item.status === AccountStatus.ACTIVE) {
+          const existingTxns = await db.select().from(transactions).where(eq(transactions.accountId, accountRecordId)).limit(1);
+          if (existingTxns.length === 0) {
+            const disbRef = `DISB-${item.accountNumber.replace(/[^A-Za-z0-9]/g, '')}`;
+            await db.insert(transactions).values({
+              accountId: accountRecordId,
+              txnRefNumber: disbRef,
+              amount: item.principal.toFixed(2),
+              txnType: TransactionType.DEBIT,
+              mode: PaymentMode.BANK_TRANSFER,
+              balanceAfter: item.principal.toFixed(2),
+              notes: `Initial principal disbursement for ${item.purpose}`
+            });
+
+            if (item.repayment) {
+              await db.insert(transactions).values({
+                accountId: accountRecordId,
+                txnRefNumber: item.repayment.ref,
+                amount: item.repayment.amount.toFixed(2),
+                txnType: TransactionType.CREDIT,
+                mode: item.repayment.mode,
+                balanceAfter: item.balance,
+                notes: item.repayment.notes
+              });
+            }
+            console.log(`    + Added initial ledger entries for: ${item.accountNumber}`);
+          }
+        }
       }
     }
 
@@ -308,6 +491,19 @@ export async function seedDatabase() {
         maxTenureMonths: 24,
         frequency: 'MONTHLY',
         purpose: 'Handloom, silk reeling machinery, raw materials and craft inventory',
+        isActive: true
+      },
+      {
+        schemeCode: 'SCHM-704',
+        name: 'Women Self-Help Group (SHG) Livelihood Facility',
+        minAmount: '25000.00',
+        maxAmount: '150000.00',
+        interestRate: '10.50',
+        defaultTenureMonths: 24,
+        minTenureMonths: 12,
+        maxTenureMonths: 36,
+        frequency: 'MONTHLY',
+        purpose: 'Joint-liability group collective micro-enterprises and agro-processing',
         isActive: true
       }
     ];

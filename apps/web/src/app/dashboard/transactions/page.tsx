@@ -35,36 +35,40 @@ const INITIAL_LEDGER: LedgerEntry[] = [];
 
 export default function TransactionsPage() {
   const { lang } = useLanguage();
-  const [ledger, setLedger] = useState<LedgerEntry[]>(() => {
-    try {
-      const raw = localStorage.getItem('nbfc_ledger_transactions');
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) return parsed;
-      }
-    } catch {
-      // fallback
-    }
-    return [];
-  });
+  const [ledger, setLedger] = useState<LedgerEntry[]>([]);
+  const [liveAccounts, setLiveAccounts] = useState<Array<{ accountNumber: string; borrowerName: string; customerId: string; balance: number }>>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [activeTab, setActiveTab] = useState<'LEDGER' | 'UPI_SIM' | 'CASH_ENTRY'>('LEDGER');
   const [searchTerm, setSearchTerm] = useState('');
   const [toastMsg, setToastMsg] = useState('');
 
-  // Live accounts from CBS
-  const [liveAccounts, setLiveAccounts] = useState<Array<{ accountNumber: string; borrowerName: string; customerId: string; balance: number }>>(() => {
+  const fetchData = async () => {
     try {
-      const raw = localStorage.getItem('nbfc_live_accounts');
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) return parsed;
+      setIsLoading(true);
+      const [resTxn, resAcc] = await Promise.all([
+        fetch('/api/transactions'),
+        fetch('/api/accounts')
+      ]);
+      const dataTxn = await resTxn.json();
+      const dataAcc = await resAcc.json();
+
+      if (dataTxn.success && Array.isArray(dataTxn.transactions)) {
+        setLedger(dataTxn.transactions);
       }
-    } catch {
-      // fallback
+      if (dataAcc.success && Array.isArray(dataAcc.accounts)) {
+        setLiveAccounts(dataAcc.accounts);
+      }
+    } catch (err) {
+      console.error('Failed to fetch transactions/accounts:', err);
+    } finally {
+      setIsLoading(false);
     }
-    return [];
-  });
+  };
+
+  React.useEffect(() => {
+    fetchData();
+  }, []);
 
   // UPI Simulation Form State
   const [upiForm, setUpiForm] = useState({
@@ -174,7 +178,7 @@ export default function TransactionsPage() {
       item.referenceId.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleSimulateUpi = (e: React.FormEvent) => {
+  const handleSimulateUpi = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!upiForm.accountNumber || !upiForm.borrowerName) {
       setToastMsg('Please specify a valid borrower account and name.');
@@ -189,66 +193,45 @@ export default function TransactionsPage() {
       return;
     }
 
-    const newTxnId = `TXN-UPI-2026-00${ledger.length + 1}`;
-    
-    // Resolve dynamic prior balance for the target account
-    const priorSettledEntry = ledger.find(
-      (l) => l.accountNumber === upiForm.accountNumber && l.status === 'SETTLED'
-    );
-    const liveAcc = liveAccounts.find((a) => a.accountNumber === upiForm.accountNumber);
-    const priorBalance = priorSettledEntry
-      ? priorSettledEntry.balanceAfter
-      : (liveAcc ? liveAcc.balance : 50000);
-    const calculatedBalance = Math.max(0, priorBalance - Number(upiForm.amount));
-
-    const newEntry: LedgerEntry = {
-      id: newTxnId,
-      timestamp: new Date().toISOString().replace('T', ' ').slice(0, 16),
-      customerId: upiForm.customerId || (liveAcc ? liveAcc.customerId : '1084000001'),
-      accountNumber: upiForm.accountNumber,
-      borrowerName: upiForm.borrowerName,
-      type: 'UPI_REPAYMENT',
-      debit: 0,
-      credit: Number(upiForm.amount),
-      balanceAfter: calculatedBalance,
-      makerId: 'SYSTEM_NPCI_WEBHOOK',
-      checkerId: 'NPCI_AUTO_SETTLED',
-      referenceId: `UTR:${upiForm.utr}`,
-      status: 'SETTLED'
-    };
-
-    const updated = [newEntry, ...ledger];
-    setLedger(updated);
     try {
-      localStorage.setItem('nbfc_ledger_transactions', JSON.stringify(updated));
-
-      // Synchronize outstanding balance into nbfc_live_accounts
-      const updatedAccounts = liveAccounts.map((acc) =>
-        acc.accountNumber === newEntry.accountNumber
-          ? { ...acc, balance: calculatedBalance }
-          : acc
-      );
-      setLiveAccounts(updatedAccounts);
-      localStorage.setItem('nbfc_live_accounts', JSON.stringify(updatedAccounts));
-
-      recordAuditLog({
-        category: 'OPERATIONAL_BANKING_EVENT',
-        action: 'UPI_PAYMENT_CONFIRMED',
-        target: upiForm.accountNumber,
-        details: `Repayment credit of ₹${Number(upiForm.amount).toLocaleString('en-IN')} settled via UPI UTR ${upiForm.utr} for ${upiForm.borrowerName}`
+      const res = await fetch('/api/transactions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          accountNumber: upiForm.accountNumber,
+          amount: upiAmount,
+          mode: 'UPI',
+          utrNumber: `UTR:${upiForm.utr}`,
+          remarks: `Repayment received via UPI (UTR: ${upiForm.utr}) for ${upiForm.borrowerName}`
+        })
       });
-    } catch {}
-    setActiveTab('LEDGER');
-    setToastMsg(`₹${upiForm.amount} successfully credited via UPI UTR ${upiForm.utr}!`);
-    // Randomize next UTR for subsequent simulations
-    setUpiForm({
-      ...upiForm,
-      utr: '2026111498' + Math.floor(1000 + Math.random() * 9000)
-    });
-    setTimeout(() => setToastMsg(''), 5000);
+
+      const data = await res.json();
+      if (data.success) {
+        await fetchData();
+        recordAuditLog({
+          category: 'OPERATIONAL_BANKING_EVENT',
+          action: 'UPI_PAYMENT_CONFIRMED',
+          target: upiForm.accountNumber,
+          details: `Repayment credit of ₹${upiAmount.toLocaleString('en-IN')} settled via UPI UTR ${upiForm.utr} for ${upiForm.borrowerName}`
+        });
+        setActiveTab('LEDGER');
+        setToastMsg(`₹${upiAmount.toLocaleString('en-IN')} successfully credited via UPI UTR ${upiForm.utr}!`);
+        setUpiForm({
+          ...upiForm,
+          utr: '2026111498' + Math.floor(1000 + Math.random() * 9000)
+        });
+        setTimeout(() => setToastMsg(''), 5000);
+      } else {
+        setToastMsg(data.message || 'Payment processing failed');
+      }
+    } catch (err) {
+      console.error(err);
+      setToastMsg('Network error processing UPI payment');
+    }
   };
 
-  const handleRecordCash = (e: React.FormEvent) => {
+  const handleRecordCash = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!cashForm.accountNumber || !cashForm.borrowerName) {
       setToastMsg('Please specify a valid borrower account and name.');
@@ -263,51 +246,42 @@ export default function TransactionsPage() {
       return;
     }
 
-    const newTxnId = `TXN-CASH-2026-00${ledger.length + 1}`;
-    
-    // Resolve current balance
-    const priorSettledEntry = ledger.find(
-      (l) => l.accountNumber === cashForm.accountNumber && l.status === 'SETTLED'
-    );
-    const liveAcc = liveAccounts.find((a) => a.accountNumber === cashForm.accountNumber);
-    const priorBalance = priorSettledEntry
-      ? priorSettledEntry.balanceAfter
-      : (liveAcc ? liveAcc.balance : 50000);
-
-    const newEntry: LedgerEntry = {
-      id: newTxnId,
-      timestamp: new Date().toISOString().replace('T', ' ').slice(0, 16),
-      customerId: cashForm.customerId || (liveAcc ? liveAcc.customerId : '1084000001'),
-      accountNumber: cashForm.accountNumber,
-      borrowerName: cashForm.borrowerName,
-      type: 'CASH_COLLECTION',
-      debit: 0,
-      credit: Number(cashForm.amount),
-      balanceAfter: priorBalance, // Not deducted until manager verifies
-      makerId: cashForm.fieldOfficer,
-      referenceId: cashForm.receiptNumber,
-      status: 'PENDING_VERIFICATION'
-    };
-
-    const updated = [newEntry, ...ledger];
-    setLedger(updated);
     try {
-      localStorage.setItem('nbfc_ledger_transactions', JSON.stringify(updated));
-      recordAuditLog({
-        category: 'OPERATIONAL_BANKING_EVENT',
-        action: 'CASH_RECEIPT_RECORDED',
-        target: cashForm.accountNumber,
-        details: `Field Officer recorded doorstep cash receipt ${cashForm.receiptNumber} for ₹${Number(cashForm.amount).toLocaleString('en-IN')} (Pending Manager Verification)`
+      const res = await fetch('/api/transactions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          accountNumber: cashForm.accountNumber,
+          amount: cashAmount,
+          mode: 'CASH',
+          utrNumber: cashForm.receiptNumber,
+          remarks: `Doorstep cash collection by ${cashForm.fieldOfficer}. Receipt: ${cashForm.receiptNumber}`
+        })
       });
-    } catch {}
-    setActiveTab('LEDGER');
-    setToastMsg(`Cash entry recorded for ${cashForm.borrowerName}. Pending Branch Manager verification!`);
-    // Randomize next receipt number
-    setCashForm({
-      ...cashForm,
-      receiptNumber: 'RCPT-KA-' + Math.floor(10000 + Math.random() * 90000)
-    });
-    setTimeout(() => setToastMsg(''), 5000);
+
+      const data = await res.json();
+      if (data.success) {
+        await fetchData();
+        recordAuditLog({
+          category: 'OPERATIONAL_BANKING_EVENT',
+          action: 'CASH_RECEIPT_RECORDED',
+          target: cashForm.accountNumber,
+          details: `Field Officer recorded doorstep cash receipt ${cashForm.receiptNumber} for ₹${cashAmount.toLocaleString('en-IN')}`
+        });
+        setActiveTab('LEDGER');
+        setToastMsg(`Cash entry of ₹${cashAmount.toLocaleString('en-IN')} recorded for ${cashForm.borrowerName}!`);
+        setCashForm({
+          ...cashForm,
+          receiptNumber: 'RCPT-KA-' + Math.floor(10000 + Math.random() * 90000)
+        });
+        setTimeout(() => setToastMsg(''), 5000);
+      } else {
+        setToastMsg(data.message || 'Cash entry recording failed');
+      }
+    } catch (err) {
+      console.error(err);
+      setToastMsg('Network error recording cash entry');
+    }
   };
 
   const handleVerifyCash = (item: LedgerEntry) => {

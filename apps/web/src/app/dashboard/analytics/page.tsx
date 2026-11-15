@@ -45,7 +45,16 @@ export default function AnalyticsPage() {
   const [auditSearch, setAuditSearch] = useState<string>('');
 
   useEffect(() => {
-    const loadAudits = () => {
+    const loadAudits = async () => {
+      try {
+        const res = await fetch('/api/audit');
+        const data = await res.json();
+        if (data.success && Array.isArray(data.events) && data.events.length > 0) {
+          setAuditEvents(data.events);
+          return;
+        }
+      } catch {}
+
       try {
         const raw = localStorage.getItem('nbfc_audit_trail');
         if (raw) {
