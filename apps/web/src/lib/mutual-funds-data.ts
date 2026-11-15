@@ -1,4 +1,6 @@
-{
+import { MutualFundsDataset } from "./mutual-funds";
+
+export const MUTUAL_FUNDS_DATA: MutualFundsDataset = {
   "amcs": [
     {
       "code": "HDFC_MF",
@@ -117,17 +119,50 @@
       "kimUrl": "https://www.hdfcfund.com/statutory-disclosure/kim",
       "factsheetUrl": "https://www.hdfcfund.com/investor-desk/factsheets",
       "milestonesNavHistory": [
-        { "date": "2021-11-15", "nav": 455.40 },
-        { "date": "2022-05-15", "nav": 490.15 },
-        { "date": "2022-11-15", "nav": 585.30 },
-        { "date": "2023-05-15", "nav": 640.20 },
-        { "date": "2023-11-15", "nav": 678.90 },
-        { "date": "2024-05-15", "nav": 780.45 },
-        { "date": "2024-11-15", "nav": 844.10 },
-        { "date": "2025-05-15", "nav": 925.30 },
-        { "date": "2025-11-15", "nav": 995.80 },
-        { "date": "2026-05-15", "nav": 1040.60 },
-        { "date": "2026-11-13", "nav": 1084.25 }
+        {
+          "date": "2021-11-15",
+          "nav": 455.4
+        },
+        {
+          "date": "2022-05-15",
+          "nav": 490.15
+        },
+        {
+          "date": "2022-11-15",
+          "nav": 585.3
+        },
+        {
+          "date": "2023-05-15",
+          "nav": 640.2
+        },
+        {
+          "date": "2023-11-15",
+          "nav": 678.9
+        },
+        {
+          "date": "2024-05-15",
+          "nav": 780.45
+        },
+        {
+          "date": "2024-11-15",
+          "nav": 844.1
+        },
+        {
+          "date": "2025-05-15",
+          "nav": 925.3
+        },
+        {
+          "date": "2025-11-15",
+          "nav": 995.8
+        },
+        {
+          "date": "2026-05-15",
+          "nav": 1040.6
+        },
+        {
+          "date": "2026-11-13",
+          "nav": 1084.25
+        }
       ]
     },
     {
@@ -142,7 +177,7 @@
       "optionType": "Growth",
       "latestNav": 82.46,
       "latestNavDate": "2026-11-13",
-      "returns1Y": 29.80,
+      "returns1Y": 29.8,
       "cagr3Y": 22.15,
       "cagr5Y": 21.05,
       "riskometer": "Very High",
@@ -154,17 +189,50 @@
       "kimUrl": "https://amc.ppfas.com/downloads/kim/",
       "factsheetUrl": "https://amc.ppfas.com/factsheets/",
       "milestonesNavHistory": [
-        { "date": "2021-11-15", "nav": 31.70 },
-        { "date": "2022-05-15", "nav": 35.40 },
-        { "date": "2022-11-15", "nav": 42.10 },
-        { "date": "2023-05-15", "nav": 47.80 },
-        { "date": "2023-11-15", "nav": 53.60 },
-        { "date": "2024-05-15", "nav": 61.20 },
-        { "date": "2024-11-15", "nav": 63.50 },
-        { "date": "2025-05-15", "nav": 71.30 },
-        { "date": "2025-11-15", "nav": 75.80 },
-        { "date": "2026-05-15", "nav": 78.90 },
-        { "date": "2026-11-13", "nav": 82.46 }
+        {
+          "date": "2021-11-15",
+          "nav": 31.7
+        },
+        {
+          "date": "2022-05-15",
+          "nav": 35.4
+        },
+        {
+          "date": "2022-11-15",
+          "nav": 42.1
+        },
+        {
+          "date": "2023-05-15",
+          "nav": 47.8
+        },
+        {
+          "date": "2023-11-15",
+          "nav": 53.6
+        },
+        {
+          "date": "2024-05-15",
+          "nav": 61.2
+        },
+        {
+          "date": "2024-11-15",
+          "nav": 63.5
+        },
+        {
+          "date": "2025-05-15",
+          "nav": 71.3
+        },
+        {
+          "date": "2025-11-15",
+          "nav": 75.8
+        },
+        {
+          "date": "2026-05-15",
+          "nav": 78.9
+        },
+        {
+          "date": "2026-11-13",
+          "nav": 82.46
+        }
       ]
     },
     {
@@ -177,11 +245,11 @@
       "subCategory": "Small Cap Fund",
       "planType": "Regular",
       "optionType": "Growth",
-      "latestNav": 164.80,
+      "latestNav": 164.8,
       "latestNavDate": "2026-11-13",
-      "returns1Y": 34.60,
-      "cagr3Y": 27.40,
-      "cagr5Y": 28.10,
+      "returns1Y": 34.6,
+      "cagr3Y": 27.4,
+      "cagr5Y": 28.1,
       "riskometer": "Very High",
       "expenseRatio": 1.51,
       "benchmarkName": "NIFTY Smallcap 250 TRI",
@@ -191,17 +259,50 @@
       "kimUrl": "https://mf.nipponindiaim.com/investor-service/downloads/factsheet-sid-kim",
       "factsheetUrl": "https://mf.nipponindiaim.com/investor-service/downloads/factsheet-sid-kim",
       "milestonesNavHistory": [
-        { "date": "2021-11-15", "nav": 47.80 },
-        { "date": "2022-05-15", "nav": 56.40 },
-        { "date": "2022-11-15", "nav": 72.10 },
-        { "date": "2023-05-15", "nav": 85.30 },
-        { "date": "2023-11-15", "nav": 98.70 },
-        { "date": "2024-05-15", "nav": 118.40 },
-        { "date": "2024-11-15", "nav": 122.40 },
-        { "date": "2025-05-15", "nav": 139.10 },
-        { "date": "2025-11-15", "nav": 149.20 },
-        { "date": "2026-05-15", "nav": 158.40 },
-        { "date": "2026-11-13", "nav": 164.80 }
+        {
+          "date": "2021-11-15",
+          "nav": 47.8
+        },
+        {
+          "date": "2022-05-15",
+          "nav": 56.4
+        },
+        {
+          "date": "2022-11-15",
+          "nav": 72.1
+        },
+        {
+          "date": "2023-05-15",
+          "nav": 85.3
+        },
+        {
+          "date": "2023-11-15",
+          "nav": 98.7
+        },
+        {
+          "date": "2024-05-15",
+          "nav": 118.4
+        },
+        {
+          "date": "2024-11-15",
+          "nav": 122.4
+        },
+        {
+          "date": "2025-05-15",
+          "nav": 139.1
+        },
+        {
+          "date": "2025-11-15",
+          "nav": 149.2
+        },
+        {
+          "date": "2026-05-15",
+          "nav": 158.4
+        },
+        {
+          "date": "2026-11-13",
+          "nav": 164.8
+        }
       ]
     },
     {
@@ -216,9 +317,9 @@
       "optionType": "Growth",
       "latestNav": 182.35,
       "latestNavDate": "2026-11-13",
-      "returns1Y": 31.20,
-      "cagr3Y": 25.80,
-      "cagr5Y": 24.50,
+      "returns1Y": 31.2,
+      "cagr3Y": 25.8,
+      "cagr5Y": 24.5,
       "riskometer": "Very High",
       "expenseRatio": 1.48,
       "benchmarkName": "NIFTY Midcap 150 TRI",
@@ -228,17 +329,50 @@
       "kimUrl": "https://www.hdfcfund.com/statutory-disclosure/kim",
       "factsheetUrl": "https://www.hdfcfund.com/investor-desk/factsheets",
       "milestonesNavHistory": [
-        { "date": "2021-11-15", "nav": 61.20 },
-        { "date": "2022-05-15", "nav": 72.80 },
-        { "date": "2022-11-15", "nav": 88.50 },
-        { "date": "2023-05-15", "nav": 104.20 },
-        { "date": "2023-11-15", "nav": 119.40 },
-        { "date": "2024-05-15", "nav": 139.10 },
-        { "date": "2024-11-15", "nav": 138.90 },
-        { "date": "2025-05-15", "nav": 156.40 },
-        { "date": "2025-11-15", "nav": 167.80 },
-        { "date": "2026-05-15", "nav": 175.20 },
-        { "date": "2026-11-13", "nav": 182.35 }
+        {
+          "date": "2021-11-15",
+          "nav": 61.2
+        },
+        {
+          "date": "2022-05-15",
+          "nav": 72.8
+        },
+        {
+          "date": "2022-11-15",
+          "nav": 88.5
+        },
+        {
+          "date": "2023-05-15",
+          "nav": 104.2
+        },
+        {
+          "date": "2023-11-15",
+          "nav": 119.4
+        },
+        {
+          "date": "2024-05-15",
+          "nav": 139.1
+        },
+        {
+          "date": "2024-11-15",
+          "nav": 138.9
+        },
+        {
+          "date": "2025-05-15",
+          "nav": 156.4
+        },
+        {
+          "date": "2025-11-15",
+          "nav": 167.8
+        },
+        {
+          "date": "2026-05-15",
+          "nav": 175.2
+        },
+        {
+          "date": "2026-11-13",
+          "nav": 182.35
+        }
       ]
     },
     {
@@ -253,9 +387,9 @@
       "optionType": "Growth",
       "latestNav": 96.12,
       "latestNavDate": "2026-11-13",
-      "returns1Y": 23.40,
+      "returns1Y": 23.4,
       "cagr3Y": 18.25,
-      "cagr5Y": 16.70,
+      "cagr5Y": 16.7,
       "riskometer": "Very High",
       "expenseRatio": 1.58,
       "benchmarkName": "S&P BSE 100 TRI",
@@ -265,17 +399,50 @@
       "kimUrl": "https://www.sbimf.com/en-us/statutory-details/kim",
       "factsheetUrl": "https://www.sbimf.com/en-us/fund-factsheets",
       "milestonesNavHistory": [
-        { "date": "2021-11-15", "nav": 44.50 },
-        { "date": "2022-05-15", "nav": 48.20 },
-        { "date": "2022-11-15", "nav": 56.40 },
-        { "date": "2023-05-15", "nav": 61.20 },
-        { "date": "2023-11-15", "nav": 67.80 },
-        { "date": "2024-05-15", "nav": 74.20 },
-        { "date": "2024-11-15", "nav": 77.90 },
-        { "date": "2025-05-15", "nav": 84.10 },
-        { "date": "2025-11-15", "nav": 89.20 },
-        { "date": "2026-05-15", "nav": 93.40 },
-        { "date": "2026-11-13", "nav": 96.12 }
+        {
+          "date": "2021-11-15",
+          "nav": 44.5
+        },
+        {
+          "date": "2022-05-15",
+          "nav": 48.2
+        },
+        {
+          "date": "2022-11-15",
+          "nav": 56.4
+        },
+        {
+          "date": "2023-05-15",
+          "nav": 61.2
+        },
+        {
+          "date": "2023-11-15",
+          "nav": 67.8
+        },
+        {
+          "date": "2024-05-15",
+          "nav": 74.2
+        },
+        {
+          "date": "2024-11-15",
+          "nav": 77.9
+        },
+        {
+          "date": "2025-05-15",
+          "nav": 84.1
+        },
+        {
+          "date": "2025-11-15",
+          "nav": 89.2
+        },
+        {
+          "date": "2026-05-15",
+          "nav": 93.4
+        },
+        {
+          "date": "2026-11-13",
+          "nav": 96.12
+        }
       ]
     },
     {
@@ -291,7 +458,7 @@
       "latestNav": 51.48,
       "latestNavDate": "2026-11-13",
       "returns1Y": 27.15,
-      "cagr3Y": 19.80,
+      "cagr3Y": 19.8,
       "cagr5Y": 19.45,
       "riskometer": "Very High",
       "expenseRatio": 1.54,
@@ -302,17 +469,50 @@
       "kimUrl": "https://www.miraeassetmf.co.in/downloads/regulatory/kim",
       "factsheetUrl": "https://www.miraeassetmf.co.in/downloads/factsheets",
       "milestonesNavHistory": [
-        { "date": "2021-11-15", "nav": 21.20 },
-        { "date": "2022-05-15", "nav": 24.10 },
-        { "date": "2022-11-15", "nav": 29.80 },
-        { "date": "2023-05-15", "nav": 33.40 },
-        { "date": "2023-11-15", "nav": 37.20 },
-        { "date": "2024-05-15", "nav": 41.50 },
-        { "date": "2024-11-15", "nav": 40.50 },
-        { "date": "2025-05-15", "nav": 45.10 },
-        { "date": "2025-11-15", "nav": 48.20 },
-        { "date": "2026-05-15", "nav": 50.10 },
-        { "date": "2026-11-13", "nav": 51.48 }
+        {
+          "date": "2021-11-15",
+          "nav": 21.2
+        },
+        {
+          "date": "2022-05-15",
+          "nav": 24.1
+        },
+        {
+          "date": "2022-11-15",
+          "nav": 29.8
+        },
+        {
+          "date": "2023-05-15",
+          "nav": 33.4
+        },
+        {
+          "date": "2023-11-15",
+          "nav": 37.2
+        },
+        {
+          "date": "2024-05-15",
+          "nav": 41.5
+        },
+        {
+          "date": "2024-11-15",
+          "nav": 40.5
+        },
+        {
+          "date": "2025-05-15",
+          "nav": 45.1
+        },
+        {
+          "date": "2025-11-15",
+          "nav": 48.2
+        },
+        {
+          "date": "2026-05-15",
+          "nav": 50.1
+        },
+        {
+          "date": "2026-11-13",
+          "nav": 51.48
+        }
       ]
     },
     {
@@ -327,9 +527,9 @@
       "optionType": "Growth",
       "latestNav": 74.85,
       "latestNavDate": "2026-11-13",
-      "returns1Y": 19.50,
-      "cagr3Y": 15.40,
-      "cagr5Y": 14.10,
+      "returns1Y": 19.5,
+      "cagr3Y": 15.4,
+      "cagr5Y": 14.1,
       "riskometer": "High",
       "expenseRatio": 1.45,
       "benchmarkName": "CRISIL Hybrid 50+50 Moderate Index",
@@ -339,17 +539,50 @@
       "kimUrl": "https://www.icicipruamc.com/downloads/kim",
       "factsheetUrl": "https://www.icicipruamc.com/downloads/factsheets",
       "milestonesNavHistory": [
-        { "date": "2021-11-15", "nav": 38.60 },
-        { "date": "2022-05-15", "nav": 41.20 },
-        { "date": "2022-11-15", "nav": 47.80 },
-        { "date": "2023-05-15", "nav": 51.40 },
-        { "date": "2023-11-15", "nav": 55.60 },
-        { "date": "2024-05-15", "nav": 60.80 },
-        { "date": "2024-11-15", "nav": 62.60 },
-        { "date": "2025-05-15", "nav": 67.40 },
-        { "date": "2025-11-15", "nav": 70.80 },
-        { "date": "2026-05-15", "nav": 73.10 },
-        { "date": "2026-11-13", "nav": 74.85 }
+        {
+          "date": "2021-11-15",
+          "nav": 38.6
+        },
+        {
+          "date": "2022-05-15",
+          "nav": 41.2
+        },
+        {
+          "date": "2022-11-15",
+          "nav": 47.8
+        },
+        {
+          "date": "2023-05-15",
+          "nav": 51.4
+        },
+        {
+          "date": "2023-11-15",
+          "nav": 55.6
+        },
+        {
+          "date": "2024-05-15",
+          "nav": 60.8
+        },
+        {
+          "date": "2024-11-15",
+          "nav": 62.6
+        },
+        {
+          "date": "2025-05-15",
+          "nav": 67.4
+        },
+        {
+          "date": "2025-11-15",
+          "nav": 70.8
+        },
+        {
+          "date": "2026-05-15",
+          "nav": 73.1
+        },
+        {
+          "date": "2026-11-13",
+          "nav": 74.85
+        }
       ]
     },
     {
@@ -362,11 +595,11 @@
       "subCategory": "Large Cap Index",
       "planType": "Regular",
       "optionType": "Growth",
-      "latestNav": 182.10,
+      "latestNav": 182.1,
       "latestNavDate": "2026-11-13",
-      "returns1Y": 24.80,
-      "cagr3Y": 17.60,
-      "cagr5Y": 16.90,
+      "returns1Y": 24.8,
+      "cagr3Y": 17.6,
+      "cagr5Y": 16.9,
       "riskometer": "Very High",
       "expenseRatio": 0.38,
       "benchmarkName": "NIFTY 50 TRI",
@@ -376,17 +609,50 @@
       "kimUrl": "https://www.utimf.com/downloads/kim",
       "factsheetUrl": "https://www.utimf.com/downloads/factsheets",
       "milestonesNavHistory": [
-        { "date": "2021-11-15", "nav": 83.40 },
-        { "date": "2022-05-15", "nav": 92.10 },
-        { "date": "2022-11-15", "nav": 108.50 },
-        { "date": "2023-05-15", "nav": 118.20 },
-        { "date": "2023-11-15", "nav": 131.40 },
-        { "date": "2024-05-15", "nav": 145.20 },
-        { "date": "2024-11-15", "nav": 145.90 },
-        { "date": "2025-05-15", "nav": 160.10 },
-        { "date": "2025-11-15", "nav": 171.40 },
-        { "date": "2026-05-15", "nav": 178.60 },
-        { "date": "2026-11-13", "nav": 182.10 }
+        {
+          "date": "2021-11-15",
+          "nav": 83.4
+        },
+        {
+          "date": "2022-05-15",
+          "nav": 92.1
+        },
+        {
+          "date": "2022-11-15",
+          "nav": 108.5
+        },
+        {
+          "date": "2023-05-15",
+          "nav": 118.2
+        },
+        {
+          "date": "2023-11-15",
+          "nav": 131.4
+        },
+        {
+          "date": "2024-05-15",
+          "nav": 145.2
+        },
+        {
+          "date": "2024-11-15",
+          "nav": 145.9
+        },
+        {
+          "date": "2025-05-15",
+          "nav": 160.1
+        },
+        {
+          "date": "2025-11-15",
+          "nav": 171.4
+        },
+        {
+          "date": "2026-05-15",
+          "nav": 178.6
+        },
+        {
+          "date": "2026-11-13",
+          "nav": 182.1
+        }
       ]
     },
     {
@@ -399,7 +665,7 @@
       "subCategory": "Liquid Debt Fund",
       "planType": "Regular",
       "optionType": "Growth",
-      "latestNav": 4982.40,
+      "latestNav": 4982.4,
       "latestNavDate": "2026-11-13",
       "returns1Y": 7.35,
       "cagr3Y": 6.85,
@@ -413,17 +679,50 @@
       "kimUrl": "https://www.hdfcfund.com/statutory-disclosure/kim",
       "factsheetUrl": "https://www.hdfcfund.com/investor-desk/factsheets",
       "milestonesNavHistory": [
-        { "date": "2021-11-15", "nav": 3738.20 },
-        { "date": "2022-05-15", "nav": 3840.10 },
-        { "date": "2022-11-15", "nav": 3975.40 },
-        { "date": "2023-05-15", "nav": 4120.30 },
-        { "date": "2023-11-15", "nav": 4270.80 },
-        { "date": "2024-05-15", "nav": 4430.50 },
-        { "date": "2024-11-15", "nav": 4641.20 },
-        { "date": "2025-05-15", "nav": 4760.10 },
-        { "date": "2025-11-15", "nav": 4875.40 },
-        { "date": "2026-05-15", "nav": 4935.20 },
-        { "date": "2026-11-13", "nav": 4982.40 }
+        {
+          "date": "2021-11-15",
+          "nav": 3738.2
+        },
+        {
+          "date": "2022-05-15",
+          "nav": 3840.1
+        },
+        {
+          "date": "2022-11-15",
+          "nav": 3975.4
+        },
+        {
+          "date": "2023-05-15",
+          "nav": 4120.3
+        },
+        {
+          "date": "2023-11-15",
+          "nav": 4270.8
+        },
+        {
+          "date": "2024-05-15",
+          "nav": 4430.5
+        },
+        {
+          "date": "2024-11-15",
+          "nav": 4641.2
+        },
+        {
+          "date": "2025-05-15",
+          "nav": 4760.1
+        },
+        {
+          "date": "2025-11-15",
+          "nav": 4875.4
+        },
+        {
+          "date": "2026-05-15",
+          "nav": 4935.2
+        },
+        {
+          "date": "2026-11-13",
+          "nav": 4982.4
+        }
       ]
     },
     {
@@ -436,11 +735,11 @@
       "subCategory": "Aggressive Hybrid Fund",
       "planType": "Regular",
       "optionType": "Growth",
-      "latestNav": 272.50,
+      "latestNav": 272.5,
       "latestNavDate": "2026-11-13",
-      "returns1Y": 21.80,
-      "cagr3Y": 16.90,
-      "cagr5Y": 15.80,
+      "returns1Y": 21.8,
+      "cagr3Y": 16.9,
+      "cagr5Y": 15.8,
       "riskometer": "Very High",
       "expenseRatio": 1.55,
       "benchmarkName": "CRISIL Hybrid 35+65 Aggressive Index",
@@ -450,17 +749,50 @@
       "kimUrl": "https://www.sbimf.com/en-us/statutory-details/kim",
       "factsheetUrl": "https://www.sbimf.com/en-us/fund-factsheets",
       "milestonesNavHistory": [
-        { "date": "2021-11-15", "nav": 131.20 },
-        { "date": "2022-05-15", "nav": 142.50 },
-        { "date": "2022-11-15", "nav": 165.80 },
-        { "date": "2023-05-15", "nav": 182.40 },
-        { "date": "2023-11-15", "nav": 198.50 },
-        { "date": "2024-05-15", "nav": 218.40 },
-        { "date": "2024-11-15", "nav": 223.70 },
-        { "date": "2025-05-15", "nav": 242.10 },
-        { "date": "2025-11-15", "nav": 255.40 },
-        { "date": "2026-05-15", "nav": 264.80 },
-        { "date": "2026-11-13", "nav": 272.50 }
+        {
+          "date": "2021-11-15",
+          "nav": 131.2
+        },
+        {
+          "date": "2022-05-15",
+          "nav": 142.5
+        },
+        {
+          "date": "2022-11-15",
+          "nav": 165.8
+        },
+        {
+          "date": "2023-05-15",
+          "nav": 182.4
+        },
+        {
+          "date": "2023-11-15",
+          "nav": 198.5
+        },
+        {
+          "date": "2024-05-15",
+          "nav": 218.4
+        },
+        {
+          "date": "2024-11-15",
+          "nav": 223.7
+        },
+        {
+          "date": "2025-05-15",
+          "nav": 242.1
+        },
+        {
+          "date": "2025-11-15",
+          "nav": 255.4
+        },
+        {
+          "date": "2026-05-15",
+          "nav": 264.8
+        },
+        {
+          "date": "2026-11-13",
+          "nav": 272.5
+        }
       ]
     },
     {
@@ -475,9 +807,9 @@
       "optionType": "Growth",
       "latestNav": 128.45,
       "latestNavDate": "2026-11-13",
-      "returns1Y": 29.50,
-      "cagr3Y": 24.10,
-      "cagr5Y": 23.40,
+      "returns1Y": 29.5,
+      "cagr3Y": 24.1,
+      "cagr5Y": 23.4,
       "riskometer": "Very High",
       "expenseRatio": 1.59,
       "benchmarkName": "NIFTY Midcap 150 TRI",
@@ -487,17 +819,50 @@
       "kimUrl": "https://www.kotakmf.com/statutory-reports/kim",
       "factsheetUrl": "https://www.kotakmf.com/factsheets",
       "milestonesNavHistory": [
-        { "date": "2021-11-15", "nav": 45.10 },
-        { "date": "2022-05-15", "nav": 53.40 },
-        { "date": "2022-11-15", "nav": 66.80 },
-        { "date": "2023-05-15", "nav": 77.20 },
-        { "date": "2023-11-15", "nav": 88.50 },
-        { "date": "2024-05-15", "nav": 102.10 },
-        { "date": "2024-11-15", "nav": 99.20 },
-        { "date": "2025-05-15", "nav": 112.50 },
-        { "date": "2025-11-15", "nav": 119.80 },
-        { "date": "2026-05-15", "nav": 124.20 },
-        { "date": "2026-11-13", "nav": 128.45 }
+        {
+          "date": "2021-11-15",
+          "nav": 45.1
+        },
+        {
+          "date": "2022-05-15",
+          "nav": 53.4
+        },
+        {
+          "date": "2022-11-15",
+          "nav": 66.8
+        },
+        {
+          "date": "2023-05-15",
+          "nav": 77.2
+        },
+        {
+          "date": "2023-11-15",
+          "nav": 88.5
+        },
+        {
+          "date": "2024-05-15",
+          "nav": 102.1
+        },
+        {
+          "date": "2024-11-15",
+          "nav": 99.2
+        },
+        {
+          "date": "2025-05-15",
+          "nav": 112.5
+        },
+        {
+          "date": "2025-11-15",
+          "nav": 119.8
+        },
+        {
+          "date": "2026-05-15",
+          "nav": 124.2
+        },
+        {
+          "date": "2026-11-13",
+          "nav": 128.45
+        }
       ]
     },
     {
@@ -510,9 +875,9 @@
       "subCategory": "Short Duration Fund",
       "planType": "Regular",
       "optionType": "Growth",
-      "latestNav": 54.80,
+      "latestNav": 54.8,
       "latestNavDate": "2026-11-13",
-      "returns1Y": 7.80,
+      "returns1Y": 7.8,
       "cagr3Y": 7.15,
       "cagr5Y": 6.45,
       "riskometer": "Moderate",
@@ -524,17 +889,50 @@
       "kimUrl": "https://www.kotakmf.com/statutory-reports/kim",
       "factsheetUrl": "https://www.kotakmf.com/factsheets",
       "milestonesNavHistory": [
-        { "date": "2021-11-15", "nav": 40.10 },
-        { "date": "2022-05-15", "nav": 41.50 },
-        { "date": "2022-11-15", "nav": 43.20 },
-        { "date": "2023-05-15", "nav": 45.10 },
-        { "date": "2023-11-15", "nav": 46.80 },
-        { "date": "2024-05-15", "nav": 48.60 },
-        { "date": "2024-11-15", "nav": 50.80 },
-        { "date": "2025-05-15", "nav": 51.90 },
-        { "date": "2025-11-15", "nav": 53.20 },
-        { "date": "2026-05-15", "nav": 54.10 },
-        { "date": "2026-11-13", "nav": 54.80 }
+        {
+          "date": "2021-11-15",
+          "nav": 40.1
+        },
+        {
+          "date": "2022-05-15",
+          "nav": 41.5
+        },
+        {
+          "date": "2022-11-15",
+          "nav": 43.2
+        },
+        {
+          "date": "2023-05-15",
+          "nav": 45.1
+        },
+        {
+          "date": "2023-11-15",
+          "nav": 46.8
+        },
+        {
+          "date": "2024-05-15",
+          "nav": 48.6
+        },
+        {
+          "date": "2024-11-15",
+          "nav": 50.8
+        },
+        {
+          "date": "2025-05-15",
+          "nav": 51.9
+        },
+        {
+          "date": "2025-11-15",
+          "nav": 53.2
+        },
+        {
+          "date": "2026-05-15",
+          "nav": 54.1
+        },
+        {
+          "date": "2026-11-13",
+          "nav": 54.8
+        }
       ]
     },
     {
@@ -550,9 +948,9 @@
       "optionType": "Growth",
       "latestNav": 268.42,
       "latestNavDate": "2026-11-13",
-      "returns1Y": 41.20,
-      "cagr3Y": 34.80,
-      "cagr5Y": 39.50,
+      "returns1Y": 41.2,
+      "cagr3Y": 34.8,
+      "cagr5Y": 39.5,
       "riskometer": "Very High",
       "expenseRatio": 1.64,
       "benchmarkName": "NIFTY Smallcap 250 TRI",
@@ -562,17 +960,50 @@
       "kimUrl": "https://www.quantmutual.com/statutory-disclosures",
       "factsheetUrl": "https://www.quantmutual.com/statutory-disclosures",
       "milestonesNavHistory": [
-        { "date": "2021-11-15", "nav": 78.40 },
-        { "date": "2022-05-15", "nav": 92.10 },
-        { "date": "2022-11-15", "nav": 118.50 },
-        { "date": "2023-05-15", "nav": 139.20 },
-        { "date": "2023-11-15", "nav": 164.80 },
-        { "date": "2024-05-15", "nav": 198.30 },
-        { "date": "2024-11-15", "nav": 204.60 },
-        { "date": "2025-05-15", "nav": 228.40 },
-        { "date": "2025-11-15", "nav": 245.10 },
-        { "date": "2026-05-15", "nav": 258.90 },
-        { "date": "2026-11-13", "nav": 268.42 }
+        {
+          "date": "2021-11-15",
+          "nav": 78.4
+        },
+        {
+          "date": "2022-05-15",
+          "nav": 92.1
+        },
+        {
+          "date": "2022-11-15",
+          "nav": 118.5
+        },
+        {
+          "date": "2023-05-15",
+          "nav": 139.2
+        },
+        {
+          "date": "2023-11-15",
+          "nav": 164.8
+        },
+        {
+          "date": "2024-05-15",
+          "nav": 198.3
+        },
+        {
+          "date": "2024-11-15",
+          "nav": 204.6
+        },
+        {
+          "date": "2025-05-15",
+          "nav": 228.4
+        },
+        {
+          "date": "2025-11-15",
+          "nav": 245.1
+        },
+        {
+          "date": "2026-05-15",
+          "nav": 258.9
+        },
+        {
+          "date": "2026-11-13",
+          "nav": 268.42
+        }
       ]
     },
     {
@@ -586,11 +1017,11 @@
       "subCategory": "Multi Cap Fund",
       "planType": "Regular",
       "optionType": "Growth",
-      "latestNav": 662.80,
+      "latestNav": 662.8,
       "latestNavDate": "2026-11-13",
-      "returns1Y": 31.40,
-      "cagr3Y": 25.10,
-      "cagr5Y": 27.60,
+      "returns1Y": 31.4,
+      "cagr3Y": 25.1,
+      "cagr5Y": 27.6,
       "riskometer": "Very High",
       "expenseRatio": 1.72,
       "benchmarkName": "NIFTY 500 TRI",
@@ -600,17 +1031,50 @@
       "kimUrl": "https://www.quantmutual.com/statutory-disclosures",
       "factsheetUrl": "https://www.quantmutual.com/statutory-disclosures",
       "milestonesNavHistory": [
-        { "date": "2021-11-15", "nav": 285.20 },
-        { "date": "2022-05-15", "nav": 315.40 },
-        { "date": "2022-11-15", "nav": 368.10 },
-        { "date": "2023-05-15", "nav": 412.50 },
-        { "date": "2023-11-15", "nav": 468.90 },
-        { "date": "2024-05-15", "nav": 530.20 },
-        { "date": "2024-11-15", "nav": 548.60 },
-        { "date": "2025-05-15", "nav": 589.20 },
-        { "date": "2025-11-15", "nav": 618.50 },
-        { "date": "2026-05-15", "nav": 642.10 },
-        { "date": "2026-11-13", "nav": 662.80 }
+        {
+          "date": "2021-11-15",
+          "nav": 285.2
+        },
+        {
+          "date": "2022-05-15",
+          "nav": 315.4
+        },
+        {
+          "date": "2022-11-15",
+          "nav": 368.1
+        },
+        {
+          "date": "2023-05-15",
+          "nav": 412.5
+        },
+        {
+          "date": "2023-11-15",
+          "nav": 468.9
+        },
+        {
+          "date": "2024-05-15",
+          "nav": 530.2
+        },
+        {
+          "date": "2024-11-15",
+          "nav": 548.6
+        },
+        {
+          "date": "2025-05-15",
+          "nav": 589.2
+        },
+        {
+          "date": "2025-11-15",
+          "nav": 618.5
+        },
+        {
+          "date": "2026-05-15",
+          "nav": 642.1
+        },
+        {
+          "date": "2026-11-13",
+          "nav": 662.8
+        }
       ]
     },
     {
@@ -626,9 +1090,9 @@
       "optionType": "Growth",
       "latestNav": 182.65,
       "latestNavDate": "2026-11-13",
-      "returns1Y": 28.90,
-      "cagr3Y": 23.40,
-      "cagr5Y": 24.80,
+      "returns1Y": 28.9,
+      "cagr3Y": 23.4,
+      "cagr5Y": 24.8,
       "riskometer": "Very High",
       "expenseRatio": 1.68,
       "benchmarkName": "NIFTY Smallcap 250 TRI",
@@ -638,17 +1102,50 @@
       "kimUrl": "https://www.dspim.com/downloads/factsheets",
       "factsheetUrl": "https://www.dspim.com/downloads/factsheets",
       "milestonesNavHistory": [
-        { "date": "2021-11-15", "nav": 74.30 },
-        { "date": "2022-05-15", "nav": 82.50 },
-        { "date": "2022-11-15", "nav": 96.10 },
-        { "date": "2023-05-15", "nav": 108.40 },
-        { "date": "2023-11-15", "nav": 121.20 },
-        { "date": "2024-05-15", "nav": 139.80 },
-        { "date": "2024-11-15", "nav": 147.20 },
-        { "date": "2025-05-15", "nav": 160.50 },
-        { "date": "2025-11-15", "nav": 169.80 },
-        { "date": "2026-05-15", "nav": 176.40 },
-        { "date": "2026-11-13", "nav": 182.65 }
+        {
+          "date": "2021-11-15",
+          "nav": 74.3
+        },
+        {
+          "date": "2022-05-15",
+          "nav": 82.5
+        },
+        {
+          "date": "2022-11-15",
+          "nav": 96.1
+        },
+        {
+          "date": "2023-05-15",
+          "nav": 108.4
+        },
+        {
+          "date": "2023-11-15",
+          "nav": 121.2
+        },
+        {
+          "date": "2024-05-15",
+          "nav": 139.8
+        },
+        {
+          "date": "2024-11-15",
+          "nav": 147.2
+        },
+        {
+          "date": "2025-05-15",
+          "nav": 160.5
+        },
+        {
+          "date": "2025-11-15",
+          "nav": 169.8
+        },
+        {
+          "date": "2026-05-15",
+          "nav": 176.4
+        },
+        {
+          "date": "2026-11-13",
+          "nav": 182.65
+        }
       ]
     },
     {
@@ -662,13 +1159,13 @@
       "subCategory": "Mid Cap Fund",
       "planType": "Regular",
       "optionType": "Growth",
-      "latestNav": 138.90,
+      "latestNav": 138.9,
       "latestNavDate": "2026-11-13",
-      "returns1Y": 27.60,
-      "cagr3Y": 21.80,
-      "cagr5Y": 21.20,
+      "returns1Y": 27.6,
+      "cagr3Y": 21.8,
+      "cagr5Y": 21.2,
       "riskometer": "Very High",
-      "expenseRatio": 1.70,
+      "expenseRatio": 1.7,
       "benchmarkName": "NIFTY Midcap 150 TRI",
       "inceptionDate": "2006-11-14",
       "amcOfficialUrl": "https://www.dspim.com",
@@ -676,17 +1173,50 @@
       "kimUrl": "https://www.dspim.com/downloads/factsheets",
       "factsheetUrl": "https://www.dspim.com/downloads/factsheets",
       "milestonesNavHistory": [
-        { "date": "2021-11-15", "nav": 65.40 },
-        { "date": "2022-05-15", "nav": 71.80 },
-        { "date": "2022-11-15", "nav": 80.20 },
-        { "date": "2023-05-15", "nav": 88.90 },
-        { "date": "2023-11-15", "nav": 98.40 },
-        { "date": "2024-05-15", "nav": 111.50 },
-        { "date": "2024-11-15", "nav": 116.20 },
-        { "date": "2025-05-15", "nav": 125.80 },
-        { "date": "2025-11-15", "nav": 131.20 },
-        { "date": "2026-05-15", "nav": 135.60 },
-        { "date": "2026-11-13", "nav": 138.90 }
+        {
+          "date": "2021-11-15",
+          "nav": 65.4
+        },
+        {
+          "date": "2022-05-15",
+          "nav": 71.8
+        },
+        {
+          "date": "2022-11-15",
+          "nav": 80.2
+        },
+        {
+          "date": "2023-05-15",
+          "nav": 88.9
+        },
+        {
+          "date": "2023-11-15",
+          "nav": 98.4
+        },
+        {
+          "date": "2024-05-15",
+          "nav": 111.5
+        },
+        {
+          "date": "2024-11-15",
+          "nav": 116.2
+        },
+        {
+          "date": "2025-05-15",
+          "nav": 125.8
+        },
+        {
+          "date": "2025-11-15",
+          "nav": 131.2
+        },
+        {
+          "date": "2026-05-15",
+          "nav": 135.6
+        },
+        {
+          "date": "2026-11-13",
+          "nav": 138.9
+        }
       ]
     }
   ],
@@ -697,4 +1227,4 @@
     "status": "HEALTHY",
     "notice": "Mutual fund NAVs are published as-of the latest AMFI daily update. For real-time intraday NAVs and official transaction servicing, please visit the respective Mutual Fund House official portal."
   }
-}
+};

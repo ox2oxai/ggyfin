@@ -11,8 +11,13 @@ const databaseUrl =
   process.env.GGYF_POSTGRES_URL_NON_POOLING ||
   process.env.GGYF_POSTGRES_URL ||
   process.env.GGYF_POSTGRES_PRISMA_URL ||
-  process.env.DATABASE_URL ||
-  'postgresql://postgres:postgres@localhost:5432/nbfc_db';
+  process.env.DATABASE_URL;
+
+if (!databaseUrl) {
+  throw new Error(
+    '[CRITICAL_DATABASE_CONFIG_ERROR] Database connection string is missing! Local database fallback is permanently disabled. Please configure GGYF_POSTGRES_URL or DATABASE_URL pointing to Supabase.'
+  );
+}
 
 const isCloudOrSsl =
   databaseUrl.includes('supabase.co') ||

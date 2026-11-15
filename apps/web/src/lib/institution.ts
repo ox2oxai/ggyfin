@@ -193,7 +193,7 @@ export async function saveInstitutionConfig(config: InstitutionConfig): Promise<
       console.error('[Institution] Failed to persist config:', err);
     }
 
-    // Dispatch update AFTER server disk write completes
+    // Dispatch update AFTER Supabase cloud write completes
     window.dispatchEvent(new Event('nbfc_config_updated'));
   }
 }

@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { getSupabaseAdminClient } from '../../../lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,122 +9,81 @@ const NO_CACHE_HEADERS = {
   Expires: '0'
 };
 
-const DEFAULT_STAFF_DATA = [
-  {
-    id: 'u-superadmin-it-001',
-    staffNumber: '202010',
-    username: 'it_superadmin',
-    fullName: 'Shiv Yaragatti',
-    email: 'it.admin@ggyfinance.in',
-    phone: '9800000001',
-    password: 'GGY#SuperAdminIT@2026!',
-    role: 'SUPER_ADMIN_IT',
-    branchCode: '2020',
-    isActive: true,
-    mustResetPassword: false,
-    createdAt: '2026-01-01'
-  },
-  {
-    id: 'u-staff-ngyaragatti-002',
-    staffNumber: '202011',
-    username: 'ngyaragatti',
-    fullName: 'N. G. Yaragatti',
-    email: 'ng.yaragatti@ggyfinance.in',
-    phone: '9845012399',
-    password: 'GGYSecurePassword@2026',
-    role: 'SYSTEM_ADMIN',
-    branchCode: '2020',
-    isActive: true,
-    mustResetPassword: true,
-    createdAt: '2026-01-01'
-  }
-];
-
-function resolveFilePath(): string {
-  const fromRoot = path.join(process.cwd(), 'apps', 'web', 'data', 'staff-directory.json');
-  if (fs.existsSync(fromRoot)) return fromRoot;
-
-  const fromWeb = path.join(process.cwd(), 'data', 'staff-directory.json');
-  if (fs.existsSync(fromWeb)) return fromWeb;
-
-  if (fs.existsSync(path.join(process.cwd(), 'apps', 'web'))) {
-    return fromRoot;
-  }
-  return fromWeb;
-}
-
-function readDirectoryFromFile(): any[] {
-  const filePath = resolveFilePath();
-  try {
-    if (fs.existsSync(filePath)) {
-      const content = fs.readFileSync(filePath, 'utf-8');
-      const parsed = JSON.parse(content);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
-      }
-    }
-  } catch (err) {
-    console.error('[API /api/staff] Error reading staff-directory.json:', err);
-  }
-
-  // Initialize file if not found
-  try {
-    const dir = path.dirname(filePath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    fs.writeFileSync(filePath, JSON.stringify(DEFAULT_STAFF_DATA, null, 2), 'utf-8');
-  } catch (err) {
-    console.error('[API /api/staff] Failed to initialize file:', err);
-  }
-
-  return DEFAULT_STAFF_DATA;
-}
-
 export async function GET() {
-  const directory = readDirectoryFromFile();
-  return NextResponse.json(
-    {
-      success: true,
-      directory
-    },
-    { headers: NO_CACHE_HEADERS }
-  );
+  try {
+    const supabase = getSupabaseAdminClient();
+    const { data, error } = await supabase
+      .from('users')
+      .select('id, staff_number, username, full_name, email, phone, role, branch_code, is_active, created_at')
+      .order('staff_number', { ascending: true });
+
+    if (!error && Array.isArray(data)) {
+      const directory = data.map((u) => ({
+        id: u.id,
+        staffNumber: u.staff_number,
+        username: u.username,
+        fullName: u.full_name,
+        email: u.email,
+        phone: u.phone,
+        role: u.role,
+        branchCode: u.branch_code,
+        isActive: u.is_active,
+        createdAt: u.created_at
+      }));
+
+      return NextResponse.json({ success: true, directory }, { headers: NO_CACHE_HEADERS });
+    }
+  } catch (err) {
+    console.error('[API /api/staff] Supabase read error:', err);
+  }
+
+  return NextResponse.json({ success: true, directory: [] }, { headers: NO_CACHE_HEADERS });
 }
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const directory = body.directory;
+    const staff = body.staff || body;
 
-    if (!Array.isArray(directory)) {
+    if (!staff || !staff.username || !staff.role) {
       return NextResponse.json(
-        { success: false, message: 'Invalid payload: directory must be an array' },
+        { success: false, message: 'Invalid payload: username and role are required' },
         { status: 400, headers: NO_CACHE_HEADERS }
       );
     }
 
-    const filePath = resolveFilePath();
-    const dir = path.dirname(filePath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
+    const supabase = getSupabaseAdminClient();
+    const { data, error } = await supabase
+      .from('users')
+      .upsert({
+        staff_number: staff.staffNumber ? String(staff.staffNumber).trim() : undefined,
+        username: String(staff.username).trim().toLowerCase(),
+        full_name: staff.fullName || 'Staff Member',
+        email: staff.email || `${staff.username}@ggyfinance.in`,
+        phone: staff.phone || '9800000000',
+        password_hash: staff.passwordHash || '$2a$10$wJ1j0F/7J2U5cO3Z5c.mmeR/aW85J7qK8K6G6U4q1K0l3Z5c.mme',
+        role: staff.role,
+        branch_code: staff.branchCode || '2020',
+        is_active: staff.isActive !== false,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'username' })
+      .select('id, staff_number, username, full_name, email, role, branch_code, is_active');
+
+    if (error) {
+      return NextResponse.json(
+        { success: false, message: error.message },
+        { status: 500, headers: NO_CACHE_HEADERS }
+      );
     }
 
-    fs.writeFileSync(filePath, JSON.stringify(directory, null, 2), 'utf-8');
-
     return NextResponse.json(
-      {
-        success: true,
-        message: 'Staff directory persisted successfully',
-        directory,
-        count: directory.length
-      },
+      { success: true, message: 'Staff member saved to Supabase', staff: data?.[0] },
       { headers: NO_CACHE_HEADERS }
     );
-  } catch (err: any) {
+  } catch (err) {
     console.error('[API /api/staff] POST error:', err);
     return NextResponse.json(
-      { success: false, message: err?.message || 'Failed to update directory' },
+      { success: false, message: 'Internal server error' },
       { status: 500, headers: NO_CACHE_HEADERS }
     );
   }

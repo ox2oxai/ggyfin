@@ -1,22 +1,8 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
 import { MutualFundInquirySchema } from '@nbfc/shared';
+import { getSupabaseAdminClient } from '../../../../lib/supabase';
 
 export const dynamic = 'force-dynamic';
-
-function resolveFilePath(): string {
-  const fromRoot = path.join(process.cwd(), 'apps', 'web', 'data', 'mutual-funds-inquiries.json');
-  if (fs.existsSync(fromRoot)) return fromRoot;
-
-  const fromWeb = path.join(process.cwd(), 'data', 'mutual-funds-inquiries.json');
-  if (fs.existsSync(fromWeb)) return fromWeb;
-
-  if (fs.existsSync(path.join(process.cwd(), 'apps', 'web'))) {
-    return fromRoot;
-  }
-  return fromWeb;
-}
 
 export async function POST(request: Request) {
   try {
@@ -37,23 +23,22 @@ export async function POST(request: Request) {
       status: 'OPEN_PENDING_ADVISORY'
     };
 
-    const filePath = resolveFilePath();
-    const dir = path.dirname(filePath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
+    // Store inquiry directly in Supabase audit_logs
+    try {
+      const supabase = getSupabaseAdminClient();
+      await supabase.from('audit_logs').insert({
+        action: 'MUTUAL_FUND_INVESTOR_INQUIRY',
+        entity_type: 'MUTUAL_FUND_INQUIRY',
+        entity_id: ticketRef,
+        category: 'WEALTH_INQUIRY',
+        details: newInquiry,
+        user_role: 'PUBLIC_INVESTOR',
+        ip_address: request.headers.get('x-forwarded-for') || '127.0.0.1',
+        user_agent: request.headers.get('user-agent') || 'Web Portal'
+      });
+    } catch (dbErr) {
+      console.error('[API /api/mutual-funds/inquire] Supabase insert warning:', dbErr);
     }
-
-    let list: any[] = [];
-    if (fs.existsSync(filePath)) {
-      try {
-        const raw = fs.readFileSync(filePath, 'utf-8');
-        list = JSON.parse(raw);
-        if (!Array.isArray(list)) list = [];
-      } catch {}
-    }
-
-    list.unshift(newInquiry);
-    fs.writeFileSync(filePath, JSON.stringify(list, null, 2), 'utf-8');
 
     return NextResponse.json({
       success: true,

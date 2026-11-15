@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { getSupabaseAdminClient } from '../../../lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,85 +9,81 @@ const NO_CACHE_HEADERS = {
   Expires: '0'
 };
 
-const DEFAULT_BRANCHES = [
-  {
-    branchCode: '2020',
-    solId: '2020',
-    name: 'Headquarters & Primary Branch',
-    type: 'Head Office & Principal SOL',
-    address: '#104, Institutional Financial Zone, Outer Ring Road, Bengaluru - 560001',
-    manager: 'Sri Suresh Hegde (Branch Head)',
-    phone: '080-28491001',
-    email: 'branch2020@ggyfinance.in',
-    operatingHours: 'Mon - Sat: 9:00 AM - 6:00 PM',
-    isActive: true
-  }
-];
-
-function resolvePath(): string {
-  const p1 = path.join(process.cwd(), 'apps', 'web', 'data', 'branches.json');
-  if (fs.existsSync(p1) || fs.existsSync(path.join(process.cwd(), 'apps', 'web'))) {
-    return p1;
-  }
-  return path.join(process.cwd(), 'data', 'branches.json');
-}
-
 export async function GET() {
-  const filePath = resolvePath();
   try {
-    if (fs.existsSync(filePath)) {
-      const content = fs.readFileSync(filePath, 'utf-8');
-      const parsed = JSON.parse(content);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return NextResponse.json(
-          { success: true, branches: parsed },
-          { headers: NO_CACHE_HEADERS }
-        );
-      }
+    const supabase = getSupabaseAdminClient();
+    const { data, error } = await supabase
+      .from('branches')
+      .select('*')
+      .order('sol_id', { ascending: true });
+
+    if (!error && Array.isArray(data) && data.length > 0) {
+      const branches = data.map((b) => ({
+        id: b.id,
+        solId: b.sol_id,
+        branchCode: b.sol_id,
+        name: b.name,
+        type: b.type,
+        address: b.address,
+        manager: b.manager,
+        phone: b.phone,
+        email: b.email,
+        operatingHours: b.operating_hours,
+        isActive: b.is_active
+      }));
+      return NextResponse.json({ success: true, branches }, { headers: NO_CACHE_HEADERS });
     }
   } catch (err) {
-    console.error('[API /api/branches] Read error:', err);
+    console.error('[API /api/branches] Supabase read error:', err);
   }
 
-  return NextResponse.json(
-    { success: true, branches: DEFAULT_BRANCHES },
-    { headers: NO_CACHE_HEADERS }
-  );
+  return NextResponse.json({ success: true, branches: [] }, { headers: NO_CACHE_HEADERS });
 }
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const branches = body.branches;
+    const branch = body.branch || body;
 
-    if (!Array.isArray(branches)) {
+    if (!branch || !branch.solId || !branch.name) {
       return NextResponse.json(
-        { success: false, message: 'Invalid payload: branches must be an array' },
+        { success: false, message: 'Invalid payload: solId and name are required' },
         { status: 400, headers: NO_CACHE_HEADERS }
       );
     }
 
-    const filePath = resolvePath();
-    const dir = path.dirname(filePath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
+    const supabase = getSupabaseAdminClient();
+    const { data, error } = await supabase
+      .from('branches')
+      .upsert({
+        sol_id: String(branch.solId).trim(),
+        name: String(branch.name).trim(),
+        type: branch.type || 'Standard NBFC SOL',
+        address: branch.address || '',
+        manager: branch.manager || '',
+        phone: branch.phone || '',
+        email: branch.email || '',
+        operating_hours: branch.operatingHours || 'Mon - Sat: 9:00 AM - 6:00 PM',
+        is_active: branch.isActive !== false,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'sol_id' })
+      .select();
+
+    if (error) {
+      return NextResponse.json(
+        { success: false, message: error.message },
+        { status: 500, headers: NO_CACHE_HEADERS }
+      );
     }
 
-    fs.writeFileSync(filePath, JSON.stringify(branches, null, 2), 'utf-8');
-
     return NextResponse.json(
-      {
-        success: true,
-        message: 'Branches updated successfully',
-        branches,
-        count: branches.length
-      },
+      { success: true, message: 'Branch saved to Supabase', branch: data?.[0] },
       { headers: NO_CACHE_HEADERS }
     );
-  } catch (err: any) {
+  } catch (err) {
     console.error('[API /api/branches] POST error:', err);
     return NextResponse.json(
-      { success: false, message: err?.message || 'Failed to update branches' },
+      { success: false, message: 'Internal server error' },
       { status: 500, headers: NO_CACHE_HEADERS }
     );
   }

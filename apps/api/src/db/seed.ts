@@ -7,7 +7,10 @@ import {
   transactions,
   cashReceipts,
   auditLogs,
-  userRoleEnum
+  userRoleEnum,
+  institutionConfig,
+  branches,
+  creditSchemes
 } from './schema.js';
 import bcrypt from 'bcryptjs';
 import { eq } from 'drizzle-orm';
@@ -188,6 +191,134 @@ export async function seedDatabase() {
         console.log(`  + Created loan account: ${item.accountNumber} (${item.status}, ₹${item.principal})`);
       } else {
         console.log(`  * Account exists: ${item.accountNumber}`);
+      }
+    }
+
+    // 4. Seed Institution Configuration
+    console.log('[Seed] Seeding institutional platform and UPI merchant settings...');
+    const existingConfig = await db.select().from(institutionConfig).where(eq(institutionConfig.id, 'PRIMARY_CONFIG')).limit(1);
+    if (existingConfig.length === 0) {
+      await db.insert(institutionConfig).values({
+        id: 'PRIMARY_CONFIG',
+        organizationName: 'GGY Finance Ltd',
+        platformTagline: 'National Micro-Lending Platform • Direct Doorstep Credit',
+        registrationNumber: 'NBFC-ND/2026/7742',
+        supportEmail: 'support@ggyfinance.in',
+        supportPhone: '1800-889-2020',
+        nodalOfficerName: 'Smt. Anita Deshmukh',
+        nodalOfficerContact: 'grievance@ggyfinance.in • 080-28491001',
+        headOfficeAddress: '#104, Institutional Financial Zone, Outer Ring Road, Bengaluru - 560001',
+        upiVpa: 'ggycollect@icici',
+        upiPayeeName: 'GGY Finance Ltd',
+        upiMerchantCode: '6012',
+        upiAccountNumber: '1084-0101-702-0039-4',
+        enablePublicQr: true,
+        collectionInstructions: 'Scan using BHIM UPI, Google Pay, PhonePe, or Paytm. Specify your Loan Account Number in remarks for instant automated ledger credit.'
+      });
+      console.log('  + Created institution config (PRIMARY_CONFIG)');
+    } else {
+      console.log('  * Institution config exists');
+    }
+
+    // 5. Seed Branches
+    console.log('[Seed] Seeding primary branches...');
+    const seedBranchesList = [
+      {
+        solId: '2020',
+        name: 'Headquarters & Primary Branch',
+        type: 'Head Office & Principal SOL',
+        address: '#104, Institutional Financial Zone, Outer Ring Road, Bengaluru - 560001',
+        manager: 'Sri Suresh Hegde (Branch Head)',
+        phone: '080-28491001',
+        email: 'branch2020@ggyfinance.in',
+        operatingHours: 'Mon - Sat: 9:00 AM - 6:00 PM',
+        isActive: true
+      },
+      {
+        solId: '2021',
+        name: 'Mandya Rural Livelihoods Hub',
+        type: 'Agri & Dairy Lending Center',
+        address: 'APMC Yard Complex, Main Road, Mandya - 571401',
+        manager: 'Smt. Roopa K.',
+        phone: '08232-224411',
+        email: 'branch2021@ggyfinance.in',
+        operatingHours: 'Mon - Sat: 8:30 AM - 5:30 PM',
+        isActive: true
+      },
+      {
+        solId: '2022',
+        name: 'Ramanagara Artisan Credit Branch',
+        type: 'Micro-Enterprise & Sericulture Hub',
+        address: 'B.M. Road, Near Old Bus Stand, Ramanagara - 562159',
+        manager: 'Sri Manjunath Swamy',
+        phone: '080-29783322',
+        email: 'branch2022@ggyfinance.in',
+        operatingHours: 'Mon - Sat: 9:00 AM - 5:30 PM',
+        isActive: true
+      }
+    ];
+
+    for (const br of seedBranchesList) {
+      const existingBranch = await db.select().from(branches).where(eq(branches.solId, br.solId)).limit(1);
+      if (existingBranch.length === 0) {
+        await db.insert(branches).values(br);
+        console.log(`  + Created branch: ${br.solId} (${br.name})`);
+      } else {
+        console.log(`  * Branch exists: ${br.solId}`);
+      }
+    }
+
+    // 6. Seed Credit Schemes
+    console.log('[Seed] Seeding credit schemes...');
+    const seedSchemesList = [
+      {
+        schemeCode: 'SCHM-701',
+        name: 'Kirana & Retail Working Capital',
+        minAmount: '10000.00',
+        maxAmount: '50000.00',
+        interestRate: '11.50',
+        defaultTenureMonths: 12,
+        minTenureMonths: 6,
+        maxTenureMonths: 18,
+        frequency: 'WEEKLY_OR_MONTHLY',
+        purpose: 'Inventory purchase, shop modernization & merchant daily liquidity',
+        isActive: true
+      },
+      {
+        schemeCode: 'SCHM-702',
+        name: 'Dairy Development & Livestock Term Loan',
+        minAmount: '20000.00',
+        maxAmount: '100000.00',
+        interestRate: '12.00',
+        defaultTenureMonths: 24,
+        minTenureMonths: 12,
+        maxTenureMonths: 24,
+        frequency: 'MONTHLY',
+        purpose: 'Milch cattle acquisition, cattle shed setup, feed stock & dairy equipment',
+        isActive: true
+      },
+      {
+        schemeCode: 'SCHM-703',
+        name: 'Rural Artisan & Weaver Term Facility',
+        minAmount: '15000.00',
+        maxAmount: '75000.00',
+        interestRate: '11.00',
+        defaultTenureMonths: 18,
+        minTenureMonths: 6,
+        maxTenureMonths: 24,
+        frequency: 'MONTHLY',
+        purpose: 'Handloom, silk reeling machinery, raw materials and craft inventory',
+        isActive: true
+      }
+    ];
+
+    for (const sc of seedSchemesList) {
+      const existingSc = await db.select().from(creditSchemes).where(eq(creditSchemes.schemeCode, sc.schemeCode)).limit(1);
+      if (existingSc.length === 0) {
+        await db.insert(creditSchemes).values(sc);
+        console.log(`  + Created scheme: ${sc.schemeCode} (${sc.name})`);
+      } else {
+        console.log(`  * Scheme exists: ${sc.schemeCode}`);
       }
     }
 

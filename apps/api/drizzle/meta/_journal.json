@@ -22,6 +22,13 @@
       "when": 1794755982455,
       "tag": "0002_tense_sally_floyd",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1794759836031,
+      "tag": "0003_open_queen_noir",
+      "breakpoints": true
     }
   ]
 }

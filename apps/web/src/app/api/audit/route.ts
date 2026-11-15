@@ -1,86 +1,84 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { getSupabaseAdminClient } from '../../../lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
-function resolveFilePath(): string {
-  const fromRoot = path.join(process.cwd(), 'apps', 'web', 'data', 'audit-trail.json');
-  if (fs.existsSync(fromRoot)) return fromRoot;
-
-  const fromWeb = path.join(process.cwd(), 'data', 'audit-trail.json');
-  if (fs.existsSync(fromWeb)) return fromWeb;
-
-  if (fs.existsSync(path.join(process.cwd(), 'apps', 'web'))) {
-    return fromRoot;
-  }
-  return fromWeb;
-}
-
-function readAudits(): any[] {
-  const filePath = resolveFilePath();
-  try {
-    if (fs.existsSync(filePath)) {
-      const content = fs.readFileSync(filePath, 'utf-8');
-      const parsed = JSON.parse(content);
-      if (Array.isArray(parsed)) return parsed;
-    }
-  } catch (err) {
-    console.error('[API /api/audit] Error reading audit-trail.json:', err);
-  }
-  return [];
-}
+const NO_CACHE_HEADERS = {
+  'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate'
+};
 
 export async function GET() {
-  const audits = readAudits();
-  return NextResponse.json(
-    { success: true, audits },
-    {
-      headers: {
-        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate'
-      }
+  try {
+    const supabase = getSupabaseAdminClient();
+    const { data, error } = await supabase
+      .from('audit_logs')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(100);
+
+    if (!error && Array.isArray(data)) {
+      const audits = data.map((log) => ({
+        id: log.id,
+        timestamp: log.created_at,
+        actor: log.user_role || 'SYSTEM',
+        userId: log.user_id,
+        action: log.action,
+        resource: log.entity_type,
+        resourceId: log.entity_id,
+        category: log.category,
+        details: typeof log.details === 'string' ? log.details : JSON.stringify(log.details || {}),
+        severity: 'INFO'
+      }));
+      return NextResponse.json({ success: true, audits }, { headers: NO_CACHE_HEADERS });
     }
-  );
+  } catch (err) {
+    console.error('[API /api/audit] Supabase read error:', err);
+  }
+
+  return NextResponse.json({ success: true, audits: [] }, { headers: NO_CACHE_HEADERS });
 }
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const filePath = resolveFilePath();
-    const dir = path.dirname(filePath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
+    const event = body.event || body;
 
-    const currentAudits = readAudits();
-    let updatedAudits: any[] = [];
-
-    if (body.event && typeof body.event === 'object') {
-      updatedAudits = [body.event, ...currentAudits];
-    } else if (Array.isArray(body.audits)) {
-      updatedAudits = body.audits;
-    } else {
+    if (!event || !event.action) {
       return NextResponse.json(
-        { success: false, message: 'Invalid payload: event or audits required' },
-        { status: 400 }
+        { success: false, message: 'Invalid payload: action is required' },
+        { status: 400, headers: NO_CACHE_HEADERS }
       );
     }
 
-    fs.writeFileSync(filePath, JSON.stringify(updatedAudits, null, 2), 'utf-8');
+    const supabase = getSupabaseAdminClient();
+    const { data, error } = await supabase.from('audit_logs').insert({
+      action: event.action,
+      entity_type: event.resource || event.entityType || 'SYSTEM_MODULE',
+      entity_id: event.resourceId || event.entityId || 'SYS-01',
+      user_id: event.userId || null,
+      user_role: event.actor || event.userRole || 'SYSTEM_ADMIN',
+      category: event.category || 'OPERATIONAL_BANKING_EVENT',
+      details: typeof event.details === 'object' ? event.details : { message: event.details || '' },
+      ip_address: event.ip || '127.0.0.1',
+      user_agent: event.userAgent || 'GGYF-Web-Portal'
+    }).select();
+
+    if (error) {
+      return NextResponse.json(
+        { success: false, message: error.message },
+        { status: 500, headers: NO_CACHE_HEADERS }
+      );
+    }
 
     return NextResponse.json(
-      { success: true, count: updatedAudits.length },
-      {
-        headers: {
-          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate'
-        }
-      }
+      { success: true, message: 'Audit event logged to Supabase', audit: data?.[0] },
+      { headers: NO_CACHE_HEADERS }
     );
   } catch (err) {
-    console.error('[API /api/audit] Failed to write audit trail:', err);
+    console.error('[API /api/audit] POST error:', err);
     return NextResponse.json(
-      { success: false, message: 'Failed to record audit log' },
-      { status: 500 }
+      { success: false, message: 'Internal server error' },
+      { status: 500, headers: NO_CACHE_HEADERS }
     );
   }
 }

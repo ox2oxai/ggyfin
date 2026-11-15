@@ -263,3 +263,59 @@ export const mutualFundSyncLogs = pgTable('mutual_fund_sync_logs', {
   status: varchar('status', { length: 20 }).default('SUCCESS').notNull(),
   errorDetails: text('error_details')
 });
+
+// 13. Institutional Platform & Merchant Configuration
+export const institutionConfig = pgTable('institution_config', {
+  id: varchar('id', { length: 50 }).primaryKey().default('PRIMARY_CONFIG'),
+  organizationName: varchar('organization_name', { length: 150 }).notNull(),
+  platformTagline: text('platform_tagline'),
+  registrationNumber: varchar('registration_number', { length: 50 }),
+  supportEmail: varchar('support_email', { length: 100 }),
+  supportPhone: varchar('support_phone', { length: 20 }),
+  nodalOfficerName: varchar('nodal_officer_name', { length: 100 }),
+  nodalOfficerContact: varchar('nodal_officer_contact', { length: 150 }),
+  headOfficeAddress: text('head_office_address'),
+  logoUrl: text('logo_url'),
+  upiVpa: varchar('upi_vpa', { length: 100 }),
+  upiPayeeName: varchar('upi_payee_name', { length: 150 }),
+  upiMerchantCode: varchar('upi_merchant_code', { length: 20 }),
+  upiAccountNumber: varchar('upi_account_number', { length: 50 }),
+  qrImageUrl: text('qr_image_url'),
+  enablePublicQr: boolean('enable_public_qr').default(true).notNull(),
+  collectionInstructions: text('collection_instructions'),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull()
+});
+
+// 14. Physical Branch Network & Service Outlets (SOL)
+export const branches = pgTable('branches', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  solId: varchar('sol_id', { length: 20 }).notNull().unique(),
+  name: varchar('name', { length: 150 }).notNull(),
+  type: varchar('type', { length: 50 }).notNull(),
+  address: text('address').notNull(),
+  manager: varchar('manager', { length: 100 }).notNull(),
+  phone: varchar('phone', { length: 20 }).notNull(),
+  email: varchar('email', { length: 100 }).notNull(),
+  operatingHours: varchar('operating_hours', { length: 100 }).notNull(),
+  isActive: boolean('is_active').default(true).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull()
+});
+
+// 15. Micro-Lending Credit Schemes
+export const creditSchemes = pgTable('credit_schemes', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  schemeCode: varchar('scheme_code', { length: 50 }).notNull().unique(),
+  name: varchar('name', { length: 150 }).notNull(),
+  minAmount: numeric('min_amount', { precision: 12, scale: 2 }).notNull(),
+  maxAmount: numeric('max_amount', { precision: 12, scale: 2 }).notNull(),
+  interestRate: numeric('interest_rate', { precision: 5, scale: 2 }).notNull(),
+  defaultTenureMonths: integer('default_tenure_months').notNull(),
+  minTenureMonths: integer('min_tenure_months').notNull(),
+  maxTenureMonths: integer('max_tenure_months').notNull(),
+  frequency: varchar('frequency', { length: 50 }).notNull(),
+  purpose: text('purpose').notNull(),
+  isActive: boolean('is_active').default(true).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull()
+});
