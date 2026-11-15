@@ -542,9 +542,22 @@ export default function MutualFundsPage() {
               ))}
             </div>
 
-            {/* Sort Select */}
-            <div className="flex items-center gap-2 text-xs font-bold shrink-0 self-end sm:self-auto">
-              <span className="text-slate-500 flex items-center gap-1">
+            {/* AMC & Sort Select */}
+            <div className="flex flex-wrap items-center gap-2 text-xs font-bold shrink-0 self-end sm:self-auto">
+              <select
+                value={selectedAmc}
+                onChange={(e) => setSelectedAmc(e.target.value)}
+                className="bg-slate-50/90 border border-slate-200/90 py-1.5 px-3 rounded-xl text-xs font-extrabold text-slate-800 cursor-pointer focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500"
+              >
+                <option value="All">All Fund Houses</option>
+                {(dataset.amcs || []).map((amc) => (
+                  <option key={amc.code} value={amc.code}>
+                    {amc.name}
+                  </option>
+                ))}
+              </select>
+
+              <span className="text-slate-500 flex items-center gap-1 pl-1">
                 <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
                 <span>{t.sortLabel}</span>
               </span>

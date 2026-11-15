@@ -23,22 +23,26 @@ export const FALLBACK_MUTUAL_FUNDS: MutualFundsDataset = {
     { code: 'SBI_MF', name: 'SBI Mutual Fund', officialWebsiteUrl: 'https://www.sbimf.com' },
     { code: 'ICICI_PRU_MF', name: 'ICICI Prudential Mutual Fund', officialWebsiteUrl: 'https://www.icicipruamc.com' },
     { code: 'PPFAS_MF', name: 'Parag Parikh Mutual Fund', officialWebsiteUrl: 'https://amc.ppfas.com' },
-    { code: 'NIPPON_MF', name: 'Nippon India Mutual Fund', officialWebsiteUrl: 'https://mf.nipponindiaim.com' }
+    { code: 'NIPPON_MF', name: 'Nippon India Mutual Fund', officialWebsiteUrl: 'https://mf.nipponindiaim.com' },
+    { code: 'QUANT_MF', name: 'Quant Mutual Fund', officialWebsiteUrl: 'https://www.quantmutual.com' },
+    { code: 'DSP_MF', name: 'DSP Mutual Fund', officialWebsiteUrl: 'https://www.dspim.com' }
   ],
   schemes: [],
   syncMetadata: {
-    lastSyncTimestamp: '2026-11-14T23:00:00.000Z',
+    lastSyncTimestamp: '2026-11-15T15:30:00.000Z',
     source: 'AMFI_INDIA',
-    recordsProcessed: 0,
+    recordsProcessed: 16,
     status: 'HEALTHY',
     notice: 'Mutual fund NAVs are published as-of the latest AMFI daily update. For real-time intraday NAVs and official transaction servicing, please visit the respective Mutual Fund House official portal.'
   }
 };
 
+const STORAGE_KEY = 'nbfc_mutual_funds_dataset_v2';
+
 export function getMutualFundsSync(): MutualFundsDataset {
   if (typeof window === 'undefined') return FALLBACK_MUTUAL_FUNDS;
   try {
-    const raw = localStorage.getItem('nbfc_mutual_funds_dataset');
+    const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
       if (parsed && Array.isArray(parsed.schemes) && parsed.schemes.length > 0) {
@@ -56,7 +60,7 @@ export async function getMutualFundsAsync(): Promise<MutualFundsDataset> {
       if (res.ok) {
         const data = await res.json();
         if (data.success && data.dataset) {
-          localStorage.setItem('nbfc_mutual_funds_dataset', JSON.stringify(data.dataset));
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data.dataset));
           return data.dataset;
         }
       }
