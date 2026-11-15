@@ -3,7 +3,15 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { UserRole, UserSession } from '@nbfc/shared';
+import {
+  UserRole,
+  UserSession,
+  sanitizePhoneInput,
+  sanitizeLegalName,
+  isValidMobile,
+  isValidEmail,
+  isValidLegalName
+} from '@nbfc/shared';
 import {
   Smartphone,
   ShieldCheck,
@@ -199,8 +207,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     setProfileError('');
     setProfileSuccess('');
 
-    if (!editEmail.trim() || !editPhone.trim()) {
-      setProfileError('Email and phone number are required.');
+    if (!isValidEmail(editEmail)) {
+      setProfileError('Please enter a valid official email address (e.g. name@ggyfinance.in).');
+      return;
+    }
+
+    if (!isValidMobile(editPhone)) {
+      setProfileError('Mobile phone number must be exactly 10 digits starting with 6, 7, 8, or 9.');
+      return;
+    }
+
+    if (session?.role === UserRole.SUPER_ADMIN_IT && !isValidLegalName(editFullName)) {
+      setProfileError('Full legal name must be 2-70 characters (letters, spaces, dots, single quotes, hyphens only).');
       return;
     }
 
@@ -246,7 +264,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
         category: isSuperAdmin ? 'INTENDED_ADMIN_UPDATE' : 'OPERATIONAL_BANKING_EVENT',
         action: 'PROFILE_UPDATED',
-        actorStaffNumber: session.staffNumber || 'EMP-1084-001',
+        actorStaffNumber: session.staffNumber || '202010',
         actorUsername: session.username,
         actorRole: session.role,
         target: session.staffNumber || session.username,
@@ -277,6 +295,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
     if (newPassword.length < 8) {
       setProfileError('New password must be at least 8 characters long.');
+      return;
+    }
+
+    if (newPassword.length > 128) {
+      setProfileError('Password cannot exceed 128 characters.');
       return;
     }
 
@@ -321,7 +344,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
         category: 'INTENDED_ADMIN_UPDATE',
         action: 'PASSWORD_CHANGED',
-        actorStaffNumber: session.staffNumber || 'EMP-1084-001',
+        actorStaffNumber: session.staffNumber || '202010',
         actorUsername: session.username,
         actorRole: session.role,
         target: session.staffNumber || session.username,
@@ -390,7 +413,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <div className="text-right hidden sm:block">
               <div className="flex items-center justify-end gap-1.5">
                 <span className="text-[10px] font-mono font-bold bg-amber-400/20 text-amber-300 px-1.5 py-0.2 rounded border border-amber-400/30">
-                  {mounted ? (session?.staffNumber || 'EMP-1084-001') : '...'}
+                  {mounted ? (session?.staffNumber || '202010') : '...'}
                 </span>
                 <p className="text-xs font-bold text-white truncate max-w-[140px]">
                   {mounted ? (session?.fullName || session?.username || 'Staff User') : 'Staff User'}
@@ -507,7 +530,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </div>
                 <h3 className="text-lg font-black tracking-tight">Staff Profile & Biodata</h3>
                 <p className="text-xs text-emerald-200/80 mt-0.5">
-                  Permanent Staff Identification: <strong className="font-mono text-white">{session?.staffNumber || 'EMP-1084-001'}</strong>
+                  Permanent Staff Identification: <strong className="font-mono text-white">{session?.staffNumber || '202010'}</strong>
                 </p>
               </div>
               <button
@@ -563,7 +586,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <div className="grid grid-cols-2 gap-3 bg-slate-50 p-3.5 rounded-2xl border border-slate-200/80">
                   <div>
                     <span className="text-[10px] text-slate-500 font-bold uppercase block">Staff ID (Immutable)</span>
-                    <span className="font-mono font-black text-slate-900 text-xs">{session?.staffNumber || 'EMP-1084-001'}</span>
+                    <span className="font-mono font-black text-slate-900 text-xs">{session?.staffNumber || '202010'}</span>
                   </div>
                   <div>
                     <span className="text-[10px] text-slate-500 font-bold uppercase block">Username</span>
@@ -595,7 +618,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       <input
                         type="text"
                         value={editFullName}
-                        onChange={(e) => setEditFullName(e.target.value)}
+                        maxLength={70}
+                        onChange={(e) => setEditFullName(sanitizeLegalName(e.target.value))}
                         placeholder="Enter your system administrator name"
                         className="w-full px-3 py-2 border border-slate-200 rounded-xl text-slate-900 font-bold focus:ring-2 focus:ring-orange-500 outline-hidden"
                       />
@@ -627,7 +651,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <input
                     type="email"
                     value={editEmail}
-                    onChange={(e) => setEditEmail(e.target.value)}
+                    maxLength={254}
+                    onChange={(e) => setEditEmail(e.target.value.trim())}
                     required
                     className="w-full px-3 py-2 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-orange-500 outline-hidden"
                   />
@@ -640,9 +665,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <input
                     type="tel"
                     value={editPhone}
-                    onChange={(e) => setEditPhone(e.target.value)}
+                    maxLength={10}
+                    placeholder="9845012399 (10 digits)"
+                    onChange={(e) => setEditPhone(sanitizePhoneInput(e.target.value))}
                     required
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-orange-500 outline-hidden"
+                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-slate-900 font-mono font-medium focus:ring-2 focus:ring-orange-500 outline-hidden"
                   />
                   <p className="text-[10px] text-slate-500 mt-1">Required for 2FA, OTPs, and statutory communication logs.</p>
                 </div>
@@ -674,6 +701,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <input
                     type="password"
                     value={currentPassword}
+                    maxLength={128}
                     onChange={(e) => setCurrentPassword(e.target.value)}
                     required
                     placeholder="Enter current password"
@@ -686,6 +714,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <input
                     type="password"
                     value={newPassword}
+                    maxLength={128}
                     onChange={(e) => setNewPassword(e.target.value)}
                     required
                     placeholder="At least 8 characters"
@@ -698,9 +727,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <input
                     type="password"
                     value={confirmPassword}
+                    maxLength={128}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
-                    placeholder="Retype new password"
+                    placeholder="Confirm new password"
                     className="w-full px-3 py-2 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-orange-500 outline-hidden"
                   />
                 </div>

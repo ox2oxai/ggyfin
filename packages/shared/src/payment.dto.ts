@@ -43,14 +43,14 @@ export function generateUpiUri(params: {
 
 export const GenerateUpiQrSchema = z.object({
   accountId: z.string().uuid(),
-  amount: z.number().positive().min(1)
+  amount: z.number().positive().min(1).max(100000)
 });
 
 export const LogCashReceiptSchema = z.object({
   accountId: z.string().uuid(),
-  amount: z.number().positive().min(1),
-  receiptNumber: z.string().min(5).max(30),
-  notes: z.string().max(250).optional()
+  amount: z.number().positive().min(1).max(200000),
+  receiptNumber: z.string().trim().min(5).max(30).regex(/^[a-zA-Z0-9_-]+$/, 'Receipt number must be alphanumeric'),
+  notes: z.string().trim().max(250).regex(/^[a-zA-Z0-9\s,./#'()-]*$/, 'Notes contain disallowed characters').optional()
 });
 
 export type LogCashReceiptInput = z.infer<typeof LogCashReceiptSchema>;
@@ -58,15 +58,15 @@ export type LogCashReceiptInput = z.infer<typeof LogCashReceiptSchema>;
 export const VerifyCashReceiptSchema = z.object({
   receiptId: z.string().uuid(),
   status: z.enum([ReceiptStatus.VERIFIED_AND_DEPOSITED, ReceiptStatus.DISCREPANCY]),
-  notes: z.string().max(250).optional()
+  notes: z.string().trim().max(250).regex(/^[a-zA-Z0-9\s,./#'()-]*$/, 'Notes contain disallowed characters').optional()
 });
 
 export const ConfirmUpiPaymentSchema = z.object({
   accountId: z.string().uuid(),
-  amount: z.number().positive().min(1),
-  utrNumber: z.string().min(8, 'Valid 12-digit NPCI UTR or reference is required').max(35),
-  transactionRef: z.string().min(5).max(64).optional(),
-  notes: z.string().max(250).optional()
+  amount: z.number().positive().min(1).max(200000),
+  utrNumber: z.string().trim().min(8, 'Valid 12-digit NPCI UTR or reference is required').max(35).regex(/^[a-zA-Z0-9_-]+$/, 'UTR must be alphanumeric'),
+  transactionRef: z.string().trim().min(5).max(64).regex(/^[a-zA-Z0-9_-]+$/, 'Reference must be alphanumeric').optional(),
+  notes: z.string().trim().max(250).regex(/^[a-zA-Z0-9\s,./#'()-]*$/, 'Notes contain disallowed characters').optional()
 });
 
 export type ConfirmUpiPaymentInput = z.infer<typeof ConfirmUpiPaymentSchema>;

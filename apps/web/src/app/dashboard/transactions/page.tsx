@@ -181,6 +181,14 @@ export default function TransactionsPage() {
       setTimeout(() => setToastMsg(''), 4000);
       return;
     }
+
+    const upiAmount = Number(upiForm.amount);
+    if (isNaN(upiAmount) || upiAmount <= 0 || upiAmount > 100000) {
+      setToastMsg('UPI repayment amount must be a positive number up to ₹1,00,000.');
+      setTimeout(() => setToastMsg(''), 4000);
+      return;
+    }
+
     const newTxnId = `TXN-UPI-2026-00${ledger.length + 1}`;
     
     // Resolve dynamic prior balance for the target account
@@ -247,6 +255,14 @@ export default function TransactionsPage() {
       setTimeout(() => setToastMsg(''), 4000);
       return;
     }
+
+    const cashAmount = Number(cashForm.amount);
+    if (isNaN(cashAmount) || cashAmount <= 0 || cashAmount > 200000) {
+      setToastMsg('Cash collection amount must be between ₹1 and ₹2,00,000 (Statutory Income Tax Act Sec 269ST limit).');
+      setTimeout(() => setToastMsg(''), 4000);
+      return;
+    }
+
     const newTxnId = `TXN-CASH-2026-00${ledger.length + 1}`;
     
     // Resolve current balance

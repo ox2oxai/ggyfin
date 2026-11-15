@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { UserRole } from '@nbfc/shared';
+import { UserRole, sanitizeUsername } from '@nbfc/shared';
 import {
   Lock,
   Shield,
@@ -34,14 +34,14 @@ interface StoredStaffUser {
 
 const DEFAULT_SUPER_ADMIN: StoredStaffUser = {
   id: 'u-superadmin-it-001',
-  staffNumber: 'EMP-1084-001',
+  staffNumber: '202010',
   username: 'it_superadmin',
   fullName: 'System Administrator',
   email: 'it.admin@ggyfinance.in',
   phone: '9800000000',
   password: 'GGY#SuperAdminIT@2026!',
   role: UserRole.SUPER_ADMIN_IT,
-  branchCode: 'KA-HQ-IT',
+  branchCode: '2020',
   isActive: true,
   mustResetPassword: false
 };
@@ -67,12 +67,16 @@ export default function LoginPage() {
       if (raw) {
         let parsed = JSON.parse(raw);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          // Migration: remove legacy mock names and assign staff numbers
+          // Migration: assign numeric staff numbers starting at 202010
           let needsUpdate = false;
           parsed = parsed.map((u: any, idx: number) => {
             let updatedUser = { ...u };
-            if (!updatedUser.staffNumber) {
-              updatedUser.staffNumber = `EMP-1084-${String(idx + 1).padStart(3, '0')}`;
+            if (!updatedUser.staffNumber || !/^\d+$/.test(updatedUser.staffNumber) || updatedUser.staffNumber.startsWith('EMP-')) {
+              updatedUser.staffNumber = String(202010 + idx);
+              needsUpdate = true;
+            }
+            if (updatedUser.branchCode === 'KA-HQ-IT') {
+              updatedUser.branchCode = '2020';
               needsUpdate = true;
             }
             if (updatedUser.fullName && updatedUser.fullName.includes('Chethan Gowda')) {
@@ -146,7 +150,7 @@ export default function LoginPage() {
         recordAuditLog({
           category: 'SECURITY_EVENT',
           action: 'SUSPENDED_LOGIN_BLOCKED',
-          actorStaffNumber: user.staffNumber || 'EMP-1084-001',
+          actorStaffNumber: user.staffNumber || '202010',
           actorUsername: user.username,
           actorRole: user.role,
           target: user.username,
@@ -161,7 +165,7 @@ export default function LoginPage() {
         recordAuditLog({
           category: 'SECURITY_EVENT',
           action: 'FAILED_LOGIN_ATTEMPT',
-          actorStaffNumber: user.staffNumber || 'EMP-1084-001',
+          actorStaffNumber: user.staffNumber || '202010',
           actorUsername: user.username,
           actorRole: user.role,
           target: user.username,
@@ -185,7 +189,7 @@ export default function LoginPage() {
         'nbfc_staff_session',
         JSON.stringify({
           userId: user.id,
-          staffNumber: user.staffNumber || 'EMP-1084-001',
+          staffNumber: user.staffNumber || '202010',
           username: user.username,
           fullName: user.fullName,
           email: user.email,
@@ -198,7 +202,7 @@ export default function LoginPage() {
       recordAuditLog({
         category: user.role === UserRole.SUPER_ADMIN_IT ? 'INTENDED_ADMIN_UPDATE' : 'OPERATIONAL_BANKING_EVENT',
         action: 'USER_LOGIN',
-        actorStaffNumber: user.staffNumber || 'EMP-1084-001',
+        actorStaffNumber: user.staffNumber || '202010',
         actorUsername: user.username,
         actorRole: user.role,
         target: user.branchCode,
@@ -249,7 +253,7 @@ export default function LoginPage() {
         'nbfc_staff_session',
         JSON.stringify({
           userId: pendingUser.id,
-          staffNumber: pendingUser.staffNumber || 'EMP-1084-001',
+          staffNumber: pendingUser.staffNumber || '202010',
           username: pendingUser.username,
           fullName: pendingUser.fullName,
           email: pendingUser.email,
@@ -262,7 +266,7 @@ export default function LoginPage() {
       recordAuditLog({
         category: 'INTENDED_ADMIN_UPDATE',
         action: 'PASSWORD_RESET_COMPLETED',
-        actorStaffNumber: pendingUser.staffNumber || 'EMP-1084-001',
+        actorStaffNumber: pendingUser.staffNumber || '202010',
         actorUsername: pendingUser.username,
         actorRole: pendingUser.role,
         target: pendingUser.username,
@@ -330,8 +334,9 @@ export default function LoginPage() {
                   type="text"
                   required
                   placeholder="e.g. it_superadmin"
+                  maxLength={30}
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  onChange={(e) => setUsername(sanitizeUsername(e.target.value))}
                   className="block w-full pl-10 pr-3 py-3 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-orange-500 transition-all font-mono"
                 />
               </div>
@@ -349,6 +354,7 @@ export default function LoginPage() {
                   type={showPassword ? 'text' : 'password'}
                   required
                   placeholder="••••••••••••"
+                  maxLength={128}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="block w-full pl-10 pr-10 py-3 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-orange-500 transition-all font-mono"
@@ -412,6 +418,7 @@ export default function LoginPage() {
                   type="password"
                   required
                   placeholder="Enter your new secure password"
+                  maxLength={128}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-mono font-normal focus:ring-2 focus:ring-orange-500"
@@ -424,6 +431,7 @@ export default function LoginPage() {
                   type="password"
                   required
                   placeholder="Retype password"
+                  maxLength={128}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-mono font-normal focus:ring-2 focus:ring-orange-500"

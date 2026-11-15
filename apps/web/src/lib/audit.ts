@@ -1,3 +1,5 @@
+import { generateNextEmployeeNumber } from '@nbfc/shared';
+
 export type AuditCategory = 'INTENDED_ADMIN_UPDATE' | 'OPERATIONAL_BANKING_EVENT' | 'SECURITY_EVENT';
 
 export interface AuditLogPayload {
@@ -41,7 +43,7 @@ export function recordAuditLog(payload: AuditLogPayload): void {
       timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
       category: payload.category,
       action: payload.action,
-      actorStaffNumber: staffNumber || 'EMP-1084-001',
+      actorStaffNumber: staffNumber || '202010',
       actorUsername: username || 'system',
       actorRole: role || 'SYSTEM',
       target: payload.target,
@@ -58,18 +60,9 @@ export function recordAuditLog(payload: AuditLogPayload): void {
 
 /**
  * Calculates the next unique Staff ID monotonically (max + 1) to prevent collisions
- * when users are deprovisioned or sequence numbers have gaps.
+ * Pure numeric employee number starting at 202010 for branch 2020 (no characters, no hyphens).
  */
-export function getNextStaffNumber(staffList: Array<{ staffNumber?: string }>): string {
-  let maxSeq = 0;
-  for (const s of staffList) {
-    if (s.staffNumber && s.staffNumber.startsWith('EMP-1084-')) {
-      const numPart = s.staffNumber.replace('EMP-1084-', '');
-      const parsed = parseInt(numPart, 10);
-      if (!isNaN(parsed) && parsed > maxSeq) {
-        maxSeq = parsed;
-      }
-    }
-  }
-  return `EMP-1084-${String(maxSeq + 1).padStart(3, '0')}`;
+export function getNextStaffNumber(staffList: Array<{ staffNumber?: string }>, branchCode: string = '2020'): string {
+  const existingNumbers = staffList.map((s) => s.staffNumber);
+  return generateNextEmployeeNumber(existingNumbers, branchCode);
 }

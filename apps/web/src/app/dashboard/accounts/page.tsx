@@ -4,7 +4,12 @@ import React, { useState } from 'react';
 import { useLanguage } from '../../../components/language-context';
 import {
   generateCustomerId,
-  generateCBSAccountNumber
+  generateCBSAccountNumber,
+  sanitizePhoneInput,
+  sanitizeLegalName,
+  isValidMobile,
+  isValidLegalName,
+  isValidAadhaarInput
 } from '@nbfc/shared';
 import { recordAuditLog } from '../../../lib/audit';
 import {
@@ -193,6 +198,28 @@ export default function AccountsPage() {
 
   const handleCreateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!isValidLegalName(newBorrower.name)) {
+      setSuccessToast('Borrower name must be 2-70 characters and contain only letters, spaces, dots, single quotes, or hyphens.');
+      return;
+    }
+
+    if (!isValidMobile(newBorrower.phone)) {
+      setSuccessToast('Borrower phone number must be exactly 10 digits starting with 6, 7, 8, or 9.');
+      return;
+    }
+
+    if (newBorrower.aadhaarMasked && !isValidAadhaarInput(newBorrower.aadhaarMasked)) {
+      setSuccessToast('Aadhaar must be formatted as XXXX-XXXX-1234 or 12 digits.');
+      return;
+    }
+
+    const principalNum = Number(newBorrower.principal);
+    if (isNaN(principalNum) || principalNum < 10000 || principalNum > 200000) {
+      setSuccessToast('Sanction principal must be between ₹10,000 and ₹2,00,000.');
+      return;
+    }
+
     const newSeq = accounts.length + 1;
     const newId = `acc-00${newSeq}`;
     const newCif = generateCustomerId('1084', newSeq + 42);
@@ -577,8 +604,9 @@ export default function AccountsPage() {
                   type="text"
                   required
                   placeholder="e.g. Smt. Renukamma Siddaramaiah"
+                  maxLength={70}
                   value={newBorrower.name}
-                  onChange={(e) => setNewBorrower({ ...newBorrower, name: e.target.value })}
+                  onChange={(e) => setNewBorrower({ ...newBorrower, name: sanitizeLegalName(e.target.value) })}
                   className="w-full px-3 py-2 bg-sandstone-100 border border-clay rounded-xl text-forest-900"
                 />
               </div>
@@ -590,20 +618,22 @@ export default function AccountsPage() {
                     type="text"
                     required
                     placeholder="XXXX-XXXX-8421"
+                    maxLength={14}
                     value={newBorrower.aadhaarMasked}
-                    onChange={(e) => setNewBorrower({ ...newBorrower, aadhaarMasked: e.target.value })}
+                    onChange={(e) => setNewBorrower({ ...newBorrower, aadhaarMasked: e.target.value.toUpperCase().replace(/[^0-9X-]/g, '').slice(0, 14) })}
                     className="w-full px-3 py-2 bg-sandstone-100 border border-clay rounded-xl font-mono text-forest-900"
                   />
                 </div>
                 <div>
                   <label className="block font-bold text-forest-900 mb-1">{t.phoneField}</label>
                   <input
-                    type="text"
+                    type="tel"
                     required
-                    placeholder="9845012345"
+                    placeholder="9845012345 (10 digits)"
+                    maxLength={10}
                     value={newBorrower.phone}
-                    onChange={(e) => setNewBorrower({ ...newBorrower, phone: e.target.value })}
-                    className="w-full px-3 py-2 bg-sandstone-100 border border-clay rounded-xl text-forest-900"
+                    onChange={(e) => setNewBorrower({ ...newBorrower, phone: sanitizePhoneInput(e.target.value) })}
+                    className="w-full px-3 py-2 bg-sandstone-100 border border-clay rounded-xl text-forest-900 font-mono"
                   />
                 </div>
               </div>

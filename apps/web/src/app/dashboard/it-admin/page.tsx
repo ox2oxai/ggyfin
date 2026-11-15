@@ -1,7 +1,16 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { UserRole } from '@nbfc/shared';
+import {
+  UserRole,
+  sanitizePhoneInput,
+  sanitizeUsername,
+  sanitizeLegalName,
+  isValidMobile,
+  isValidEmail,
+  isValidLegalName,
+  isValidUsername
+} from '@nbfc/shared';
 import { recordAuditLog, getNextStaffNumber } from '../../../lib/audit';
 import {
   Shield,
@@ -95,13 +104,13 @@ interface AuditEvent {
 const DEFAULT_SUPER_ADMIN_STAFF: StaffUser[] = [
   {
     id: 'u-superadmin-it-001',
-    staffNumber: 'EMP-1084-001',
+    staffNumber: '202010',
     username: 'it_superadmin',
     fullName: 'System Administrator',
     email: 'it.admin@ggyfinance.in',
     phone: '9800000000',
     role: UserRole.SUPER_ADMIN_IT,
-    branchCode: 'KA-HQ-IT',
+    branchCode: '2020',
     isActive: true,
     createdAt: '2026-01-01'
   }
@@ -118,7 +127,7 @@ export default function SuperAdminItDashboard() {
   const [editFullName, setEditFullName] = useState('');
   const [editEmail, setEditEmail] = useState('');
   const [editPhone, setEditPhone] = useState('');
-  const [editBranch, setEditBranch] = useState('KA-BLR-01');
+  const [editBranch, setEditBranch] = useState('2020');
 
   const [actionSuccessMsg, setActionSuccessMsg] = useState('');
   const [actionErrorMsg, setActionErrorMsg] = useState('');
@@ -144,7 +153,12 @@ export default function SuperAdminItDashboard() {
       const rawSession = localStorage.getItem('nbfc_staff_session');
       if (rawSession) {
         const s = JSON.parse(rawSession);
-        setActiveSession({ username: s.username, userId: s.userId, staffNumber: s.staffNumber });
+        const fixedStaffNo = !s.staffNumber || !/^\d+$/.test(s.staffNumber) || s.staffNumber.startsWith('EMP-') ? '202010' : s.staffNumber;
+        const fixedBranch = s.branchCode === 'KA-HQ-IT' ? '2020' : (s.branchCode || '2020');
+        setActiveSession({ username: s.username, userId: s.userId, staffNumber: fixedStaffNo });
+        if (fixedStaffNo !== s.staffNumber || fixedBranch !== s.branchCode) {
+          localStorage.setItem('nbfc_staff_session', JSON.stringify({ ...s, staffNumber: fixedStaffNo, branchCode: fixedBranch }));
+        }
       }
 
       const raw = localStorage.getItem('nbfc_staff_directory');
@@ -154,8 +168,12 @@ export default function SuperAdminItDashboard() {
           let needsUpdate = false;
           parsed = parsed.map((u: any, idx: number) => {
             let updated = { ...u };
-            if (!updated.staffNumber) {
-              updated.staffNumber = `EMP-1084-${String(idx + 1).padStart(3, '0')}`;
+            if (!updated.staffNumber || !/^\d+$/.test(updated.staffNumber) || updated.staffNumber.startsWith('EMP-')) {
+              updated.staffNumber = String(202010 + idx);
+              needsUpdate = true;
+            }
+            if (updated.branchCode === 'KA-HQ-IT') {
+              updated.branchCode = '2020';
               needsUpdate = true;
             }
             if (updated.fullName && updated.fullName.includes('Chethan Gowda')) {
@@ -213,7 +231,7 @@ export default function SuperAdminItDashboard() {
         timestamp: '2026-11-15 02:30:12',
         category: 'INTENDED_ADMIN_UPDATE',
         action: 'SYSTEM_BOOT',
-        actorStaffNumber: 'EMP-1084-001',
+        actorStaffNumber: '202010',
         actorUsername: 'it_superadmin',
         actorRole: 'SUPER_ADMIN_IT',
         target: 'KA-HQ-IT',
@@ -225,7 +243,7 @@ export default function SuperAdminItDashboard() {
         timestamp: '2026-11-15 02:15:40',
         category: 'INTENDED_ADMIN_UPDATE',
         action: 'GATEWAY_TEST',
-        actorStaffNumber: 'EMP-1084-001',
+        actorStaffNumber: '202010',
         actorUsername: 'it_superadmin',
         actorRole: 'SUPER_ADMIN_IT',
         target: 'SMTP_GATEWAY',
@@ -346,7 +364,7 @@ export default function SuperAdminItDashboard() {
     appendAuditEvent({
       category: 'INTENDED_ADMIN_UPDATE',
       action: 'ROLE_MUTATED',
-      actorStaffNumber: activeSession?.staffNumber || 'EMP-1084-001',
+      actorStaffNumber: activeSession?.staffNumber || '202010',
       actorUsername: activeSession?.username || 'it_superadmin',
       actorRole: 'SUPER_ADMIN_IT',
       target: user.staffNumber || user.username,
@@ -378,7 +396,7 @@ export default function SuperAdminItDashboard() {
     appendAuditEvent({
       category: 'INTENDED_ADMIN_UPDATE',
       action: nextState ? 'ACCESS_RESTORED' : 'ACCESS_REVOKED',
-      actorStaffNumber: activeSession?.staffNumber || 'EMP-1084-001',
+      actorStaffNumber: activeSession?.staffNumber || '202010',
       actorUsername: activeSession?.username || 'it_superadmin',
       actorRole: 'SUPER_ADMIN_IT',
       target: user.staffNumber || user.username,
@@ -415,7 +433,7 @@ export default function SuperAdminItDashboard() {
     appendAuditEvent({
       category: 'INTENDED_ADMIN_UPDATE',
       action: 'STAFF_DEPROVISIONED',
-      actorStaffNumber: activeSession?.staffNumber || 'EMP-1084-001',
+      actorStaffNumber: activeSession?.staffNumber || '202010',
       actorUsername: activeSession?.username || 'it_superadmin',
       actorRole: 'SUPER_ADMIN_IT',
       target: user.staffNumber || user.username,
@@ -443,7 +461,7 @@ export default function SuperAdminItDashboard() {
     persistStaffList(updated);
 
     setLastProvisionedInvite({
-      staffNumber: user.staffNumber || 'EMP-1084-001',
+      staffNumber: user.staffNumber || '202010',
       username: user.username,
       fullName: user.fullName,
       role: user.role,
@@ -454,7 +472,7 @@ export default function SuperAdminItDashboard() {
     appendAuditEvent({
       category: 'INTENDED_ADMIN_UPDATE',
       action: 'PASSWORD_RESET_ISSUED',
-      actorStaffNumber: 'EMP-1084-001',
+      actorStaffNumber: '202010',
       actorUsername: 'it_superadmin',
       actorRole: 'SUPER_ADMIN_IT',
       target: user.staffNumber || user.username,
@@ -478,6 +496,21 @@ export default function SuperAdminItDashboard() {
   const handleSaveStaffEdit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingStaff) return;
+
+    if (!isValidEmail(editEmail)) {
+      notifyError('Please enter a valid official email address (e.g. name@ggyfinance.in).');
+      return;
+    }
+
+    if (!isValidMobile(editPhone)) {
+      notifyError('Mobile phone number must be exactly 10 digits starting with 6, 7, 8, or 9.');
+      return;
+    }
+
+    if (editingStaff.role === UserRole.SUPER_ADMIN_IT && !isValidLegalName(editFullName)) {
+      notifyError('Full legal name must be 2-70 characters and contain only letters, spaces, dots, single quotes, or hyphens.');
+      return;
+    }
 
     const updated = staffList.map((u) => {
       if (u.id === editingStaff.id) {
@@ -516,11 +549,11 @@ export default function SuperAdminItDashboard() {
     appendAuditEvent({
       category: 'INTENDED_ADMIN_UPDATE',
       action: 'PROFILE_UPDATED',
-      actorStaffNumber: 'EMP-1084-001',
-      actorUsername: 'it_superadmin',
+      actorStaffNumber: activeSession?.staffNumber || '202010',
+      actorUsername: activeSession?.username || 'it_superadmin',
       actorRole: 'SUPER_ADMIN_IT',
       target: editingStaff.staffNumber || editingStaff.username,
-      details: `Staff profile details updated for ${editingStaff.username} (Name: ${editFullName}, Email: ${editEmail})`
+      details: `Staff profile details updated for ${editingStaff.username} (Name: ${editFullName}, Email: ${editEmail}, Phone: ${editPhone})`
     });
 
     setIsEditModalOpen(false);
@@ -528,11 +561,35 @@ export default function SuperAdminItDashboard() {
     notifySuccess(`Profile details for '${editingStaff.username}' updated.`);
   };
 
-  const nextStaffNumber = getNextStaffNumber(staffList);
+  const nextStaffNumber = getNextStaffNumber(staffList, newBranch || '2020');
 
   const handleProvisionSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newUsername.trim() || !newEmail.trim()) return;
+
+    if (!isValidUsername(newUsername)) {
+      notifyError('Username must be 3-30 characters alphanumeric, underscore, or hyphen (no spaces or special symbols).');
+      return;
+    }
+
+    if (!isValidLegalName(newFullName)) {
+      notifyError('Full legal name must be 2-70 characters (letters, spaces, dots, single quotes, hyphens only).');
+      return;
+    }
+
+    if (!isValidEmail(newEmail)) {
+      notifyError('Please enter a valid official email address.');
+      return;
+    }
+
+    if (!isValidMobile(newPhone)) {
+      notifyError('Mobile phone number must be exactly 10 digits starting with 6, 7, 8, or 9.');
+      return;
+    }
+
+    if (newPassword.length < 8 || newPassword.length > 128) {
+      notifyError('Password must be between 8 and 128 characters.');
+      return;
+    }
 
     // Check duplicate
     if (staffList.some((u) => u.username.toLowerCase() === newUsername.toLowerCase())) {
@@ -548,9 +605,9 @@ export default function SuperAdminItDashboard() {
       username: newUsername.trim(),
       fullName: newFullName.trim() || newUsername.trim(),
       email: newEmail.trim(),
-      phone: newPhone.trim() || '9800000000',
+      phone: newPhone.trim(),
       role: newRole,
-      branchCode: newBranch,
+      branchCode: newBranch || '2020',
       isActive: true,
       createdAt: new Date().toISOString().slice(0, 10),
       password: newPassword,
@@ -572,8 +629,8 @@ export default function SuperAdminItDashboard() {
     appendAuditEvent({
       category: 'INTENDED_ADMIN_UPDATE',
       action: 'STAFF_PROVISIONED',
-      actorStaffNumber: 'EMP-1084-001',
-      actorUsername: 'it_superadmin',
+      actorStaffNumber: activeSession?.staffNumber || '202010',
+      actorUsername: activeSession?.username || 'it_superadmin',
       actorRole: 'SUPER_ADMIN_IT',
       target: assignedStaffNumber,
       details: `Provisioned as ${created.role} for branch ${created.branchCode} with temporary password`
@@ -617,7 +674,7 @@ export default function SuperAdminItDashboard() {
       appendAuditEvent({
         category: 'INTENDED_ADMIN_UPDATE',
         action: 'GATEWAY_TEST',
-        actorStaffNumber: 'EMP-1084-001',
+        actorStaffNumber: '202010',
         actorUsername: 'it_superadmin',
         actorRole: 'SUPER_ADMIN_IT',
         target: gateway,
@@ -874,7 +931,7 @@ export default function SuperAdminItDashboard() {
                     <tr key={user.id} className="hover:bg-slate-50/70 transition-colors">
                       <td className="py-3 px-4">
                         <span className="font-mono font-black text-orange-950 bg-orange-100/70 px-2 py-1 rounded-md text-[11px] border border-orange-200">
-                          {user.staffNumber || 'EMP-1084-001'}
+                          {user.staffNumber || '202010'}
                         </span>
                       </td>
 
@@ -1308,7 +1365,7 @@ export default function SuperAdminItDashboard() {
                 appendAuditEvent({
                   category: 'INTENDED_ADMIN_UPDATE',
                   action: 'GATEWAY_CONFIG_UPDATED',
-                  actorStaffNumber: 'EMP-1084-001',
+                  actorStaffNumber: '202010',
                   actorUsername: 'it_superadmin',
                   actorRole: 'SUPER_ADMIN_IT',
                   target: 'SYSTEM_GATEWAYS',
@@ -1514,8 +1571,9 @@ export default function SuperAdminItDashboard() {
                   type="text"
                   required
                   placeholder="officer_kumar"
+                  maxLength={30}
                   value={newUsername}
-                  onChange={(e) => setNewUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_.-]/g, ''))}
+                  onChange={(e) => setNewUsername(sanitizeUsername(e.target.value))}
                   className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono font-normal focus:ring-2 focus:ring-orange-500"
                 />
               </div>
@@ -1526,8 +1584,9 @@ export default function SuperAdminItDashboard() {
                   type="text"
                   required
                   placeholder="e.g. Praveen Kumar"
+                  maxLength={70}
                   value={newFullName}
-                  onChange={(e) => setNewFullName(e.target.value)}
+                  onChange={(e) => setNewFullName(sanitizeLegalName(e.target.value))}
                   className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-normal focus:ring-2 focus:ring-orange-500"
                 />
                 <p className="text-[10px] text-slate-500 mt-1 font-normal">
@@ -1542,8 +1601,9 @@ export default function SuperAdminItDashboard() {
                     type="email"
                     required
                     placeholder="praveen.kumar@ggyfinance.in"
+                    maxLength={254}
                     value={newEmail}
-                    onChange={(e) => setNewEmail(e.target.value)}
+                    onChange={(e) => setNewEmail(e.target.value.trim())}
                     className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-normal focus:ring-2 focus:ring-orange-500"
                   />
                 </div>
@@ -1553,9 +1613,10 @@ export default function SuperAdminItDashboard() {
                   <input
                     type="tel"
                     required
-                    placeholder="9845012399"
+                    placeholder="9845012399 (10 digits)"
+                    maxLength={10}
                     value={newPhone}
-                    onChange={(e) => setNewPhone(e.target.value)}
+                    onChange={(e) => setNewPhone(sanitizePhoneInput(e.target.value))}
                     className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono font-normal focus:ring-2 focus:ring-orange-500"
                   />
                 </div>
@@ -1584,12 +1645,12 @@ export default function SuperAdminItDashboard() {
                     onChange={(e) => setNewBranch(e.target.value)}
                     className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:ring-2 focus:ring-orange-500 cursor-pointer"
                   >
+                    <option value="2020">Branch 2020 (Headquarters &amp; Rural Operations)</option>
                     <option value="KA-BLR-01">KA-BLR-01 (Bengaluru Hub)</option>
                     <option value="KA-MND-01">KA-MND-01 (Mandya &amp; Maddur)</option>
                     <option value="KA-RAM-01">KA-RAM-01 (Ramanagara &amp; Channapatna)</option>
                     <option value="KA-TUM-01">KA-TUM-01 (Tumakuru &amp; Kunigal)</option>
                     <option value="KA-MYS-01">KA-MYS-01 (Mysuru &amp; Nanjangud)</option>
-                    <option value="KA-HQ-IT">KA-HQ-IT (State IT Command)</option>
                   </select>
                 </div>
               </div>
@@ -1653,7 +1714,7 @@ export default function SuperAdminItDashboard() {
               <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 grid grid-cols-2 gap-2 text-xs">
                 <div>
                   <span className="text-[10px] text-slate-500 block uppercase">Staff ID</span>
-                  <span className="font-mono font-black text-slate-900">{editingStaff.staffNumber || 'EMP-1084-001'}</span>
+                  <span className="font-mono font-black text-slate-900">{editingStaff.staffNumber || '202010'}</span>
                 </div>
                 <div>
                   <span className="text-[10px] text-slate-500 block uppercase">Role</span>
@@ -1666,8 +1727,9 @@ export default function SuperAdminItDashboard() {
                 <input
                   type="text"
                   required
+                  maxLength={70}
                   value={editFullName}
-                  onChange={(e) => setEditFullName(e.target.value)}
+                  onChange={(e) => setEditFullName(sanitizeLegalName(e.target.value))}
                   className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-bold focus:ring-2 focus:ring-orange-500"
                 />
                 <p className="text-[10px] text-slate-500 mt-1 font-normal">
@@ -1680,8 +1742,9 @@ export default function SuperAdminItDashboard() {
                 <input
                   type="email"
                   required
+                  maxLength={254}
                   value={editEmail}
-                  onChange={(e) => setEditEmail(e.target.value)}
+                  onChange={(e) => setEditEmail(e.target.value.trim())}
                   className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-normal focus:ring-2 focus:ring-orange-500"
                 />
               </div>
@@ -1691,8 +1754,10 @@ export default function SuperAdminItDashboard() {
                 <input
                   type="tel"
                   required
+                  maxLength={10}
+                  placeholder="9845012399 (10 digits)"
                   value={editPhone}
-                  onChange={(e) => setEditPhone(e.target.value)}
+                  onChange={(e) => setEditPhone(sanitizePhoneInput(e.target.value))}
                   className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-mono font-normal focus:ring-2 focus:ring-orange-500"
                 />
               </div>
@@ -1704,12 +1769,12 @@ export default function SuperAdminItDashboard() {
                   onChange={(e) => setEditBranch(e.target.value)}
                   className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:ring-2 focus:ring-orange-500 cursor-pointer"
                 >
+                  <option value="2020">Branch 2020 (Headquarters &amp; Rural Operations)</option>
                   <option value="KA-BLR-01">KA-BLR-01 (Bengaluru Hub)</option>
                   <option value="KA-MND-01">KA-MND-01 (Mandya &amp; Maddur)</option>
                   <option value="KA-RAM-01">KA-RAM-01 (Ramanagara &amp; Channapatna)</option>
                   <option value="KA-TUM-01">KA-TUM-01 (Tumakuru &amp; Kunigal)</option>
                   <option value="KA-MYS-01">KA-MYS-01 (Mysuru &amp; Nanjangud)</option>
-                  <option value="KA-HQ-IT">KA-HQ-IT (State IT Command)</option>
                 </select>
               </div>
 

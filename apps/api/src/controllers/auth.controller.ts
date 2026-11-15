@@ -76,7 +76,7 @@ export async function authRoutes(fastify: FastifyInstance) {
 
     const sessionPayload = {
       userId: user.id,
-      staffNumber: user.staffNumber || 'EMP-1084-001',
+      staffNumber: user.staffNumber || '202010',
       username: user.username,
       fullName: user.fullName || 'System Administrator',
       email: user.email,
@@ -109,7 +109,7 @@ export async function authRoutes(fastify: FastifyInstance) {
         accessToken: token,
         user: {
           id: user.id,
-          staffNumber: user.staffNumber || 'EMP-1084-001',
+          staffNumber: user.staffNumber || '202010',
           username: user.username,
           fullName: user.fullName || 'System Administrator',
           email: user.email,

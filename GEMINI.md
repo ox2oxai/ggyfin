@@ -18,3 +18,21 @@
      2. Verify port 3000/4000 are free from background tasks.
      3. Clean Production Build: `npm run build` (all routes compiled cleanly).
      4. Ensure all verification processes are killed and ports 3000/4000 are fully released.
+8. **Pure-Numeric Employee Identification Specification**:
+   - **Strict Numeric Requirement**: Employee numbers must contain zero characters, zero hyphens, and zero spaces (`^\d+$`).
+   - **Branch Numbering Structure**: Based on branch code (first branch: `2020`).
+   - **Reserved Sequence**: The first 10 numbers (`202000` through `202009`) are reserved for branch infrastructure.
+   - **Assigned Progression**: First employee number is strictly **`202010`**. Next employee is **`202011`**, then **`202012`**, etc.
+   - **Monotonic ID Generation**: Never rely on array length (`length + 1`); always calculate `max(parsedId >= 202010) + 1` to prevent collisions on deprovisioning.
+9. **Mandatory Dual-Layer Input Validation (Client & Server)**:
+   - **Zero-Trust Input Principle**: Never assume any input is good or safe. Validation and character sanitization must be symmetrically enforced on BOTH the client-side UI and server-side Fastify controllers.
+   - **Mobile Phone Numbers**: Strictly 10 digits starting with `[6-9]` (`/^[6-9]\d{9}$/`). Client-side inputs must strip non-digit characters (`\D`) on input/paste; server schemas must reject any non-compliant phone payload.
+   - **Email Addresses**: RFC 5322 compliant regex (`/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/`), min 5, max 254 characters (SMTP standard).
+   - **Full Legal Names**: 2 to 70 characters, letters, spaces, dots, single quotes, and hyphens only (`/^[a-zA-Z\s.'-]+$/`). Strictly block HTML tags (`<`, `>`), curly brackets, and script injection vectors.
+   - **Usernames**: 3 to 30 characters, alphanumeric, underscores, and hyphens only (`/^[a-zA-Z0-9_-]{3,30}$/`). No spaces, dots, or symbols.
+   - **Passwords**: Min 8, max 128 characters. Must contain uppercase, lowercase, digit, and special character. Disallow reuse of current password on rotation.
+   - **Financial Amounts & Statutory Caps**:
+     - Principal Sanction: Positive number between ₹10,000 and ₹2,00,000.
+     - Cash Collection: Positive number between ₹1 and ₹2,00,000 (Statutory Income Tax Act Sec 269ST cap).
+     - UPI Repayment: Positive number between ₹1 and ₹1,00,000 with 12-digit UTR.
+

@@ -1,7 +1,16 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
-import { UserRole, AuditAction, AuditCategory } from '@nbfc/shared';
+import {
+  UserRole,
+  AuditAction,
+  AuditCategory,
+  generateNextEmployeeNumber,
+  IndianMobileRegex,
+  StrictEmailRegex,
+  LegalNameRegex,
+  UsernameRegex
+} from '@nbfc/shared';
 import { UserRepository } from '../repositories/user.repo.js';
 import { AuditRepository } from '../repositories/audit.repo.js';
 import { requireRole } from '../middleware/auth.js';
@@ -11,13 +20,13 @@ const userRepo = new UserRepository();
 const auditRepo = new AuditRepository();
 
 const ProvisionStaffSchema = z.object({
-  username: z.string().min(3).max(50).regex(/^[a-zA-Z0-9_.-]+$/, 'Username must be alphanumeric with dots, dashes or underscores'),
-  fullName: z.string().min(2).max(150).optional(),
-  email: z.string().email(),
-  phone: z.string().min(10).max(15),
+  username: z.string().trim().min(3).max(30).regex(UsernameRegex, 'Username must be 3-30 characters alphanumeric, underscore, or hyphen'),
+  fullName: z.string().trim().min(2).max(70).regex(LegalNameRegex, 'Full name may only contain letters, spaces, dots, single quotes, and hyphens').optional(),
+  email: z.string().trim().min(5).max(254).regex(StrictEmailRegex, 'Invalid email format'),
+  phone: z.string().trim().regex(IndianMobileRegex, 'Must be a valid 10-digit Indian mobile number starting with 6-9'),
   role: z.nativeEnum(UserRole),
-  branchCode: z.string().min(2).max(20),
-  password: z.string().min(8).max(100)
+  branchCode: z.string().trim().min(2).max(20).default('2020'),
+  password: z.string().min(8).max(128)
 });
 
 const UpdateRoleSchema = z.object({
@@ -29,10 +38,10 @@ const UpdateStatusSchema = z.object({
 });
 
 const UpdateStaffProfileSchema = z.object({
-  fullName: z.string().min(2).max(150).optional(),
-  email: z.string().email().optional(),
-  phone: z.string().min(10).max(15).optional(),
-  branchCode: z.string().min(2).max(20).optional()
+  fullName: z.string().trim().min(2).max(70).regex(LegalNameRegex, 'Full name may only contain letters, spaces, dots, single quotes, and hyphens').optional(),
+  email: z.string().trim().min(5).max(254).regex(StrictEmailRegex, 'Invalid email format').optional(),
+  phone: z.string().trim().regex(IndianMobileRegex, 'Must be a valid 10-digit Indian mobile number starting with 6-9').optional(),
+  branchCode: z.string().trim().min(2).max(20).optional()
 });
 
 const GatewayConfigSchema = z.object({
@@ -134,17 +143,8 @@ export async function itAdminRoutes(fastify: FastifyInstance) {
     }
 
     const currentStaff = await userRepo.findAll();
-    let maxSeq = 0;
-    for (const s of currentStaff) {
-      if (s.staffNumber && s.staffNumber.startsWith('EMP-1084-')) {
-        const numPart = s.staffNumber.replace('EMP-1084-', '');
-        const parsed = parseInt(numPart, 10);
-        if (!isNaN(parsed) && parsed > maxSeq) {
-          maxSeq = parsed;
-        }
-      }
-    }
-    const staffNumber = `EMP-1084-${String(maxSeq + 1).padStart(3, '0')}`;
+    const existingStaffNumbers = currentStaff.map((s) => s.staffNumber);
+    const staffNumber = generateNextEmployeeNumber(existingStaffNumbers, branchCode || '2020');
 
     const passwordHash = await bcrypt.hash(password, 10);
     const createdUser = await userRepo.create({

@@ -1,9 +1,14 @@
 import { z } from 'zod';
+import {
+  IndianMobileRegex,
+  IndianPanRegex,
+  AadhaarMaskRegex,
+  IndianPincodeRegex,
+  LegalNameRegex,
+  StrictEmailRegex
+} from './validation.js';
 
-export const AadhaarMaskRegex = /^XXXX-XXXX-\d{4}$/;
-export const IndianPanRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
-export const IndianMobileRegex = /^[6-9]\d{9}$/;
-export const IndianPincodeRegex = /^[1-9][0-9]{5}$/;
+export { AadhaarMaskRegex, IndianPanRegex, IndianMobileRegex, IndianPincodeRegex };
 
 export enum Gender {
   MALE = 'MALE',
@@ -12,9 +17,9 @@ export enum Gender {
 }
 
 export const CreateCustomerSchema = z.object({
-  fullName: z.string().trim().min(3, 'Full name must be at least 3 characters').max(150),
+  fullName: z.string().trim().min(3, 'Full name must be at least 3 characters').max(70).regex(LegalNameRegex, 'Full name may only contain letters, spaces, dots, single quotes, and hyphens'),
   phone: z.string().regex(IndianMobileRegex, 'Must be a valid 10-digit Indian mobile number starting with 6-9'),
-  email: z.string().email('Invalid email address').optional().or(z.literal('')),
+  email: z.string().trim().regex(StrictEmailRegex, 'Invalid email address').optional().or(z.literal('')),
   dob: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date of birth must be YYYY-MM-DD'),
   gender: z.nativeEnum(Gender),
   addressLine: z.string().trim().min(10, 'Address must be at least 10 characters'),
