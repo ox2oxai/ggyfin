@@ -48,6 +48,7 @@ export function PublicHeader() {
       home: 'Home',
       about: 'About Us',
       investments: 'Investments',
+      mutualFunds: 'Mutual Funds',
       gallery: 'Gallery',
       contact: 'Contact Us',
       tollFree: `Helpline: ${config.supportPhone || '1800-889-2020'}`,
@@ -61,6 +62,7 @@ export function PublicHeader() {
       home: 'ಮುಖಪುಟ',
       about: 'ನಮ್ಮ ಬಗ್ಗೆ',
       investments: 'ಹೂಡಿಕೆಗಳು',
+      mutualFunds: 'ಮ್ಯೂಚುಯಲ್ ಫಂಡ್ಸ್',
       gallery: 'ಗ್ಯಾಲರಿ',
       contact: 'ಸಂಪರ್ಕಿಸಿ',
       tollFree: `ಸಹಾಯವಾಣಿ: ${config.supportPhone || '1800-889-2020'}`,
@@ -147,6 +149,16 @@ export function PublicHeader() {
                 }`}
               >
                 {t.investments}
+              </Link>
+              <Link
+                href="/mutual-funds"
+                className={`px-3.5 py-1.5 rounded-lg transition-all ${
+                  pathname === '/mutual-funds'
+                    ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-xs font-extrabold'
+                    : 'text-slate-700 hover:text-orange-600 hover:bg-white'
+                }`}
+              >
+                {t.mutualFunds}
               </Link>
               <Link
                 href="/gallery"
@@ -257,6 +269,15 @@ export function PublicHeader() {
                 }`}
               >
                 {t.investments}
+              </Link>
+              <Link
+                href="/mutual-funds"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`p-3 rounded-xl border text-center transition-all min-h-[44px] flex items-center justify-center ${
+                  pathname === '/mutual-funds' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white border-orange-600 shadow-xs' : 'bg-slate-50 text-slate-800 border-slate-200'
+                }`}
+              >
+                {t.mutualFunds}
               </Link>
               <Link
                 href="/gallery"

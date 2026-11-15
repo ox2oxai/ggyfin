@@ -198,3 +198,68 @@ export const auditLogs = pgTable('audit_logs', {
   idx_audit_logs_created_at: index('idx_audit_logs_created_at').on(table.createdAt),
   idx_audit_logs_user_id: index('idx_audit_logs_user_id').on(table.userId)
 }));
+
+// 9. Mutual Fund Asset Management Companies (AMCs)
+export const mutualFundAmcs = pgTable('mutual_fund_amcs', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  amcCode: varchar('amc_code', { length: 50 }).notNull().unique(),
+  amcName: varchar('amc_name', { length: 150 }).notNull(),
+  officialWebsiteUrl: text('official_website_url').notNull(),
+  supportPhone: varchar('support_phone', { length: 50 }),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull()
+});
+
+// 10. Mutual Fund Schemes Master
+export const mutualFundSchemes = pgTable('mutual_fund_schemes', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  amfiSchemeCode: varchar('amfi_scheme_code', { length: 30 }).notNull().unique(),
+  isinGrowth: varchar('isin_growth', { length: 30 }),
+  isinDivPayout: varchar('isin_div_payout', { length: 30 }),
+  isinDivReinvestment: varchar('isin_div_reinvestment', { length: 30 }),
+  schemeName: varchar('scheme_name', { length: 255 }).notNull(),
+  amcId: uuid('amc_id').references(() => mutualFundAmcs.id).notNull(),
+  category: varchar('category', { length: 50 }).notNull(),
+  subCategory: varchar('sub_category', { length: 80 }).notNull(),
+  planType: varchar('plan_type', { length: 20 }).default('Regular').notNull(),
+  optionType: varchar('option_type', { length: 20 }).default('Growth').notNull(),
+  latestNav: numeric('latest_nav', { precision: 12, scale: 4 }),
+  latestNavDate: date('latest_nav_date'),
+  benchmarkName: varchar('benchmark_name', { length: 150 }),
+  expenseRatio: numeric('expense_ratio', { precision: 5, scale: 2 }),
+  riskometer: varchar('riskometer', { length: 30 }).default('Moderate'),
+  inceptionDate: date('inception_date'),
+  status: varchar('status', { length: 20 }).default('ACTIVE').notNull(),
+  source: varchar('source', { length: 50 }).default('AMFI_INDIA').notNull(),
+  lastUpdatedAt: timestamp('last_updated_at', { withTimezone: true }).defaultNow().notNull()
+}, (table) => ({
+  idx_mf_schemes_amfi: index('idx_mf_schemes_amfi').on(table.amfiSchemeCode),
+  idx_mf_schemes_category: index('idx_mf_schemes_category').on(table.category),
+  idx_mf_schemes_amc: index('idx_mf_schemes_amc').on(table.amcId)
+}));
+
+// 11. Historical Net Asset Value (NAV) Series
+export const mutualFundNavHistory = pgTable('mutual_fund_nav_history', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  schemeId: uuid('scheme_id').references(() => mutualFundSchemes.id, { onDelete: 'cascade' }).notNull(),
+  nav: numeric('nav', { precision: 12, scale: 4 }).notNull(),
+  navDate: date('nav_date').notNull(),
+  source: varchar('source', { length: 50 }).default('AMFI_INDIA').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull()
+}, (table) => ({
+  idx_mf_nav_scheme_date: index('idx_mf_nav_scheme_date').on(table.schemeId, table.navDate)
+}));
+
+// 12. Mutual Fund Ingestion & Synchronization Audit Log
+export const mutualFundSyncLogs = pgTable('mutual_fund_sync_logs', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  source: varchar('source', { length: 50 }).default('AMFI_INDIA').notNull(),
+  syncStartedAt: timestamp('sync_started_at', { withTimezone: true }).defaultNow().notNull(),
+  syncCompletedAt: timestamp('sync_completed_at', { withTimezone: true }),
+  recordsProcessed: integer('records_processed').default(0).notNull(),
+  recordsInserted: integer('records_inserted').default(0).notNull(),
+  recordsUpdated: integer('records_updated').default(0).notNull(),
+  recordsRejected: integer('records_rejected').default(0).notNull(),
+  status: varchar('status', { length: 20 }).default('SUCCESS').notNull(),
+  errorDetails: text('error_details')
+});

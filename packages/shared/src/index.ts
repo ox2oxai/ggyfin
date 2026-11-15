@@ -9,3 +9,4 @@ export * from './timezone.js';
 export * from './notification.dto.js';
 export * from './cbs-account.js';
 export * from './validation.js';
+export * from './mutual-fund.js';
