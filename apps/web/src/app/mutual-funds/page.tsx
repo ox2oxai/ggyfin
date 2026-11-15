@@ -241,7 +241,7 @@ function NavSplineChart({
 
 export default function MutualFundsPage() {
   const { lang } = useLanguage();
-  const [dataset, setDataset] = useState<MutualFundsDataset>(getMutualFundsSync());
+  const [dataset, setDataset] = useState<MutualFundsDataset>(FALLBACK_MUTUAL_FUNDS);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Filters & Search

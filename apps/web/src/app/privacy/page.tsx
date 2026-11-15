@@ -5,11 +5,11 @@ import { PublicHeader } from '../../components/public-header';
 import { PublicFooter } from '../../components/public-footer';
 import { useLanguage } from '../../components/language-context';
 import { ShieldCheck, Lock, EyeOff, Server, UserCheck, HelpCircle } from 'lucide-react';
-import { getInstitutionConfigSync, InstitutionConfig } from '../../lib/institution';
+import { getInstitutionConfigSync, InstitutionConfig, DEFAULT_INSTITUTION_CONFIG } from '../../lib/institution';
 
 export default function PrivacyPolicyPage() {
   const { lang } = useLanguage();
-  const [config, setConfig] = useState<InstitutionConfig>(getInstitutionConfigSync());
+  const [config, setConfig] = useState<InstitutionConfig>(DEFAULT_INSTITUTION_CONFIG);
 
   useEffect(() => {
     const handleSync = () => setConfig(getInstitutionConfigSync());

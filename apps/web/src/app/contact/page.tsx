@@ -24,13 +24,15 @@ import {
   getBranchesSync,
   getInstitutionConfigSync,
   BranchRecord,
-  InstitutionConfig
+  InstitutionConfig,
+  DEFAULT_BRANCHES,
+  DEFAULT_INSTITUTION_CONFIG
 } from '../../lib/institution';
 
 export default function ContactPage() {
   const { lang } = useLanguage();
-  const [branches, setBranches] = useState<BranchRecord[]>(getBranchesSync());
-  const [config, setConfig] = useState<InstitutionConfig>(getInstitutionConfigSync());
+  const [branches, setBranches] = useState<BranchRecord[]>(DEFAULT_BRANCHES);
+  const [config, setConfig] = useState<InstitutionConfig>(DEFAULT_INSTITUTION_CONFIG);
 
   // Contact Form State
   const [fullName, setFullName] = useState('');

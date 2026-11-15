@@ -18,12 +18,12 @@ import {
   Mail,
   Award
 } from 'lucide-react';
-import { getBranchesSync, getInstitutionConfigSync, BranchRecord, InstitutionConfig } from '../../lib/institution';
+import { getBranchesSync, getInstitutionConfigSync, BranchRecord, InstitutionConfig, DEFAULT_BRANCHES, DEFAULT_INSTITUTION_CONFIG } from '../../lib/institution';
 
 export default function AboutPage() {
   const { lang } = useLanguage();
-  const [branches, setBranches] = useState<BranchRecord[]>(getBranchesSync());
-  const [config, setConfig] = useState<InstitutionConfig>(getInstitutionConfigSync());
+  const [branches, setBranches] = useState<BranchRecord[]>(DEFAULT_BRANCHES);
+  const [config, setConfig] = useState<InstitutionConfig>(DEFAULT_INSTITUTION_CONFIG);
 
   useEffect(() => {
     const handleSync = () => {

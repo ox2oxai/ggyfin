@@ -45,7 +45,8 @@ import {
   InstitutionConfig,
   getInstitutionConfigSync,
   getInstitutionConfigAsync,
-  DEFAULT_INSTITUTION_CONFIG
+  DEFAULT_INSTITUTION_CONFIG,
+  DEFAULT_CREDIT_SCHEMES
 } from '../lib/institution';
 
 interface ProductItem {
@@ -174,14 +175,18 @@ export default function HomePage() {
   const [isCarouselPaused, setIsCarouselPaused] = useState<boolean>(false);
   const touchStartXRef = useRef<number | null>(null);
 
-  // Dynamic Credit Schemes from Admin Store
-  const [creditSchemes, setCreditSchemes] = useState<CreditScheme[]>(getCreditSchemesSync());
+  // Dynamic Credit Schemes from Admin Store (Initialized with SSR-safe defaults)
+  const [creditSchemes, setCreditSchemes] = useState<CreditScheme[]>(DEFAULT_CREDIT_SCHEMES);
 
-  // Dynamic Institution Configuration (for Admin-Published UPI / QR Details)
-  const [instConfig, setInstConfig] = useState<InstitutionConfig>(getInstitutionConfigSync());
+  // Dynamic Institution Configuration (Initialized with SSR-safe defaults)
+  const [instConfig, setInstConfig] = useState<InstitutionConfig>(DEFAULT_INSTITUTION_CONFIG);
   const [copiedUpi, setCopiedUpi] = useState<boolean>(false);
 
   useEffect(() => {
+    // Rehydrate dynamic configurations safely after initial client mount
+    setCreditSchemes(getCreditSchemesSync());
+    setInstConfig(getInstitutionConfigSync());
+
     const handleSchemesUpdate = () => {
       setCreditSchemes(getCreditSchemesSync());
     };
@@ -1036,7 +1041,7 @@ export default function HomePage() {
 
                     <div className="space-y-2 text-center sm:text-left flex-1 min-w-0">
                       <div>
-                        <p className="text-xs font-black text-white truncate">
+                        <p className="text-xs font-black text-white truncate" suppressHydrationWarning={true}>
                           {instConfig.upiPayeeName || instConfig.organizationName || 'GGY Finance Ltd'}
                         </p>
                         <p className="text-[11px] text-emerald-200/90 font-medium">
@@ -1046,7 +1051,7 @@ export default function HomePage() {
 
                       {/* Clean VPA Badge + One-Click Copy */}
                       <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1">
-                        <span className="text-xs font-mono font-bold text-amber-300 bg-emerald-900/90 px-2.5 py-1 rounded-lg border border-emerald-700/80 truncate max-w-[200px]">
+                        <span className="text-xs font-mono font-bold text-amber-300 bg-emerald-900/90 px-2.5 py-1 rounded-lg border border-emerald-700/80 truncate max-w-[200px]" suppressHydrationWarning={true}>
                           {instConfig.upiVpa || 'ggycollect@icici'}
                         </span>
                         <button
@@ -1068,8 +1073,8 @@ export default function HomePage() {
                         </button>
                       </div>
 
-                      <p className="text-[10px] text-emerald-300/80 font-medium pt-0.5">
-                        {instConfig.collectionInstructions || 'Mention your Loan Account Number in remarks. Zero transaction charges.'}
+                      <p className="text-[10px] text-emerald-300/80 font-medium pt-0.5" suppressHydrationWarning={true}>
+                        {instConfig.collectionInstructions || 'Scan using BHIM UPI, Google Pay, PhonePe, or Paytm. Specify your Loan Account Number in remarks for instant automated ledger credit.'}
                       </p>
                     </div>
                   </div>

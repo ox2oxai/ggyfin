@@ -26,7 +26,7 @@ const DEFAULT_CONFIG = {
   upiAccountNumber: '1084-0101-702-0039-4',
   qrImageUrl: '',
   enablePublicQr: true,
-  collectionInstructions: 'Scan using BHIM UPI, Google Pay, PhonePe, or Paytm. Specify your 10-digit Loan Account Number in remarks for instant automated ledger credit.'
+  collectionInstructions: 'Scan using BHIM UPI, Google Pay, PhonePe, or Paytm. Specify your Loan Account Number in remarks for instant automated ledger credit.'
 };
 
 function resolvePath(): string {

@@ -6,13 +6,13 @@ import { usePathname } from 'next/navigation';
 import { GGYBrandMark } from './brand-mark';
 import { useLanguage } from './language-context';
 import { Menu, X, MessageCircle } from 'lucide-react';
-import { getInstitutionConfigSync, InstitutionConfig } from '../lib/institution';
+import { getInstitutionConfigSync, InstitutionConfig, DEFAULT_INSTITUTION_CONFIG } from '../lib/institution';
 
 export function PublicHeader() {
   const { lang, setLang } = useLanguage();
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [config, setConfig] = useState<InstitutionConfig>(getInstitutionConfigSync());
+  const [config, setConfig] = useState<InstitutionConfig>(DEFAULT_INSTITUTION_CONFIG);
 
   useEffect(() => {
     const handleSync = () => {

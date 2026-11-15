@@ -26,7 +26,8 @@ import { generateUpiUri } from '@nbfc/shared';
 import {
   InstitutionConfig,
   getInstitutionConfigSync,
-  getInstitutionConfigAsync
+  getInstitutionConfigAsync,
+  DEFAULT_INSTITUTION_CONFIG
 } from '../../lib/institution';
 
 interface BorrowerAccountSummary {
@@ -57,7 +58,7 @@ export default function BorrowerPortalPage() {
   const [selectedAcc, setSelectedAcc] = useState<BorrowerAccountSummary | null>(null);
   const [showQrModal, setShowQrModal] = useState(false);
   const [showNocModal, setShowNocModal] = useState(false);
-  const [instConfig, setInstConfig] = useState<InstitutionConfig>(getInstitutionConfigSync());
+  const [instConfig, setInstConfig] = useState<InstitutionConfig>(DEFAULT_INSTITUTION_CONFIG);
   const [copiedPortalUpi, setCopiedPortalUpi] = useState(false);
 
   React.useEffect(() => {

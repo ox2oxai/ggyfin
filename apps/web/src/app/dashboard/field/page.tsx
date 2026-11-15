@@ -29,7 +29,8 @@ import {
 import {
   InstitutionConfig,
   getInstitutionConfigSync,
-  getInstitutionConfigAsync
+  getInstitutionConfigAsync,
+  DEFAULT_INSTITUTION_CONFIG
 } from '../../../lib/institution';
 
 export default function FieldOfficerPage() {
@@ -56,7 +57,7 @@ export default function FieldOfficerPage() {
   const [showQrModal, setShowQrModal] = useState(false);
   const [qrAmount, setQrAmount] = useState<number>(4650);
   const [activeUpiUri, setActiveUpiUri] = useState('');
-  const [instConfig, setInstConfig] = useState<InstitutionConfig>(getInstitutionConfigSync());
+  const [instConfig, setInstConfig] = useState<InstitutionConfig>(DEFAULT_INSTITUTION_CONFIG);
   const [copiedFieldUpi, setCopiedFieldUpi] = useState(false);
 
   React.useEffect(() => {

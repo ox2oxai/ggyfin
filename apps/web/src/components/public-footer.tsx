@@ -11,14 +11,17 @@ import {
   getBranchesSync,
   InstitutionConfig,
   CreditScheme,
-  BranchRecord
+  BranchRecord,
+  DEFAULT_INSTITUTION_CONFIG,
+  DEFAULT_CREDIT_SCHEMES,
+  DEFAULT_BRANCHES
 } from '../lib/institution';
 
 export function PublicFooter() {
   const { lang } = useLanguage();
-  const [config, setConfig] = useState<InstitutionConfig>(getInstitutionConfigSync());
-  const [schemes, setSchemes] = useState<CreditScheme[]>(getCreditSchemesSync());
-  const [branches, setBranches] = useState<BranchRecord[]>(getBranchesSync());
+  const [config, setConfig] = useState<InstitutionConfig>(DEFAULT_INSTITUTION_CONFIG);
+  const [schemes, setSchemes] = useState<CreditScheme[]>(DEFAULT_CREDIT_SCHEMES);
+  const [branches, setBranches] = useState<BranchRecord[]>(DEFAULT_BRANCHES);
 
   useEffect(() => {
     const handleSync = () => {
