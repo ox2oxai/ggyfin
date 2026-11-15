@@ -34,18 +34,28 @@ export default function RootLayout({
             __html: `
               (function() {
                 var reloadKey = 'ggy_chunk_reload_ts';
-                function handleChunkError(e) {
-                  var msg = (e && (e.message || (e.reason && e.reason.message))) || '';
-                  if (/ChunkLoadError|Loading chunk|timeout:.*chunk/i.test(msg)) {
-                    var lastReload = parseInt(sessionStorage.getItem(reloadKey) || '0', 10);
-                    if (Date.now() - lastReload > 8000) {
-                      sessionStorage.setItem(reloadKey, String(Date.now()));
-                      window.location.reload();
-                    }
+                function triggerReload() {
+                  var lastReload = parseInt(sessionStorage.getItem(reloadKey) || '0', 10);
+                  if (Date.now() - lastReload > 5000) {
+                    sessionStorage.setItem(reloadKey, String(Date.now()));
+                    window.location.reload();
                   }
                 }
-                window.addEventListener('error', handleChunkError, true);
-                window.addEventListener('unhandledrejection', handleChunkError);
+                window.addEventListener('error', function(e) {
+                  var msg = (e && (e.message || (e.reason && e.reason.message))) || '';
+                  if (/ChunkLoadError|Loading chunk|timeout:.*chunk/i.test(msg)) {
+                    triggerReload();
+                  }
+                  if (e.target && e.target.tagName === 'SCRIPT' && e.target.src && e.target.src.indexOf('/_next/static/chunks/') !== -1) {
+                    triggerReload();
+                  }
+                }, true);
+                window.addEventListener('unhandledrejection', function(e) {
+                  var msg = (e && (e.reason && (e.reason.message || e.reason.stack))) || '';
+                  if (/ChunkLoadError|Loading chunk|timeout:.*chunk/i.test(msg)) {
+                    triggerReload();
+                  }
+                });
               })();
             `
           }}

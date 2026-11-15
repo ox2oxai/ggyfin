@@ -669,7 +669,7 @@ export default function HomePage() {
                 className={`bg-white rounded-3xl p-6 border transition-all cursor-pointer flex flex-col justify-between space-y-6 relative overflow-hidden ${
                   isSelected
                     ? 'border-orange-500 shadow-xl ring-2 ring-orange-500/20 transform -translate-y-1'
-                    : 'border-slate-200 hover:border-orange-300 hover:shadow-lg'
+                    : 'border-slate-200/90 shadow-[0_2px_12px_-4px_rgba(15,23,42,0.06),0_1px_3px_-1px_rgba(15,23,42,0.04)] ring-1 ring-slate-900/[0.04] hover:border-orange-300 hover:shadow-lg'
                 }`}
               >
                 <div className="space-y-4">
@@ -681,7 +681,7 @@ export default function HomePage() {
                     >
                       <Icon className="w-6 h-6" />
                     </div>
-                    <span className="text-[10px] font-black uppercase tracking-wider bg-orange-50 text-orange-700 border border-orange-200 px-2 py-0.5 rounded-full">
+                    <span className="text-[10px] font-black uppercase tracking-wider bg-orange-50/90 text-orange-800 border border-orange-200/90 ring-1 ring-inset ring-orange-500/10 px-2 py-0.5 rounded-full">
                       {prod.tag}
                     </span>
                   </div>
@@ -872,12 +872,12 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* Input Controls (7 cols) */}
-            <div className="lg:col-span-7 bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-6">
+            <div className="lg:col-span-7 bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/90 shadow-[0_2px_12px_-4px_rgba(15,23,42,0.06),0_1px_3px_-1px_rgba(15,23,42,0.04)] ring-1 ring-slate-900/[0.04] space-y-6">
               {/* Slider 1: Loan Amount */}
               <div className="space-y-2">
                 <div className="flex justify-between items-center text-xs font-bold">
-                  <label className="text-slate-900">{t.sliderAmount}</label>
-                  <span className="text-base sm:text-lg font-black text-slate-950 font-mono bg-slate-50 px-3 py-1 rounded-xl border border-slate-200 shadow-2xs">
+                  <label className="text-slate-900 font-extrabold">{t.sliderAmount}</label>
+                  <span className="text-base sm:text-lg font-black text-slate-950 font-mono tabular-nums bg-slate-100/90 px-3 py-1 rounded-xl border border-slate-200/90 shadow-2xs">
                     ₹{loanAmount.toLocaleString('en-IN')}
                   </span>
                 </div>
@@ -890,7 +890,7 @@ export default function HomePage() {
                   onChange={(e) => setLoanAmount(Number(e.target.value))}
                   className="w-full accent-orange-600 h-2 bg-slate-100 rounded-lg cursor-pointer"
                 />
-                <div className="flex justify-between text-[11px] text-slate-400 font-semibold font-mono">
+                <div className="flex justify-between text-[11px] text-slate-400 font-semibold font-mono tabular-nums">
                   <span>₹10,000</span>
                   <span>₹1,00,000</span>
                   <span>₹2,00,000</span>
@@ -900,8 +900,8 @@ export default function HomePage() {
               {/* Slider 2: Tenure */}
               <div className="space-y-2">
                 <div className="flex justify-between items-center text-xs font-bold">
-                  <label className="text-slate-900">{t.sliderTenure}</label>
-                  <span className="text-base sm:text-lg font-black text-slate-950 font-mono bg-slate-50 px-3 py-1 rounded-xl border border-slate-200 shadow-2xs">
+                  <label className="text-slate-900 font-extrabold">{t.sliderTenure}</label>
+                  <span className="text-base sm:text-lg font-black text-slate-950 font-mono tabular-nums bg-slate-100/90 px-3 py-1 rounded-xl border border-slate-200/90 shadow-2xs">
                     {tenure} Months
                   </span>
                 </div>
@@ -914,7 +914,7 @@ export default function HomePage() {
                   onChange={(e) => setTenure(Number(e.target.value))}
                   className="w-full accent-orange-600 h-2 bg-slate-100 rounded-lg cursor-pointer"
                 />
-                <div className="flex justify-between text-[11px] text-slate-400 font-semibold font-mono">
+                <div className="flex justify-between text-[11px] text-slate-400 font-semibold font-mono tabular-nums">
                   <span>6 Mo</span>
                   <span>18 Mo</span>
                   <span>36 Mo</span>
@@ -924,8 +924,8 @@ export default function HomePage() {
               {/* Slider 3: Interest Rate */}
               <div className="space-y-2">
                 <div className="flex justify-between items-center text-xs font-bold">
-                  <label className="text-slate-900">{t.sliderRate}</label>
-                  <span className="text-base sm:text-lg font-black text-orange-600 font-mono bg-orange-50 px-3 py-1 rounded-xl border border-orange-200 shadow-2xs">
+                  <label className="text-slate-900 font-extrabold">{t.sliderRate}</label>
+                  <span className="text-base sm:text-lg font-black text-orange-600 font-mono tabular-nums bg-orange-50/90 px-3 py-1 rounded-xl border border-orange-200/90 shadow-2xs">
                     {interestRate}% p.a.
                   </span>
                 </div>
@@ -938,7 +938,7 @@ export default function HomePage() {
                   onChange={(e) => setInterestRate(Number(e.target.value))}
                   className="w-full accent-orange-600 h-2 bg-slate-100 rounded-lg cursor-pointer"
                 />
-                <div className="flex justify-between text-[11px] text-slate-400 font-semibold font-mono">
+                <div className="flex justify-between text-[11px] text-slate-400 font-semibold font-mono tabular-nums">
                   <span>10.0%</span>
                   <span>14.0%</span>
                   <span>18.0%</span>
@@ -957,11 +957,11 @@ export default function HomePage() {
             </div>
 
             {/* Live Calculation Display & UPI Simulator (5 cols) */}
-            <div className="lg:col-span-5 bg-gradient-to-br from-[#064e3b] via-[#062e1c] to-[#022c22] p-6 sm:p-8 rounded-3xl text-white shadow-xl space-y-6">
+            <div className="lg:col-span-5 bg-gradient-to-br from-[#064e3b] via-[#062e1c] to-[#022c22] p-6 sm:p-8 rounded-3xl text-white shadow-2xl border border-emerald-800/80 space-y-6 ring-1 ring-emerald-700/30">
               <div className="space-y-1 pb-4 border-b border-emerald-800">
                 <p className="text-xs font-bold text-amber-300 uppercase tracking-wider">{t.emiHeading}</p>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-3xl sm:text-4xl font-black text-white font-mono tracking-tight">
+                  <span className="text-3xl sm:text-4xl font-extrabold text-white font-mono tabular-nums tracking-tight">
                     ₹{monthlyEmi.toLocaleString('en-IN')}
                   </span>
                   <span className="text-xs text-emerald-300 font-semibold">{t.perMonth}</span>
@@ -990,21 +990,21 @@ export default function HomePage() {
               <div className="space-y-3 text-xs pt-2">
                 <div className="flex justify-between py-1.5 border-b border-emerald-900 font-medium">
                   <span className="text-emerald-200">{t.principalBreakdown}</span>
-                  <span className="font-mono font-bold text-white">₹{loanAmount.toLocaleString('en-IN')}</span>
+                  <span className="font-mono tabular-nums font-bold text-white">₹{loanAmount.toLocaleString('en-IN')}</span>
                 </div>
                 <div className="flex justify-between py-1.5 border-b border-emerald-900 font-medium">
                   <span className="text-emerald-200">{t.interestBreakdown}</span>
-                  <span className="font-mono font-bold text-amber-300">₹{totalInterest.toLocaleString('en-IN')}</span>
+                  <span className="font-mono tabular-nums font-bold text-amber-300">₹{totalInterest.toLocaleString('en-IN')}</span>
                 </div>
                 <div className="flex justify-between py-1.5 font-bold text-sm">
                   <span className="text-white">{t.totalPayable}</span>
-                  <span className="font-mono font-black text-orange-400">₹{totalAmount.toLocaleString('en-IN')}</span>
+                  <span className="font-mono tabular-nums font-black text-orange-400">₹{totalAmount.toLocaleString('en-IN')}</span>
                 </div>
               </div>
 
               {/* NPCI Verified Merchant UPI Repayment Card (Published by Sysadmin) */}
               {(instConfig.enablePublicQr ?? true) ? (
-                <div className="p-4 sm:p-5 bg-emerald-950/90 rounded-2xl border border-emerald-700/80 space-y-4 shadow-inner">
+                <div className="p-4 sm:p-5 bg-emerald-950/95 rounded-2xl border border-emerald-700/80 space-y-4 shadow-inner ring-1 ring-emerald-500/10">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -1179,7 +1179,7 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-2xs space-y-3">
+            <div className="bg-white p-6 rounded-3xl border border-slate-200/90 shadow-[0_2px_12px_-4px_rgba(15,23,42,0.06),0_1px_3px_-1px_rgba(15,23,42,0.04)] ring-1 ring-slate-900/[0.04] space-y-3 hover:-translate-y-0.5 transition-transform">
               <div className="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center font-bold">
                 <ShieldCheck className="w-5 h-5" />
               </div>
@@ -1189,7 +1189,7 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-2xs space-y-3">
+            <div className="bg-white p-6 rounded-3xl border border-slate-200/90 shadow-[0_2px_12px_-4px_rgba(15,23,42,0.06),0_1px_3px_-1px_rgba(15,23,42,0.04)] ring-1 ring-slate-900/[0.04] space-y-3 hover:-translate-y-0.5 transition-transform">
               <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
                 <Users2 className="w-5 h-5" />
               </div>
@@ -1199,7 +1199,7 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-2xs space-y-3">
+            <div className="bg-white p-6 rounded-3xl border border-slate-200/90 shadow-[0_2px_12px_-4px_rgba(15,23,42,0.06),0_1px_3px_-1px_rgba(15,23,42,0.04)] ring-1 ring-slate-900/[0.04] space-y-3 hover:-translate-y-0.5 transition-transform">
               <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
                 <QrCode className="w-5 h-5" />
               </div>
@@ -1209,7 +1209,7 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-2xs space-y-3">
+            <div className="bg-white p-6 rounded-3xl border border-slate-200/90 shadow-[0_2px_12px_-4px_rgba(15,23,42,0.06),0_1px_3px_-1px_rgba(15,23,42,0.04)] ring-1 ring-slate-900/[0.04] space-y-3 hover:-translate-y-0.5 transition-transform">
               <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
                 <Building2 className="w-5 h-5" />
               </div>

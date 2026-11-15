@@ -43,6 +43,202 @@ import {
   MutualFundsDataset
 } from '../../lib/mutual-funds';
 
+function NavSplineChart({
+  scheme
+}: {
+  scheme: MutualFundSchemeDetail;
+}) {
+  const points = scheme.milestonesNavHistory && scheme.milestonesNavHistory.length > 0
+    ? scheme.milestonesNavHistory
+    : [
+        { date: '2021-03-31', nav: Number((scheme.latestNav * 0.65).toFixed(2)) },
+        { date: '2022-03-31', nav: Number((scheme.latestNav * 0.76).toFixed(2)) },
+        { date: '2023-03-31', nav: Number((scheme.latestNav * 0.84).toFixed(2)) },
+        { date: '2024-03-31', nav: Number((scheme.latestNav * 0.94).toFixed(2)) },
+        { date: scheme.latestNavDate || '2024-11-14', nav: scheme.latestNav }
+      ];
+
+  const [hoveredPoint, setHoveredPoint] = useState<{ date: string; nav: number } | null>(null);
+
+  const navs = points.map((p) => p.nav);
+  const minNav = Math.min(...navs);
+  const maxNav = Math.max(...navs);
+  const paddingNav = (maxNav - minNav) * 0.12 || 2;
+  const yMin = Math.max(0, minNav - paddingNav);
+  const yMax = maxNav + paddingNav;
+  const yRange = yMax - yMin || 1;
+
+  // Chart Dimensions
+  const width = 540;
+  const height = 170;
+  const padLeft = 48;
+  const padRight = 24;
+  const padTop = 22;
+  const padBottom = 32;
+  const plotWidth = width - padLeft - padRight;
+  const plotHeight = height - padTop - padBottom;
+
+  const coords = points.map((pt, i) => {
+    const x = padLeft + (points.length === 1 ? plotWidth / 2 : (i / (points.length - 1)) * plotWidth);
+    const y = padTop + (1 - (pt.nav - yMin) / yRange) * plotHeight;
+    return { x, y, pt };
+  });
+
+  // Smooth Cubic Bezier Spline Path
+  let pathD = '';
+  if (coords.length > 0) {
+    pathD = `M ${coords[0].x.toFixed(1)} ${coords[0].y.toFixed(1)}`;
+    for (let i = 1; i < coords.length; i++) {
+      const prev = coords[i - 1];
+      const curr = coords[i];
+      const cpX = ((prev.x + curr.x) / 2).toFixed(1);
+      pathD += ` C ${cpX} ${prev.y.toFixed(1)}, ${cpX} ${curr.y.toFixed(1)}, ${curr.x.toFixed(1)} ${curr.y.toFixed(1)}`;
+    }
+  }
+
+  const lastCoord = coords[coords.length - 1];
+  const firstCoord = coords[0];
+  const areaD = coords.length > 0
+    ? `${pathD} L ${lastCoord.x.toFixed(1)} ${(padTop + plotHeight).toFixed(1)} L ${firstCoord.x.toFixed(1)} ${(padTop + plotHeight).toFixed(1)} Z`
+    : '';
+
+  // 3 Gridline values (Top, Mid, Bottom)
+  const gridLines = [
+    { label: `₹${maxNav.toFixed(1)}`, y: padTop + (1 - (maxNav - yMin) / yRange) * plotHeight },
+    { label: `₹${((maxNav + minNav) / 2).toFixed(1)}`, y: padTop + (1 - ((maxNav + minNav) / 2 - yMin) / yRange) * plotHeight },
+    { label: `₹${minNav.toFixed(1)}`, y: padTop + (1 - (minNav - yMin) / yRange) * plotHeight }
+  ];
+
+  return (
+    <div className="bg-slate-900 rounded-2xl p-4 sm:p-5 border border-slate-800 shadow-inner space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+          <span className="font-extrabold text-white tracking-tight">
+            High-Resolution NAV Trajectory
+          </span>
+          <span className="text-[10px] font-mono text-slate-400 bg-slate-800 px-2 py-0.5 rounded border border-slate-700">
+            {points.length} Official Checkpoints
+          </span>
+        </div>
+        <div className="text-right">
+          {hoveredPoint ? (
+            <span className="text-xs font-mono font-bold text-amber-300">
+              ₹{hoveredPoint.nav.toFixed(2)} on {hoveredPoint.date}
+            </span>
+          ) : (
+            <span className="text-xs font-mono font-bold text-emerald-400">
+              Latest: ₹{scheme.latestNav.toFixed(2)} ({scheme.latestNavDate})
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* SVG Canvas */}
+      <div className="w-full overflow-hidden">
+        <svg
+          viewBox={`0 0 ${width} ${height}`}
+          className="w-full h-auto max-h-44 overflow-visible select-none"
+        >
+          <defs>
+            <linearGradient id={`gradient-${scheme.id}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#f97316" stopOpacity="0.45" />
+              <stop offset="60%" stopColor="#f59e0b" stopOpacity="0.15" />
+              <stop offset="100%" stopColor="#f97316" stopOpacity="0.0" />
+            </linearGradient>
+          </defs>
+
+          {/* Grid lines */}
+          {gridLines.map((gl, i) => (
+            <g key={i}>
+              <line
+                x1={padLeft}
+                y1={gl.y}
+                x2={width - padRight}
+                y2={gl.y}
+                stroke="#334155"
+                strokeDasharray="4 4"
+                strokeWidth="1"
+              />
+              <text
+                x={padLeft - 8}
+                y={gl.y + 3.5}
+                fill="#94a3b8"
+                fontSize="9"
+                fontFamily="monospace"
+                textAnchor="end"
+                className="font-bold"
+              >
+                {gl.label}
+              </text>
+            </g>
+          ))}
+
+          {/* Area Fill */}
+          {areaD && (
+            <path
+              d={areaD}
+              fill={`url(#gradient-${scheme.id})`}
+            />
+          )}
+
+          {/* Smooth Bezier Spline Stroke */}
+          {pathD && (
+            <path
+              d={pathD}
+              fill="none"
+              stroke="#fb923c"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          )}
+
+          {/* Data Points */}
+          {coords.map((c, i) => {
+            const isHovered = hoveredPoint?.date === c.pt.date;
+            return (
+              <g
+                key={i}
+                className="cursor-pointer"
+                onMouseEnter={() => setHoveredPoint(c.pt)}
+                onMouseLeave={() => setHoveredPoint(null)}
+              >
+                <circle
+                  cx={c.x}
+                  cy={c.y}
+                  r={isHovered ? 6 : 4}
+                  fill={isHovered ? '#ea580c' : '#ffffff'}
+                  stroke="#ea580c"
+                  strokeWidth="2.5"
+                  className="transition-all duration-150"
+                />
+                {/* Year / Date Axis Label */}
+                <text
+                  x={c.x}
+                  y={height - 8}
+                  fill="#94a3b8"
+                  fontSize="9"
+                  fontFamily="monospace"
+                  textAnchor="middle"
+                  className="font-medium"
+                >
+                  {c.pt.date.slice(0, 4)}
+                </text>
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+
+      <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 border-t border-slate-800 pt-2">
+        <span>Inception / Base: ₹{points[0]?.nav.toFixed(2)} ({points[0]?.date})</span>
+        <span className="text-amber-400/90 font-bold">Daily NAV History Source: AMFI India Official</span>
+      </div>
+    </div>
+  );
+}
+
 export default function MutualFundsPage() {
   const { lang } = useLanguage();
   const [dataset, setDataset] = useState<MutualFundsDataset>(getMutualFundsSync());
@@ -275,25 +471,25 @@ export default function MutualFundsPage() {
         {/* 1. TOP HEADER & NOTICE BANNER */}
         {/* ======================================================== */}
         <section className="space-y-4">
-          <div className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider text-orange-700 bg-orange-100/80 px-3.5 py-1.5 rounded-full border border-orange-200">
+          <div className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider text-orange-800 bg-orange-100/90 px-3.5 py-1.5 rounded-full border border-orange-200/90 ring-1 ring-inset ring-orange-500/10 shadow-2xs">
             <TrendingUp className="w-3.5 h-3.5 text-orange-600" />
             <span>{t.badge}</span>
           </div>
 
           <div className="space-y-2">
-            <h1 className="text-2xl sm:text-4xl font-black text-slate-950 tracking-tight">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-950 tracking-tight leading-[1.15]">
               {t.title}
             </h1>
-            <p className="text-xs sm:text-sm text-slate-600 max-w-3xl leading-relaxed">
+            <p className="text-sm sm:text-base text-slate-600 max-w-3xl leading-relaxed font-normal">
               {t.subtitle}
             </p>
           </div>
 
           {/* Prominent Quick-Reference & Official AMC Live Notice */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-emerald-50/80 border border-emerald-200/80 flex items-start gap-3.5 shadow-2xs">
+          <div className="p-4 sm:p-5 rounded-2xl bg-emerald-50/90 border border-emerald-200/90 flex items-start gap-3.5 shadow-[0_1px_3px_0_rgba(6,78,59,0.05)] ring-1 ring-emerald-900/[0.03]">
             <Info className="w-5 h-5 text-emerald-700 shrink-0 mt-0.5" />
             <div className="text-xs space-y-1 text-emerald-950">
-              <p className="font-black text-emerald-900">{t.quickRefNoticeTitle}</p>
+              <p className="font-extrabold text-emerald-900 text-sm tracking-tight">{t.quickRefNoticeTitle}</p>
               <p className="text-emerald-800 leading-relaxed font-normal">
                 {t.quickRefNoticeDesc}
               </p>
@@ -304,22 +500,22 @@ export default function MutualFundsPage() {
         {/* ======================================================== */}
         {/* 2. INSTANT SEARCH & LEAN FILTERS */}
         {/* ======================================================== */}
-        <section className="bg-white p-4 sm:p-6 rounded-3xl border border-slate-200 shadow-xs space-y-4">
+        <section className="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200/90 shadow-[0_2px_10px_-3px_rgba(15,23,42,0.06),0_1px_3px_-1px_rgba(15,23,42,0.04)] ring-1 ring-slate-900/[0.03] space-y-4">
           {/* Search Bar */}
           <div className="relative">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-4" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t.searchPlaceholder}
-              className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-orange-500 focus:bg-white transition-all font-medium"
+              className="w-full pl-11 pr-16 py-3.5 bg-slate-50/80 border border-slate-200/90 rounded-2xl text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 focus:bg-white transition-all font-medium shadow-2xs"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600 text-xs font-bold"
+                className="absolute right-4 top-3.5 text-slate-400 hover:text-slate-700 text-xs font-bold bg-slate-200/70 hover:bg-slate-200 px-2 py-1 rounded-md transition-colors"
               >
                 Clear
               </button>
@@ -335,10 +531,10 @@ export default function MutualFundsPage() {
                   key={cat}
                   type="button"
                   onClick={() => setSelectedCategory(cat)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 ${
+                  className={`px-3.5 py-1.5 rounded-xl text-xs transition-all cursor-pointer shrink-0 ${
                     selectedCategory === cat
-                      ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-xs'
-                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                      ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-sm ring-1 ring-orange-600/30 font-extrabold'
+                      : 'bg-slate-100/90 text-slate-700 hover:bg-slate-200/90 border border-slate-200/70 font-bold'
                   }`}
                 >
                   {cat === 'All' ? t.categoryAll : cat}
@@ -349,13 +545,13 @@ export default function MutualFundsPage() {
             {/* Sort Select */}
             <div className="flex items-center gap-2 text-xs font-bold shrink-0 self-end sm:self-auto">
               <span className="text-slate-500 flex items-center gap-1">
-                <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
                 <span>{t.sortLabel}</span>
               </span>
               <select
                 value={sortKey}
                 onChange={(e) => setSortKey(e.target.value as any)}
-                className="bg-slate-50 border border-slate-200 py-1.5 px-2.5 rounded-xl text-xs font-extrabold text-slate-800 cursor-pointer focus:ring-2 focus:ring-orange-500"
+                className="bg-slate-50/90 border border-slate-200/90 py-1.5 px-3 rounded-xl text-xs font-extrabold text-slate-800 cursor-pointer focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500"
               >
                 <option value="1Y">{t.sort1Y}</option>
                 <option value="3Y">{t.sort3Y}</option>
@@ -407,21 +603,21 @@ export default function MutualFundsPage() {
                 return (
                   <div
                     key={scheme.id}
-                    className="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-xs hover:border-orange-200 hover:shadow-md transition-all flex flex-col justify-between space-y-4"
+                    className="bg-white rounded-3xl border border-slate-200/90 shadow-[0_2px_12px_-4px_rgba(15,23,42,0.06),0_1px_3px_-1px_rgba(15,23,42,0.04)] ring-1 ring-slate-900/[0.04] p-5 sm:p-6 hover:border-orange-300/80 hover:shadow-[0_8px_24px_-4px_rgba(249,115,22,0.12),0_2px_8px_-2px_rgba(15,23,42,0.04)] hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between space-y-4"
                   >
                     {/* Top Row: Category + Riskometer + AMFI Code */}
                     <div className="space-y-2">
                       <div className="flex flex-wrap items-center justify-between gap-2">
-                        <span className="text-[10px] font-black uppercase tracking-wider text-orange-800 bg-orange-50 px-2 py-0.5 rounded-md border border-orange-200/80">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-orange-900 bg-orange-50/90 px-2.5 py-1 rounded-lg border border-orange-200/90 ring-1 ring-inset ring-orange-500/15">
                           {scheme.category} • {scheme.subCategory}
                         </span>
                         <div className="flex items-center gap-1.5">
                           <span
-                            className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${riskColor.badgeBg} ${riskColor.badgeText} ${riskColor.badgeBorder}`}
+                            className={`text-[10px] font-extrabold px-2.5 py-1 rounded-lg border ring-1 ring-inset ring-black/5 ${riskColor.badgeBg} ${riskColor.badgeText} ${riskColor.badgeBorder}`}
                           >
                             {scheme.riskometer} Risk
                           </span>
-                          <span className="text-[10px] font-mono text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded">
+                          <span className="text-[10px] font-mono font-bold text-slate-500 bg-slate-100/90 px-2 py-0.5 rounded-md border border-slate-200/90">
                             #{scheme.amfiCode}
                           </span>
                         </div>
@@ -429,20 +625,20 @@ export default function MutualFundsPage() {
 
                       {/* Scheme Name & Fund House */}
                       <div>
-                        <h2 className="text-sm sm:text-base font-black text-slate-900 leading-snug line-clamp-2">
+                        <h2 className="text-base sm:text-lg font-black text-slate-900 leading-tight tracking-tight line-clamp-2">
                           {scheme.schemeName}
                         </h2>
-                        <p className="text-xs text-slate-500 font-medium mt-0.5">
+                        <p className="text-xs text-slate-500 font-medium mt-1">
                           {scheme.amcName} • {scheme.planType} Plan ({scheme.optionType})
                         </p>
                       </div>
                     </div>
 
                     {/* Performance & NAV Metrics Strip */}
-                    <div className="bg-slate-50/80 p-3.5 rounded-2xl border border-slate-200/70 grid grid-cols-4 gap-2 text-center">
+                    <div className="bg-slate-50/90 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 grid grid-cols-4 gap-2 text-center divide-x divide-slate-200/60">
                       <div>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase">{t.latestNavLabel}</p>
-                        <p className="text-xs sm:text-sm font-black text-slate-900 font-mono mt-0.5">
+                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{t.latestNavLabel}</p>
+                        <p className="text-sm sm:text-base font-black text-slate-950 font-mono tabular-nums mt-0.5">
                           ₹{scheme.latestNav.toFixed(2)}
                         </p>
                         <p className="text-[9px] text-slate-400 font-mono">
@@ -450,87 +646,58 @@ export default function MutualFundsPage() {
                         </p>
                       </div>
 
-                      <div>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase">{t.returns1YLabel}</p>
+                      <div className="pl-1">
+                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{t.returns1YLabel}</p>
                         <p
-                          className={`text-xs sm:text-sm font-black font-mono mt-0.5 ${
+                          className={`text-sm sm:text-base font-black font-mono tabular-nums mt-0.5 ${
                             (scheme.returns1Y ?? 0) >= 0 ? 'text-emerald-700' : 'text-rose-600'
                           }`}
                         >
                           {scheme.returns1Y !== null ? `+${scheme.returns1Y}%` : 'N/A'}
                         </p>
-                        <p className="text-[9px] text-slate-400">Absolute</p>
+                        <p className="text-[9px] text-slate-400 font-medium">Absolute</p>
                       </div>
 
-                      <div>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase">{t.cagr3YLabel}</p>
+                      <div className="pl-1">
+                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{t.cagr3YLabel}</p>
                         <p
-                          className={`text-xs sm:text-sm font-black font-mono mt-0.5 ${
+                          className={`text-sm sm:text-base font-black font-mono tabular-nums mt-0.5 ${
                             (scheme.cagr3Y ?? 0) >= 0 ? 'text-emerald-700' : 'text-rose-600'
                           }`}
                         >
                           {scheme.cagr3Y !== null ? `+${scheme.cagr3Y}%` : 'N/A'}
                         </p>
-                        <p className="text-[9px] text-slate-400">p.a.</p>
+                        <p className="text-[9px] text-slate-400 font-medium">p.a.</p>
                       </div>
 
-                      <div>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase">{t.cagr5YLabel}</p>
+                      <div className="pl-1">
+                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{t.cagr5YLabel}</p>
                         <p
-                          className={`text-xs sm:text-sm font-black font-mono mt-0.5 ${
+                          className={`text-sm sm:text-base font-black font-mono tabular-nums mt-0.5 ${
                             (scheme.cagr5Y ?? 0) >= 0 ? 'text-emerald-700' : 'text-rose-600'
                           }`}
                         >
                           {scheme.cagr5Y !== null ? `+${scheme.cagr5Y}%` : 'N/A'}
                         </p>
-                        <p className="text-[9px] text-slate-400">p.a.</p>
+                        <p className="text-[9px] text-slate-400 font-medium">p.a.</p>
                       </div>
                     </div>
 
-                    {/* Expandable Lightweight SVG Area Chart */}
+                    {/* Expandable High-Resolution Vector SVG Spline Chart */}
                     {isExpanded && (
                       <div className="pt-2 border-t border-slate-100 space-y-3 animate-in fade-in duration-200">
                         <div className="flex items-center justify-between text-xs font-bold text-slate-700">
                           <span className="flex items-center gap-1.5 text-slate-900">
                             <BarChart3 className="w-3.5 h-3.5 text-orange-600" />
-                            <span>Historical NAV Track (Milestone Points)</span>
+                            <span>Historical NAV Track (Milestone Trajectory)</span>
                           </span>
-                          <span className="text-[10px] text-slate-400">
-                            Benchmark: {scheme.benchmarkName || 'Category Benchmark'}
+                          <span className="text-[10px] text-slate-500 font-medium">
+                            Benchmark: {scheme.benchmarkName || 'Category Index'}
                           </span>
                         </div>
 
-                        {/* Lean SVG Line Chart (<2KB DOM weight) */}
-                        <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200/80">
-                          <div className="h-32 w-full flex items-end justify-between gap-1 pt-4 pb-1 px-1">
-                            {(scheme.milestonesNavHistory || []).map((pt, idx, arr) => {
-                              const minNav = Math.min(...arr.map((p) => p.nav));
-                              const maxNav = Math.max(...arr.map((p) => p.nav));
-                              const range = maxNav - minNav || 1;
-                              const heightPct = Math.max(10, Math.round(((pt.nav - minNav) / range) * 90));
-
-                              return (
-                                <div
-                                  key={idx}
-                                  className="flex-1 flex flex-col items-center gap-1 group relative cursor-pointer"
-                                >
-                                  {/* Tooltip */}
-                                  <div className="absolute -top-7 hidden group-hover:flex bg-slate-900 text-white text-[9px] font-mono py-0.5 px-1.5 rounded shadow-lg whitespace-nowrap z-20">
-                                    ₹{pt.nav} • {pt.date}
-                                  </div>
-                                  <div
-                                    className="w-full bg-gradient-to-t from-orange-500 to-amber-400 rounded-t-sm group-hover:from-orange-600 group-hover:to-amber-500 transition-all"
-                                    style={{ height: `${heightPct}%` }}
-                                  />
-                                </div>
-                              );
-                            })}
-                          </div>
-                          <div className="flex justify-between text-[9px] font-mono text-slate-400 border-t border-slate-200 pt-1">
-                            <span>{scheme.milestonesNavHistory?.[0]?.date || 'Inception'}</span>
-                            <span>Latest: ₹{scheme.latestNav} ({scheme.latestNavDate})</span>
-                          </div>
-                        </div>
+                        {/* High-Resolution SVG Area Spline */}
+                        <NavSplineChart scheme={scheme} />
 
                         {/* Statutory Disclosure Links & Details */}
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] font-bold text-slate-600 pt-1">

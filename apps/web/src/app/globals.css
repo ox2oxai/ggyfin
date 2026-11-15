@@ -11,6 +11,11 @@
   --deep-forest: #062e1c;
 }
 
+*, ::before, ::after {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 body {
   color: var(--foreground);
   background: var(--background);
@@ -51,4 +56,26 @@ p {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #f97316;
+}
+
+/* High-Resolution Elevation & Crisp Card Contrast */
+.card-crisp {
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 4px 12px -2px rgba(15, 23, 42, 0.05);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-crisp:hover {
+  border-color: rgba(249, 115, 22, 0.35);
+  box-shadow: 0 8px 24px -4px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(249, 115, 22, 0.08);
+}
+
+/* Crisp Input Focus Glow */
+.input-crisp {
+  transition: all 0.15s ease-in-out;
+}
+.input-crisp:focus {
+  border-color: #ea580c;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+  outline: none;
 }
