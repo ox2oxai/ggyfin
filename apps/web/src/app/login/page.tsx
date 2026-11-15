@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { UserRole, sanitizeUsername } from '@nbfc/shared';
+import { UserRole } from '@nbfc/shared';
 import {
   Lock,
   Shield,
@@ -13,7 +13,12 @@ import {
   Eye,
   EyeOff,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Building2,
+  Sparkles,
+  ShieldCheck,
+  Check,
+  PhoneCall
 } from 'lucide-react';
 import { GGYBrandMark } from '../../components/brand-mark';
 import { recordAuditLog } from '../../lib/audit';
@@ -44,10 +49,6 @@ export default function LoginPage() {
     getStaffDirectoryAsync().catch(() => {});
   }, []);
 
-  const getStaffDirectory = (): StaffRecord[] => {
-    return getStaffDirectorySync();
-  };
-
   const routeByRole = (role: UserRole) => {
     switch (role) {
       case UserRole.SUPER_ADMIN_IT:
@@ -69,6 +70,22 @@ export default function LoginPage() {
         router.push('/dashboard/workspace');
     }
   };
+
+  // Live Detected Staff Preview
+  const matchedStaff = username.trim()
+    ? getStaffDirectorySync().find(
+        (u) =>
+          u.username.toLowerCase() === username.trim().toLowerCase() ||
+          (u.staffNumber && u.staffNumber.trim().toLowerCase() === username.trim().toLowerCase()) ||
+          (u.email && u.email.trim().toLowerCase() === username.trim().toLowerCase())
+      ) ||
+      DEFAULT_STAFF_DIRECTORY.find(
+        (u) =>
+          u.username.toLowerCase() === username.trim().toLowerCase() ||
+          (u.staffNumber && u.staffNumber.trim().toLowerCase() === username.trim().toLowerCase()) ||
+          (u.email && u.email.trim().toLowerCase() === username.trim().toLowerCase())
+      )
+    : null;
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -251,36 +268,98 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
-      {/* Brand & Heading */}
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-orange-600 mb-6 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Public Website</span>
-        </Link>
+    <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center p-4 sm:p-6 lg:p-8 font-sans selection:bg-orange-500 selection:text-white">
+      {/* Modern Split-Screen Banking Gateway Card */}
+      <div className="max-w-5xl w-full bg-white rounded-3xl border border-slate-200/90 shadow-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[620px]">
+        {/* ======================================================== */}
+        {/* LEFT COLUMN: INSTITUTIONAL TRUST & CORE BANKING PILLAR */}
+        {/* ======================================================== */}
+        <div className="lg:col-span-5 bg-gradient-to-br from-[#062e1c] via-[#064e3b] to-[#022c22] text-white p-8 sm:p-10 flex flex-col justify-between relative overflow-hidden">
+          {/* Subtle Ambient Radial Glow */}
+          <div className="absolute -top-24 -left-24 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="absolute -bottom-24 -right-24 w-72 h-72 bg-amber-400/10 rounded-full blur-3xl pointer-events-none"></div>
 
-        <div className="flex justify-center">
-          <GGYBrandMark size="xl" />
+          <div className="relative z-10 space-y-6">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 text-xs font-bold text-emerald-300 hover:text-white transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Back to Public Website</span>
+            </Link>
+
+            <div className="space-y-3 pt-2">
+              <div className="flex items-center gap-3">
+                <GGYBrandMark size="lg" />
+                <div>
+                  <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                    GGY Finance
+                  </h1>
+                  <span className="text-[10px] text-amber-300 font-bold uppercase tracking-wider block">
+                    Institutional Core Banking Portal
+                  </span>
+                </div>
+              </div>
+
+              <p className="text-xs text-emerald-100/90 leading-relaxed font-normal">
+                National Micro-Lending Platform operating under strict RBI Dual-Control Maker-Checker protocols and DPDP Act 2023 data sovereignty.
+              </p>
+            </div>
+
+            {/* Institutional Security Assurance Checklist */}
+            <div className="space-y-3 pt-2">
+              <div className="flex items-start gap-2.5 text-xs text-emerald-100">
+                <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <div>
+                  <strong className="text-white block font-bold">AES-256 Envelope Vault</strong>
+                  <span className="text-[11px] text-emerald-200/80">UIDAI compliant masked Aadhaar and encrypted document storage.</span>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-2.5 text-xs text-emerald-100">
+                <Shield className="w-4 h-4 text-amber-300 shrink-0 mt-0.5" />
+                <div>
+                  <strong className="text-white block font-bold">DPDP Act 2023 Compliant</strong>
+                  <span className="text-[11px] text-emerald-200/80">100% Data Sovereignty housed exclusively in Indian Data Centers.</span>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-2.5 text-xs text-emerald-100">
+                <Building2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <div>
+                  <strong className="text-white block font-bold">RBI Four-Eyes Principle</strong>
+                  <span className="text-[11px] text-emerald-200/80">Maker-Checker dual authorization for loan sanctions and cash collections.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Support Helpline Pill */}
+          <div className="relative z-10 pt-6 mt-6 border-t border-emerald-800/80 flex items-center justify-between text-xs text-emerald-300/90">
+            <span className="flex items-center gap-1.5 font-medium">
+              <PhoneCall className="w-3.5 h-3.5 text-amber-300" />
+              <span>IT Support: 1800-889-2020</span>
+            </span>
+            <span className="font-mono text-[10px] text-emerald-400 font-bold bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-700/60">
+              Branch 2020 Active
+            </span>
+          </div>
         </div>
 
-        <h2 className="mt-4 text-center text-2xl font-bold text-slate-900 tracking-tight">
-          GGY Finance Staff Portal
-        </h2>
-        <p className="mt-1 text-center text-xs text-slate-500 font-medium">
-          National Micro-Lending Platform • Dual-Control Core Banking
-        </p>
-      </div>
-
-      {/* Clean Modern Login Form */}
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-6 shadow-xl rounded-3xl border border-slate-200/80 sm:px-10 space-y-6">
-          <div className="text-center space-y-1 pb-1">
-            <h3 className="text-sm font-black text-slate-900">Sign In to Your Workspace</h3>
-            <p className="text-xs text-slate-500">
-              Enter your assigned institutional username and password
+        {/* ======================================================== */}
+        {/* RIGHT COLUMN: AUTHENTICATION WORKSPACE CARD */}
+        {/* ======================================================== */}
+        <div className="lg:col-span-7 p-6 sm:p-10 lg:p-12 flex flex-col justify-center space-y-6 bg-white">
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 text-orange-700 border border-orange-200 text-[11px] font-black uppercase tracking-wider mb-2">
+              <Lock className="w-3 h-3 text-orange-600" />
+              <span>Staff Authentication</span>
+            </div>
+            <h2 className="text-2xl font-black text-slate-900 tracking-tight">
+              Sign In to Your Workspace
+            </h2>
+            <p className="text-xs text-slate-500 font-medium">
+              Enter your assigned institutional username, numeric staff ID, or registered email.
             </p>
           </div>
 
@@ -293,9 +372,12 @@ export default function LoginPage() {
 
           <form className="space-y-4" onSubmit={handleLogin}>
             <div>
-              <label className="block text-xs font-bold text-slate-800 mb-1">
-                Staff Username, ID, or Email
-              </label>
+              <div className="flex justify-between items-center mb-1">
+                <label className="block text-xs font-bold text-slate-800">
+                  Staff Identifier (Username, ID, or Email)
+                </label>
+                <span className="text-[10px] text-slate-400 font-mono">e.g. ngyaragatti or 202011</span>
+              </div>
               <div className="relative rounded-xl">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                   <User className="h-4 w-4" />
@@ -307,10 +389,23 @@ export default function LoginPage() {
                   maxLength={80}
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-3 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-orange-500 transition-all font-mono"
+                  className="block w-full pl-10 pr-3 py-3 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-semibold focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-orange-500 transition-all font-mono"
                 />
               </div>
             </div>
+
+            {/* Live Detected Staff Preview Badge */}
+            {matchedStaff && (
+              <div className="p-2.5 bg-orange-50/80 border border-orange-200/80 rounded-xl text-[11px] text-orange-950 flex items-center justify-between animate-in fade-in">
+                <div className="flex items-center gap-1.5 font-bold">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>{matchedStaff.fullName}</span>
+                </div>
+                <span className="font-mono text-[10px] bg-white px-2 py-0.5 rounded border border-orange-200 text-orange-700 font-extrabold">
+                  {matchedStaff.role} ({matchedStaff.branchCode})
+                </span>
+              </div>
+            )}
 
             <div>
               <label className="block text-xs font-bold text-slate-800 mb-1">
@@ -327,19 +422,21 @@ export default function LoginPage() {
                   maxLength={128}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-10 pr-10 py-3 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-orange-500 transition-all font-mono"
+                  className="block w-full pl-10 pr-10 py-3 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-semibold focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-orange-500 transition-all font-mono"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
                   tabIndex={-1}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
             </div>
 
+            {/* Quick Fill Test Staff Pills */}
             <div className="pt-1 pb-1">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">
                 Quick Fill Test Staff:
@@ -368,17 +465,10 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <div className="p-3 bg-emerald-50/70 rounded-2xl border border-emerald-200/80 text-[11px] text-emerald-900 flex items-start gap-2">
-              <Shield className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
-              <span>
-                Role-based access privileges are assigned directly by the Super Admin IT.
-              </span>
-            </div>
-
             <button
               type="submit"
               disabled={isLoading || !username.trim() || !password}
-              className="w-full flex justify-center items-center gap-2 py-3.5 px-4 rounded-xl shadow-md text-xs font-black text-white bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 active:scale-[0.99] transition-all disabled:opacity-50 cursor-pointer"
+              className="w-full flex justify-center items-center gap-2 py-3.5 px-4 rounded-xl shadow-md text-xs font-black text-white bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 active:scale-[0.99] transition-all disabled:opacity-50 cursor-pointer min-h-[46px]"
             >
               <Lock className="w-4 h-4" />
               <span>{isLoading ? 'Verifying Credentials...' : 'Sign In to Staff Portal'}</span>
@@ -391,10 +481,10 @@ export default function LoginPage() {
       {/* MANDATORY FIRST-TIME PASSWORD RESET MODAL */}
       {/* ======================================================== */}
       {isResetModalOpen && pendingUser && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 space-y-5 shadow-2xl border border-slate-200 animate-in zoom-in-95">
             <div className="text-center space-y-1">
-              <div className="w-12 h-12 bg-orange-100 text-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-2 font-bold">
+              <div className="w-12 h-12 bg-orange-100 text-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-2 font-bold shadow-xs">
                 <KeyRound className="w-6 h-6" />
               </div>
               <h3 className="text-lg font-black text-slate-950">Set Your Private Password</h3>
@@ -455,13 +545,13 @@ export default function LoginPage() {
                     setConfirmPassword('');
                     setResetError('');
                   }}
-                  className="w-full sm:w-1/3 py-3 border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold text-xs rounded-xl transition-all text-center cursor-pointer"
+                  className="w-full sm:w-1/3 py-3 border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold text-xs rounded-xl transition-all text-center cursor-pointer min-h-[44px]"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="w-full sm:w-2/3 py-3.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-black text-xs rounded-xl shadow-md transition-all text-center cursor-pointer"
+                  className="w-full sm:w-2/3 py-3.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-black text-xs rounded-xl shadow-md transition-all text-center cursor-pointer min-h-[44px]"
                 >
                   Save Password &amp; Open Workspace &rarr;
                 </button>

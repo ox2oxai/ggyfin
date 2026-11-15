@@ -429,7 +429,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </Link>
             <span className="text-xs text-emerald-600 hidden sm:inline">•</span>
             <span className="text-xs bg-bankGreen-900 text-emerald-200 py-0.5 px-2.5 rounded-full border border-bankGreen-700/60 font-medium">
-              Branch: <strong>{mounted ? (session?.branchCode || 'KA-BLR-01') : 'KA-BLR-01'}</strong>
+              Branch: <strong>{mounted ? (session?.branchCode || '2020') : '2020'}</strong>
             </span>
             <span className="hidden md:inline-flex items-center gap-1.5 text-[11px] bg-saffron-500/20 text-saffron-300 py-0.5 px-2.5 rounded-full border border-saffron-500/40 font-mono font-bold">
               ROLE: <strong>{mounted ? userRole : '...'}</strong>

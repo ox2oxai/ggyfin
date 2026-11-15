@@ -134,7 +134,7 @@ interface AuditEvent {
 const DEFAULT_SUPER_ADMIN_STAFF: StaffUser[] = DEFAULT_STAFF_DIRECTORY as StaffUser[];
 
 export default function SuperAdminItDashboard() {
-  const [activeTab, setActiveTab] = useState<'staff' | 'institution' | 'schemes' | 'gateways' | 'telemetry'>('staff');
+  const [activeTab, setActiveTab] = useState<'staff' | 'institution' | 'schemes' | 'branches' | 'gateways' | 'telemetry'>('institution');
   const [staffList, setStaffList] = useState<StaffUser[]>(DEFAULT_SUPER_ADMIN_STAFF);
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('ALL');
@@ -992,66 +992,78 @@ export default function SuperAdminItDashboard() {
         </div>
       )}
 
-      {/* Tab Navigation */}
-      <div className="flex border-b border-slate-200 gap-4 text-xs font-bold text-slate-600 overflow-x-auto pb-1">
-        <button
-          onClick={() => setActiveTab('staff')}
-          className={`pb-3 px-2 border-b-2 flex items-center gap-2 transition-colors cursor-pointer shrink-0 ${
-            activeTab === 'staff'
-              ? 'border-orange-500 text-orange-600 font-black'
-              : 'border-transparent hover:text-slate-900'
-          }`}
-        >
-          <Users className="w-4 h-4" />
-          <span>Staff Accounts ({staffList.length})</span>
-        </button>
-
+      {/* Executive Segmented Navigation Menu Bar */}
+      <div className="bg-white p-1.5 rounded-2xl border border-slate-200 shadow-xs flex items-center gap-1 overflow-x-auto text-xs font-bold">
         <button
           onClick={() => setActiveTab('institution')}
-          className={`pb-3 px-2 border-b-2 flex items-center gap-2 transition-colors cursor-pointer shrink-0 ${
+          className={`px-3.5 py-2 rounded-xl flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
             activeTab === 'institution'
-              ? 'border-orange-500 text-orange-600 font-black'
-              : 'border-transparent hover:text-slate-900'
+              ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-xs font-black'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
           }`}
         >
           <Building2 className="w-4 h-4" />
-          <span>Institution Profile &amp; Branding</span>
+          <span>Institution &amp; Branding</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('staff')}
+          className={`px-3.5 py-2 rounded-xl flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
+            activeTab === 'staff'
+              ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-xs font-black'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+          }`}
+        >
+          <Users className="w-4 h-4" />
+          <span>Staff Directory ({staffList.length})</span>
         </button>
 
         <button
           onClick={() => setActiveTab('schemes')}
-          className={`pb-3 px-2 border-b-2 flex items-center gap-2 transition-colors cursor-pointer shrink-0 ${
+          className={`px-3.5 py-2 rounded-xl flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
             activeTab === 'schemes'
-              ? 'border-orange-500 text-orange-600 font-black'
-              : 'border-transparent hover:text-slate-900'
+              ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-xs font-black'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
           }`}
         >
           <Layers className="w-4 h-4" />
-          <span>Credit Schemes &amp; Products ({schemesList.length})</span>
+          <span>Credit Schemes ({schemesList.length})</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('branches')}
+          className={`px-3.5 py-2 rounded-xl flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
+            activeTab === 'branches'
+              ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-xs font-black'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+          }`}
+        >
+          <Building2 className="w-4 h-4" />
+          <span>Branch SOLs ({branchesList.length})</span>
         </button>
 
         <button
           onClick={() => setActiveTab('gateways')}
-          className={`pb-3 px-2 border-b-2 flex items-center gap-2 transition-colors cursor-pointer shrink-0 ${
+          className={`px-3.5 py-2 rounded-xl flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
             activeTab === 'gateways'
-              ? 'border-orange-500 text-orange-600 font-black'
-              : 'border-transparent hover:text-slate-900'
+              ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-xs font-black'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
           }`}
         >
           <Settings className="w-4 h-4" />
-          <span>Technical Integrations &amp; Gateways</span>
+          <span>Technical Gateways</span>
         </button>
 
         <button
           onClick={() => setActiveTab('telemetry')}
-          className={`pb-3 px-2 border-b-2 flex items-center gap-2 transition-colors cursor-pointer shrink-0 ${
+          className={`px-3.5 py-2 rounded-xl flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
             activeTab === 'telemetry'
-              ? 'border-orange-500 text-orange-600 font-black'
-              : 'border-transparent hover:text-slate-900'
+              ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-xs font-black'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
           }`}
         >
           <Activity className="w-4 h-4" />
-          <span>Audit Logs &amp; Governance ({auditEvents.length})</span>
+          <span>Audit &amp; Governance ({auditEvents.length})</span>
         </button>
       </div>
 
@@ -1420,80 +1432,87 @@ export default function SuperAdminItDashboard() {
                 </button>
               </div>
             </form>
+          </div>
+        </section>
+      )}
 
-            {/* Operational Branches Section */}
-            <div className="pt-6 border-t border-slate-200 space-y-4">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h4 className="text-xs font-black text-slate-900 flex items-center gap-2">
-                    <Building2 className="w-4 h-4 text-orange-600" />
-                    <span>Operational Branch Directory ({branchesList.length})</span>
-                  </h4>
-                  <p className="text-[11px] text-slate-500 mt-0.5">
-                    Authorized banking branches and Service Outlets (SOL). Primary operational branch is Branch 2020.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditingBranch({
-                      branchCode: '',
-                      solId: '',
-                      name: '',
-                      type: 'Branch Office',
-                      address: '',
-                      manager: '',
-                      phone: '',
-                      email: '',
-                      operatingHours: 'Mon - Sat: 9:00 AM - 6:00 PM',
-                      isActive: true
-                    });
-                    setIsBranchModalOpen(true);
-                  }}
-                  className="px-4 py-2 bg-orange-50 hover:bg-orange-100 text-orange-700 text-xs font-bold rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Add Branch</span>
-                </button>
+      {/* ======================================================== */}
+      {/* TAB 4: OPERATIONAL BRANCHES & SOLS */}
+      {/* ======================================================== */}
+      {activeTab === 'branches' && (
+        <section className="space-y-6">
+          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-xs space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-100">
+              <div>
+                <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
+                  <Building2 className="w-5 h-5 text-orange-600" />
+                  <span>Authorized Branch Network &amp; Service Outlets (SOL) ({branchesList.length})</span>
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Core banking service outlets under RBI Branch Authorisation Guidelines. Primary operational branch is Branch 2020.
+                </p>
               </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingBranch({
+                    branchCode: '',
+                    solId: '',
+                    name: '',
+                    type: 'Branch Office',
+                    address: '',
+                    manager: '',
+                    phone: '',
+                    email: '',
+                    operatingHours: 'Mon - Sat: 9:00 AM - 6:00 PM',
+                    isActive: true
+                  });
+                  setIsBranchModalOpen(true);
+                }}
+                className="py-2.5 px-4 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-xs font-black rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Add Branch SOL</span>
+              </button>
+            </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {branchesList.map((branch) => (
-                  <div key={branch.branchCode} className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-3">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-[10px] font-black bg-orange-100 text-orange-900 px-2 py-0.5 rounded-full">
-                            SOL {branch.branchCode}
-                          </span>
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${branch.isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'}`}>
-                            {branch.isActive ? 'Operational' : 'Inactive'}
-                          </span>
-                        </div>
-                        <h5 className="text-xs font-bold text-slate-900 mt-1">{branch.name}</h5>
-                        <p className="text-[11px] text-slate-500">{branch.type}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {branchesList.map((branch) => (
+                <div key={branch.branchCode} className="p-5 rounded-2xl bg-slate-50/60 border border-slate-200/80 shadow-xs space-y-3 hover:border-orange-300 transition-all">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-[11px] font-black bg-orange-100 text-orange-900 px-2.5 py-0.5 rounded-full border border-orange-200">
+                          SOL {branch.branchCode}
+                        </span>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${branch.isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'}`}>
+                          {branch.isActive ? 'Operational' : 'Inactive'}
+                        </span>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setEditingBranch(branch);
-                          setIsBranchModalOpen(true);
-                        }}
-                        className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
-                        title="Edit Branch"
-                      >
-                        <Edit3 className="w-4 h-4" />
-                      </button>
+                      <h5 className="text-sm font-black text-slate-900 mt-1.5">{branch.name}</h5>
+                      <p className="text-[11px] text-slate-500 font-semibold">{branch.type}</p>
                     </div>
-
-                    <div className="text-[11px] text-slate-600 space-y-1 font-medium">
-                      <p className="truncate"><strong>Address:</strong> {branch.address}</p>
-                      <p><strong>Manager:</strong> {branch.manager}</p>
-                      <p><strong>Contact:</strong> {branch.phone} • {branch.email}</p>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingBranch(branch);
+                        setIsBranchModalOpen(true);
+                      }}
+                      className="p-2 hover:bg-white rounded-xl text-slate-600 hover:text-slate-900 border border-transparent hover:border-slate-200 transition-all cursor-pointer shadow-2xs"
+                      title="Edit Branch"
+                    >
+                      <Edit3 className="w-4 h-4 text-orange-600" />
+                    </button>
                   </div>
-                ))}
-              </div>
+
+                  <div className="text-xs text-slate-600 space-y-1.5 font-medium pt-2 border-t border-slate-200/60">
+                    <p className="truncate"><strong>Address:</strong> {branch.address}</p>
+                    <p><strong>Branch Manager:</strong> {branch.manager}</p>
+                    <p><strong>Contact:</strong> {branch.phone} • {branch.email}</p>
+                    <p><strong>Hours:</strong> {branch.operatingHours}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </section>

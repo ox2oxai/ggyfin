@@ -1,5 +1,29 @@
 [
   {
+    "id": "aud-1794727888445-602",
+    "timestamp": "2026-11-15 07:31:28",
+    "category": "INTENDED_ADMIN_UPDATE",
+    "action": "USER_LOGIN",
+    "actorStaffNumber": "202010",
+    "actorUsername": "it_superadmin",
+    "actorRole": "SUPER_ADMIN_IT",
+    "target": "2020",
+    "details": "Staff user @it_superadmin (Shiv Yaragatti) authenticated into SUPER_ADMIN_IT workspace",
+    "ip": "127.0.0.1"
+  },
+  {
+    "id": "aud-1794727752264-920",
+    "timestamp": "2026-11-15 07:29:12",
+    "category": "INTENDED_ADMIN_UPDATE",
+    "action": "USER_LOGIN",
+    "actorStaffNumber": "202010",
+    "actorUsername": "it_superadmin",
+    "actorRole": "SUPER_ADMIN_IT",
+    "target": "2020",
+    "details": "Staff user @it_superadmin (Shiv Yaragatti) authenticated into SUPER_ADMIN_IT workspace",
+    "ip": "127.0.0.1"
+  },
+  {
     "id": "aud-001",
     "timestamp": "2026-11-15 02:30:12",
     "category": "INTENDED_ADMIN_UPDATE",
