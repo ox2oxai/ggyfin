@@ -13,6 +13,13 @@ import {
 } from '@nbfc/shared';
 import { recordAuditLog, getNextStaffNumber } from '../../../lib/audit';
 import {
+  DEFAULT_STAFF_DIRECTORY,
+  getStaffDirectoryAsync,
+  getStaffDirectorySync,
+  saveStaffDirectory,
+  StaffRecord
+} from '../../../lib/staff';
+import {
   Shield,
   Users,
   Settings,
@@ -101,20 +108,7 @@ interface AuditEvent {
   ip: string;
 }
 
-const DEFAULT_SUPER_ADMIN_STAFF: StaffUser[] = [
-  {
-    id: 'u-superadmin-it-001',
-    staffNumber: '202010',
-    username: 'it_superadmin',
-    fullName: 'System Administrator',
-    email: 'it.admin@ggyfinance.in',
-    phone: '9800000000',
-    role: UserRole.SUPER_ADMIN_IT,
-    branchCode: '2020',
-    isActive: true,
-    createdAt: '2026-01-01'
-  }
-];
+const DEFAULT_SUPER_ADMIN_STAFF: StaffUser[] = DEFAULT_STAFF_DIRECTORY as StaffUser[];
 
 export default function SuperAdminItDashboard() {
   const [activeTab, setActiveTab] = useState<'staff' | 'gateways' | 'telemetry'>('staff');
@@ -147,7 +141,7 @@ export default function SuperAdminItDashboard() {
   const [auditSearchQuery, setAuditSearchQuery] = useState('');
   const [activeSession, setActiveSession] = useState<{ username: string; userId: string; staffNumber: string } | null>(null);
 
-  // Sync staff directory from localStorage with clean migration and real-time reactivity
+  // Sync staff directory from persistent API & localStorage with clean migration and real-time reactivity
   const syncStaffDirectory = () => {
     try {
       const rawSession = localStorage.getItem('nbfc_staff_session');
@@ -161,54 +155,25 @@ export default function SuperAdminItDashboard() {
         }
       }
 
-      const raw = localStorage.getItem('nbfc_staff_directory');
-      if (raw) {
-        let parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          let needsUpdate = false;
-          parsed = parsed.map((u: any, idx: number) => {
-            let updated = { ...u };
-            if (!updated.staffNumber || !/^\d+$/.test(updated.staffNumber) || updated.staffNumber.startsWith('EMP-')) {
-              updated.staffNumber = String(202010 + idx);
-              needsUpdate = true;
-            }
-            if (updated.branchCode === 'KA-HQ-IT') {
-              updated.branchCode = '2020';
-              needsUpdate = true;
-            }
-            if (updated.fullName && updated.fullName.includes('Chethan Gowda')) {
-              updated.fullName = 'System Administrator';
-              needsUpdate = true;
-            }
-            return updated;
-          });
-
-          if (!parsed.some((u: any) => u.username === 'it_superadmin')) {
-            parsed.unshift(DEFAULT_SUPER_ADMIN_STAFF[0]);
-            needsUpdate = true;
-          }
-
-          if (needsUpdate) {
-            localStorage.setItem('nbfc_staff_directory', JSON.stringify(parsed));
-          }
-          setStaffList(parsed);
-          return;
-        }
-      }
+      getStaffDirectoryAsync().then((list) => {
+        setStaffList(list as StaffUser[]);
+      }).catch(() => {
+        setStaffList(getStaffDirectorySync() as StaffUser[]);
+      });
     } catch {
-      // fallback
+      setStaffList(getStaffDirectorySync() as StaffUser[]);
     }
-    setStaffList(DEFAULT_SUPER_ADMIN_STAFF);
-    localStorage.setItem('nbfc_staff_directory', JSON.stringify(DEFAULT_SUPER_ADMIN_STAFF));
   };
 
   useEffect(() => {
     syncStaffDirectory();
     window.addEventListener('storage', syncStaffDirectory);
     window.addEventListener('nbfc_session_updated', syncStaffDirectory);
+    window.addEventListener('nbfc_staff_updated', syncStaffDirectory);
     return () => {
       window.removeEventListener('storage', syncStaffDirectory);
       window.removeEventListener('nbfc_session_updated', syncStaffDirectory);
+      window.removeEventListener('nbfc_staff_updated', syncStaffDirectory);
     };
   }, []);
 
@@ -282,11 +247,7 @@ export default function SuperAdminItDashboard() {
 
   const persistStaffList = (updated: StaffUser[]) => {
     setStaffList(updated);
-    try {
-      localStorage.setItem('nbfc_staff_directory', JSON.stringify(updated));
-    } catch {
-      // ignore
-    }
+    saveStaffDirectory(updated as any);
   };
 
   // Provision Form State

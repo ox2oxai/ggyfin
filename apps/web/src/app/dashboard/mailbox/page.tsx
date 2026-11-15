@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { UserRole, UserSession } from '@nbfc/shared';
+import { getStaffDirectorySync } from '../../../lib/staff';
 import {
   Mail,
   Send,
@@ -69,15 +70,8 @@ export default function StaffMailboxPage() {
       return;
     }
 
-    const rawDir = localStorage.getItem('nbfc_staff_directory');
-    if (rawDir) {
-      try {
-        const parsedDir = JSON.parse(rawDir);
-        if (Array.isArray(parsedDir)) {
-          setStaffDirectory(parsedDir);
-        }
-      } catch (e) {}
-    }
+    const dir = getStaffDirectorySync();
+    setStaffDirectory(dir);
 
     const rawMsgs = localStorage.getItem('nbfc_staff_messages');
     if (rawMsgs) {

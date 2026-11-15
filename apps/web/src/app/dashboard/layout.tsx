@@ -34,6 +34,7 @@ import {
   BadgeCheck
 } from 'lucide-react';
 import { GGYBrandMark } from '../../components/brand-mark';
+import { saveStaffDirectory, getStaffDirectorySync } from '../../lib/staff';
 
 interface NavTab {
   href: string;
@@ -244,7 +245,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         }
         return u;
       });
-      localStorage.setItem('nbfc_staff_directory', JSON.stringify(updatedDir));
+      saveStaffDirectory(updatedDir);
 
       // Update session
       const updatedSession = {
@@ -308,6 +309,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       return;
     }
 
+    const hasUpper = /[A-Z]/.test(newPassword);
+    const hasLower = /[a-z]/.test(newPassword);
+    const hasDigit = /\d/.test(newPassword);
+    const hasSpecial = /[^A-Za-z0-9]/.test(newPassword);
+    if (!hasUpper || !hasLower || !hasDigit || !hasSpecial) {
+      setProfileError('Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character.');
+      return;
+    }
+
     if (newPassword === currentPassword) {
       setProfileError('Your new confidential password must be different from your current password.');
       return;
@@ -316,8 +326,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     if (!session) return;
 
     try {
-      const rawDir = localStorage.getItem('nbfc_staff_directory');
-      const dir = rawDir ? JSON.parse(rawDir) : [];
+      const dir = getStaffDirectorySync();
       const user = dir.find((u: any) => u.username === session.username);
 
       if (!user) {
@@ -334,7 +343,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       const updatedDir = dir.map((u: any) =>
         u.username === session.username ? { ...u, password: newPassword, mustResetPassword: false } : u
       );
-      localStorage.setItem('nbfc_staff_directory', JSON.stringify(updatedDir));
+      saveStaffDirectory(updatedDir);
 
       // Append immutable audit log
       const rawAudit = localStorage.getItem('nbfc_audit_trail');

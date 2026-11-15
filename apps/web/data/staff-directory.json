@@ -1,0 +1,30 @@
+[
+  {
+    "id": "u-superadmin-it-001",
+    "staffNumber": "202010",
+    "username": "it_superadmin",
+    "fullName": "Sri Chethan Gowda (IT Lead)",
+    "email": "it.admin@ggyfinance.in",
+    "phone": "9800000001",
+    "password": "GGY#SuperAdminIT@2026!",
+    "role": "SUPER_ADMIN_IT",
+    "branchCode": "2020",
+    "isActive": true,
+    "mustResetPassword": false,
+    "createdAt": "2026-01-01"
+  },
+  {
+    "id": "u-staff-ngyaragatti-002",
+    "staffNumber": "202011",
+    "username": "ngyaragatti",
+    "fullName": "N. G. Yaragatti",
+    "email": "ng.yaragatti@ggyfinance.in",
+    "phone": "9845012399",
+    "password": "GGYSecurePassword@2026",
+    "role": "SYSTEM_ADMIN",
+    "branchCode": "2020",
+    "isActive": true,
+    "mustResetPassword": true,
+    "createdAt": "2026-01-01"
+  }
+]

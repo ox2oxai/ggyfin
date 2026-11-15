@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { UserRole, sanitizeUsername } from '@nbfc/shared';
@@ -17,34 +17,13 @@ import {
 } from 'lucide-react';
 import { GGYBrandMark } from '../../components/brand-mark';
 import { recordAuditLog } from '../../lib/audit';
-
-interface StoredStaffUser {
-  id: string;
-  staffNumber: string;
-  username: string;
-  fullName: string;
-  email: string;
-  phone: string;
-  password: string;
-  role: UserRole;
-  branchCode: string;
-  isActive: boolean;
-  mustResetPassword?: boolean;
-}
-
-const DEFAULT_SUPER_ADMIN: StoredStaffUser = {
-  id: 'u-superadmin-it-001',
-  staffNumber: '202010',
-  username: 'it_superadmin',
-  fullName: 'System Administrator',
-  email: 'it.admin@ggyfinance.in',
-  phone: '9800000000',
-  password: 'GGY#SuperAdminIT@2026!',
-  role: UserRole.SUPER_ADMIN_IT,
-  branchCode: '2020',
-  isActive: true,
-  mustResetPassword: false
-};
+import {
+  StaffRecord,
+  DEFAULT_STAFF_DIRECTORY,
+  getStaffDirectoryAsync,
+  getStaffDirectorySync,
+  saveStaffDirectory
+} from '../../lib/staff';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -56,55 +35,17 @@ export default function LoginPage() {
 
   // First-Time Password Reset Modal State
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
-  const [pendingUser, setPendingUser] = useState<StoredStaffUser | null>(null);
+  const [pendingUser, setPendingUser] = useState<StaffRecord | null>(null);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [resetError, setResetError] = useState('');
 
-  const getStaffDirectory = (): StoredStaffUser[] => {
-    try {
-      const raw = localStorage.getItem('nbfc_staff_directory');
-      if (raw) {
-        let parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          // Migration: assign numeric staff numbers starting at 202010
-          let needsUpdate = false;
-          parsed = parsed.map((u: any, idx: number) => {
-            let updatedUser = { ...u };
-            if (!updatedUser.staffNumber || !/^\d+$/.test(updatedUser.staffNumber) || updatedUser.staffNumber.startsWith('EMP-')) {
-              updatedUser.staffNumber = String(202010 + idx);
-              needsUpdate = true;
-            }
-            if (updatedUser.branchCode === 'KA-HQ-IT') {
-              updatedUser.branchCode = '2020';
-              needsUpdate = true;
-            }
-            if (updatedUser.fullName && updatedUser.fullName.includes('Chethan Gowda')) {
-              updatedUser.fullName = 'System Administrator';
-              needsUpdate = true;
-            }
-            return updatedUser;
-          });
+  useEffect(() => {
+    getStaffDirectoryAsync().catch(() => {});
+  }, []);
 
-          // Ensure it_superadmin is always present
-          if (!parsed.some((u: StoredStaffUser) => u.username === 'it_superadmin')) {
-            parsed.unshift(DEFAULT_SUPER_ADMIN);
-            needsUpdate = true;
-          }
-
-          if (needsUpdate) {
-            localStorage.setItem('nbfc_staff_directory', JSON.stringify(parsed));
-          }
-          return parsed;
-        }
-      }
-    } catch {
-      // fallback
-    }
-    // Default initial directory with ONLY the Super Admin IT
-    const initial = [DEFAULT_SUPER_ADMIN];
-    localStorage.setItem('nbfc_staff_directory', JSON.stringify(initial));
-    return initial;
+  const getStaffDirectory = (): StaffRecord[] => {
+    return getStaffDirectorySync();
   };
 
   const routeByRole = (role: UserRole) => {
@@ -135,7 +76,8 @@ export default function LoginPage() {
     setErrorMessage('');
 
     try {
-      const directory = getStaffDirectory();
+      // Synchronize latest directory across server and local storage
+      const directory = await getStaffDirectoryAsync();
       const user = directory.find(
         (u) => u.username.toLowerCase() === username.trim().toLowerCase()
       );
@@ -217,12 +159,21 @@ export default function LoginPage() {
     }
   };
 
-  const handleCompletePasswordReset = (e: React.FormEvent) => {
+  const handleCompletePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
     setResetError('');
 
-    if (newPassword.length < 8) {
-      setResetError('Password must be at least 8 characters long.');
+    if (newPassword.length < 8 || newPassword.length > 128) {
+      setResetError('Password must be between 8 and 128 characters.');
+      return;
+    }
+
+    const hasUpper = /[A-Z]/.test(newPassword);
+    const hasLower = /[a-z]/.test(newPassword);
+    const hasDigit = /\d/.test(newPassword);
+    const hasSpecial = /[^A-Za-z0-9]/.test(newPassword);
+    if (!hasUpper || !hasLower || !hasDigit || !hasSpecial) {
+      setResetError('Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character.');
       return;
     }
 
@@ -240,13 +191,13 @@ export default function LoginPage() {
 
     try {
       // Update password in staff directory
-      const directory = getStaffDirectory();
+      const directory = await getStaffDirectoryAsync();
       const updated = directory.map((u) =>
-        u.id === pendingUser.id
+        u.id === pendingUser.id || u.username.toLowerCase() === pendingUser.username.toLowerCase()
           ? { ...u, password: newPassword, mustResetPassword: false }
           : u
       );
-      localStorage.setItem('nbfc_staff_directory', JSON.stringify(updated));
+      await saveStaffDirectory(updated);
 
       // Establish session
       localStorage.setItem(
@@ -413,11 +364,15 @@ export default function LoginPage() {
 
             <form onSubmit={handleCompletePasswordReset} className="space-y-4 text-xs font-bold">
               <div>
-                <label className="block text-slate-800 mb-1">New Password (Min 8 characters)</label>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="block text-slate-800">New Password</label>
+                  <span className="text-[10px] text-slate-400 font-normal">8-128 chars (A-Z, a-z, 0-9, symbol)</span>
+                </div>
                 <input
                   type="password"
                   required
                   placeholder="Enter your new secure password"
+                  minLength={8}
                   maxLength={128}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}

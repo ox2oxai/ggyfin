@@ -21,16 +21,27 @@ export async function seedDatabase() {
     console.log('[Seed] Seeding initial Super Admin IT...');
     const superAdminPassword = 'GGY#SuperAdminIT@2026!';
     const superAdminPasswordHash = await bcrypt.hash(superAdminPassword, 10);
+    const ngyPasswordHash = await bcrypt.hash('GGYSecurePassword@2026', 10);
 
     const staffProfiles = [
       {
         staffNumber: '202010',
         username: 'it_superadmin',
-        fullName: 'System Administrator',
+        fullName: 'Sri Chethan Gowda (IT Lead)',
         email: 'it.admin@ggyfinance.in',
-        phone: '9800000000',
+        phone: '9800000001',
         passwordHash: superAdminPasswordHash,
         role: 'SUPER_ADMIN_IT' as const,
+        branchCode: '2020'
+      },
+      {
+        staffNumber: '202011',
+        username: 'ngyaragatti',
+        fullName: 'N. G. Yaragatti',
+        email: 'ng.yaragatti@ggyfinance.in',
+        phone: '9845012399',
+        passwordHash: ngyPasswordHash,
+        role: 'SYSTEM_ADMIN' as const,
         branchCode: '2020'
       }
     ];
