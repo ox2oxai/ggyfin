@@ -11,12 +11,17 @@ const databaseUrl = process.env.DATABASE_URL || 'postgresql://postgres:postgres@
 
 const isCloudOrSsl =
   databaseUrl.includes('supabase.co') ||
+  databaseUrl.includes('supabase.com') ||
   databaseUrl.includes('neon.tech') ||
   databaseUrl.includes('sslmode=require') ||
   process.env.DB_SSL === 'true';
 
+const cleanConnectionString = isCloudOrSsl
+  ? databaseUrl.replace(/[?&]sslmode=[^&]+/, '')
+  : databaseUrl;
+
 export const pool = new Pool({
-  connectionString: databaseUrl,
+  connectionString: cleanConnectionString,
   ssl: isCloudOrSsl ? { rejectUnauthorized: false } : undefined,
   max: 20,
   idleTimeoutMillis: 30000,
