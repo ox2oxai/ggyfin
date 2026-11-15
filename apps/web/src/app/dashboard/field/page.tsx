@@ -72,7 +72,7 @@ export default function FieldOfficerPage() {
   const currentLoanConfig = LoanPurposeLabels[loanPurpose];
   const calculatedEmi = calculateEMI(principalAmount, currentLoanConfig.defaultRate, tenureMonths);
 
-  const handleSubmitApplication = (e: React.FormEvent) => {
+  const handleSubmitApplication = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!consentGranted) {
       alert('DPDP Act statutory consent is required before submitting the application.');
@@ -80,13 +80,44 @@ export default function FieldOfficerPage() {
     }
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      const generatedId = `APP-${Date.now().toString().slice(-6)}`;
-      const generatedCif = `108400${Math.floor(1000 + Math.random() * 9000)}`;
+    try {
+      let activeOfficer = '202015';
+      try {
+        const sess = localStorage.getItem('nbfc_staff_session');
+        if (sess) {
+          const parsed = JSON.parse(sess);
+          if (parsed.staffNumber) activeOfficer = parsed.staffNumber;
+        }
+      } catch {}
 
+      const res = await fetch('/api/accounts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'CREATE_APPLICATION',
+          borrowerName: fullName.trim(),
+          phone: phone.trim(),
+          address: `${addressLine}, ${pincode}`,
+          product: currentLoanConfig.title,
+          principal: principalAmount,
+          interestRate: currentLoanConfig.defaultRate,
+          tenureMonths,
+          branchCode: '2020',
+          makerId: activeOfficer
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        alert(data.message || 'Failed to submit application to cloud database. Please retry.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Also update local cache for instant UI feedback
       const newApp = {
-        id: generatedId,
-        cifNumber: generatedCif,
+        id: data.account?.accountNumber || `APP-${Date.now().toString().slice(-6)}`,
+        cifNumber: data.account?.customerId || `108400${Math.floor(1000 + Math.random() * 9000)}`,
         customerName: fullName,
         phone,
         address: `${addressLine}, ${pincode}`,
@@ -96,7 +127,7 @@ export default function FieldOfficerPage() {
         interestRate: currentLoanConfig.defaultRate,
         tenureMonths,
         emiAmount: calculatedEmi,
-        makerName: 'field_officer',
+        makerName: activeOfficer,
         submittedAt: new Date().toISOString().replace('T', ' ').slice(0, 16)
       };
 
@@ -109,7 +140,11 @@ export default function FieldOfficerPage() {
 
       setIsSubmitting(false);
       setSubmitSuccess(true);
-    }, 700);
+    } catch (err) {
+      console.error('Error submitting application:', err);
+      alert('An unexpected network error occurred. Please retry.');
+      setIsSubmitting(false);
+    }
   };
 
   const handleOpenUpiQr = () => {

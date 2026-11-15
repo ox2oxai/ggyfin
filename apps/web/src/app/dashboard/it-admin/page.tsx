@@ -304,6 +304,18 @@ export default function SuperAdminItDashboard() {
 
   // Sync immutable audit trail
   const syncAudits = () => {
+    // 1. Fetch live cloud audit logs from Supabase
+    fetch('/api/audit', { cache: 'no-store' })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.audits) && data.audits.length > 0) {
+          setAuditEvents(data.audits);
+          localStorage.setItem('nbfc_audit_trail', JSON.stringify(data.audits));
+          return;
+        }
+      })
+      .catch(() => {});
+
     try {
       const raw = localStorage.getItem('nbfc_audit_trail');
       if (raw) {
@@ -368,6 +380,22 @@ export default function SuperAdminItDashboard() {
     localStorage.setItem('nbfc_audit_trail', JSON.stringify(updated));
     setAuditEvents(updated);
     window.dispatchEvent(new Event('nbfc_audit_updated'));
+
+    // Also persist asynchronously to Supabase /api/audit
+    fetch('/api/audit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: event.action,
+        resource: event.target || 'ADMIN_PANEL',
+        entityId: event.target || 'SYS-01',
+        actor: event.actorUsername || 'it_superadmin',
+        actorStaffNumber: event.actorStaffNumber || '202010',
+        userRole: event.actorRole || 'SUPER_ADMIN_IT',
+        category: event.category || 'INTENDED_ADMIN_UPDATE',
+        details: event.details
+      })
+    }).catch(() => {});
   };
 
   const persistStaffList = (updated: StaffUser[]) => {

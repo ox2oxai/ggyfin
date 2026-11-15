@@ -18,7 +18,16 @@ import {
   Mail,
   Award
 } from 'lucide-react';
-import { getBranchesSync, getInstitutionConfigSync, BranchRecord, InstitutionConfig, DEFAULT_BRANCHES, DEFAULT_INSTITUTION_CONFIG } from '../../lib/institution';
+import {
+  getBranchesSync,
+  getBranchesAsync,
+  getInstitutionConfigSync,
+  getInstitutionConfigAsync,
+  BranchRecord,
+  InstitutionConfig,
+  DEFAULT_BRANCHES,
+  DEFAULT_INSTITUTION_CONFIG
+} from '../../lib/institution';
 
 export default function AboutPage() {
   const { lang } = useLanguage();
@@ -31,6 +40,10 @@ export default function AboutPage() {
       setConfig(getInstitutionConfigSync());
     };
     handleSync();
+
+    getBranchesAsync().then(setBranches).catch(() => {});
+    getInstitutionConfigAsync().then(setConfig).catch(() => {});
+
     window.addEventListener('nbfc_branches_updated', handleSync);
     window.addEventListener('nbfc_config_updated', handleSync);
     return () => {
@@ -64,7 +77,7 @@ export default function AboutPage() {
       leader1Title: 'Former Regional Head, Rural Microfinance Banking (28+ years experience).',
       leader2: 'Chief Risk & Compliance Officer: Smt. Meenakshi Sundaram',
       leader2Title: 'Senior Banking & Microfinance Regulatory Specialist.',
-      leader3: `Principal Nodal & Grievance Officer: ${config.nodalOfficerName || 'Smt. Anita Deshmukh'}`,
+      leader3: `Principal Nodal & Grievance Officer: ${config.nodalOfficerName || 'Sunil'}`,
       leader3Title: 'Direct point of contact for customer rights and grievance resolution.',
       ctaTitle: 'Need honest credit for your business or enterprise?',
       ctaButton: 'Explore Loan Products'
@@ -93,7 +106,7 @@ export default function AboutPage() {
       leader1Title: 'ಗ್ರಾಮೀಣ ಬ್ಯಾಂಕಿಂಗ್ ಕ್ಷೇತ್ರದಲ್ಲಿ 28+ ವರ್ಷಗಳ ನಾಯಕತ್ವದ ಅನುಭವ.',
       leader2: 'ಮುಖ್ಯ ನಿಯಂತ್ರಣ & ರಿಸ್ಕ್ ಅಧಿಕಾರಿ: ಶ್ರೀಮತಿ ಮೀನಾಕ್ಷಿ ಸುಂದರಂ',
       leader2Title: 'ಹಿರಿಯ ಬ್ಯಾಂಕರ್ ಮತ್ತು ನಿಯಮಾವಳಿ ತಜ್ಞರು.',
-      leader3: `ಮುಖ್ಯ ಕುಂದುಕೊರತೆ ಅಧಿಕಾರಿ: ${config.nodalOfficerName || 'ಶ್ರೀಮತಿ ಅನಿತಾ ದೇಶಮುಖ್'}`,
+      leader3: `ಮುಖ್ಯ ಕುಂದುಕೊರತೆ ಅಧಿಕಾರಿ: ${config.nodalOfficerName || 'ಸುನೀಲ್'}`,
       leader3Title: 'ಗ್ರಾಹಕರ ಹಕ್ಕುಗಳ ರಕ್ಷಣೆ ಮತ್ತು ದೂರು ನಿವಾರಣೆಯ ಮುಖ್ಯ ಅಧಿಕಾರಿ.',
       ctaTitle: 'ನಿಮ್ಮ ವ್ಯಾಪಾರಕ್ಕೆ ಪ್ರಾಮಾಣಿಕ ಕಿರು ಸಾಲ ಬೇಕೇ?',
       ctaButton: 'ಕಿರು ಸಾಲ ಯೋಜನೆಗಳನ್ನು ನೋಡಿ'
@@ -193,6 +206,27 @@ export default function AboutPage() {
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold text-slate-950 tracking-tight">{t.branchesTitle}</h2>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">{t.branchesDesc}</p>
+          </div>
+
+          {/* Registered Head Office Banner */}
+          <div className="bg-slate-900 text-white p-6 sm:p-7 rounded-3xl border border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="space-y-1">
+              <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider block">
+                {lang === 'kn' ? 'ಪ್ರಧಾನ ನೋಂದಾಯಿತ ಕಚೇರಿ' : 'Registered Institutional Headquarters'}
+              </span>
+              <h3 className="text-base sm:text-lg font-bold text-white">
+                {config.organizationName || 'GGY Finance Limited'}
+              </h3>
+              <p className="text-xs text-slate-300 flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <span>{config.headOfficeAddress || config.registeredOfficeAddress || 'Dhavaleshwar, Bagalakote Karnataka 587312'}</span>
+              </p>
+            </div>
+            <div className="text-xs text-slate-300 font-mono">
+              <span className="bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-700 block">
+                Registration: {config.registrationNumber || 'NBFC-ND/2026/7742'}
+              </span>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

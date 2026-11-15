@@ -112,25 +112,6 @@ export default function LoginPage() {
 
       const user = data.user;
 
-      if (data.mustResetPassword) {
-        setPendingUser({
-          id: user.id,
-          staffNumber: user.staffNumber,
-          username: user.username,
-          fullName: user.fullName,
-          email: user.email,
-          phone: user.phone,
-          role: user.role,
-          branchCode: user.branchCode,
-          isActive: true,
-          mustResetPassword: true,
-          createdAt: new Date().toISOString()
-        });
-        setIsResetModalOpen(true);
-        setIsLoading(false);
-        return;
-      }
-
       // Successful Authentication: Establish staff session
       localStorage.setItem(
         'nbfc_staff_session',

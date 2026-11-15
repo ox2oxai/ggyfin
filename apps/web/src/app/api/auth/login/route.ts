@@ -55,9 +55,13 @@ export async function POST(request: Request) {
         entity_type: 'STAFF_USER',
         entity_id: user.staff_number || user.username,
         user_id: user.id,
-        user_role: user.role,
         category: 'SECURITY_EVENT',
-        details: { message: `Blocked login attempt by suspended staff account @${user.username}` },
+        payload_after: {
+          userRole: user.role,
+          actorUsername: user.username,
+          actorStaffNumber: user.staff_number,
+          details: `Blocked login attempt by suspended staff account @${user.username}`
+        },
         ip_address: '127.0.0.1'
       });
 
@@ -77,9 +81,13 @@ export async function POST(request: Request) {
         entity_type: 'STAFF_USER',
         entity_id: user.staff_number || user.username,
         user_id: user.id,
-        user_role: user.role,
         category: 'SECURITY_EVENT',
-        details: { message: `Failed authentication attempt for @${user.username}: Invalid password` },
+        payload_after: {
+          userRole: user.role,
+          actorUsername: user.username,
+          actorStaffNumber: user.staff_number,
+          details: `Failed authentication attempt for @${user.username}: Invalid password`
+        },
         ip_address: '127.0.0.1'
       });
 
@@ -95,13 +103,15 @@ export async function POST(request: Request) {
       entity_type: 'STAFF_USER',
       entity_id: user.staff_number || user.username,
       user_id: user.id,
-      user_role: user.role,
       category: user.role === 'SUPER_ADMIN_IT' ? 'INTENDED_ADMIN_UPDATE' : 'OPERATIONAL_BANKING_EVENT',
-      details: { message: `Staff user @${user.username} (${user.full_name}) authenticated into ${user.role} workspace` },
+      payload_after: {
+        userRole: user.role,
+        actorUsername: user.username,
+        actorStaffNumber: user.staff_number,
+        details: `Staff user @${user.username} (${user.full_name}) authenticated into ${user.role} workspace`
+      },
       ip_address: '127.0.0.1'
     });
-
-    const mustReset = user.username === 'ngyaragatti';
 
     return NextResponse.json({
       success: true,
@@ -116,7 +126,7 @@ export async function POST(request: Request) {
         role: user.role,
         branchCode: user.branch_code || '2020'
       },
-      mustResetPassword: mustReset
+      mustResetPassword: false
     }, { headers: NO_CACHE_HEADERS });
   } catch (err: any) {
     console.error('[API /api/auth/login] Internal error:', err);

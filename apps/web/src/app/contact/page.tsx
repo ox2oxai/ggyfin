@@ -22,7 +22,9 @@ import {
 } from 'lucide-react';
 import {
   getBranchesSync,
+  getBranchesAsync,
   getInstitutionConfigSync,
+  getInstitutionConfigAsync,
   BranchRecord,
   InstitutionConfig,
   DEFAULT_BRANCHES,
@@ -47,6 +49,10 @@ export default function ContactPage() {
       setConfig(getInstitutionConfigSync());
     };
     handleSync();
+
+    getBranchesAsync().then(setBranches).catch(() => {});
+    getInstitutionConfigAsync().then(setConfig).catch(() => {});
+
     window.addEventListener('nbfc_branches_updated', handleSync);
     window.addEventListener('nbfc_config_updated', handleSync);
     return () => {
@@ -228,6 +234,28 @@ export default function ContactPage() {
             <p className="text-xs text-slate-500 font-medium">
               {t.branchSubheading}
             </p>
+          </div>
+
+          {/* Head Office Registered Hub Banner */}
+          <div className="bg-gradient-to-r from-emerald-900 via-forest-900 to-[#022c22] text-white p-6 sm:p-8 rounded-3xl shadow-md border border-emerald-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div className="space-y-2">
+              <div className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-300 bg-emerald-800/80 px-2.5 py-0.5 rounded-full border border-emerald-700">
+                <Building2 className="w-3.5 h-3.5" />
+                <span>{lang === 'kn' ? 'ಪ್ರಧಾನ ನೋಂದಾಯಿತ ಕಚೇರಿ' : 'Registered Head Office'}</span>
+              </div>
+              <h3 className="text-lg sm:text-xl font-black text-white">
+                {config.organizationName || 'GGY Finance Limited'}
+              </h3>
+              <p className="text-xs text-emerald-100 flex items-start gap-1.5 max-w-xl">
+                <MapPin className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                <span>{config.headOfficeAddress || config.registeredOfficeAddress || 'Dhavaleshwar, Bagalakote Karnataka 587312'}</span>
+              </p>
+            </div>
+            <div className="text-xs text-emerald-200 space-y-1 bg-emerald-950/70 p-4 rounded-2xl border border-emerald-800/60 shrink-0">
+              <p><strong className="text-white">Principal Nodal Officer:</strong> {config.nodalOfficerName || 'Sunil'}</p>
+              <p><strong className="text-white">Customer Helpline:</strong> {config.supportPhone || '1800-889-2020'}</p>
+              <p><strong className="text-white">Official Email:</strong> {config.supportEmail || 'support@ggyfinance.in'}</p>
+            </div>
           </div>
 
           {/* Branch Cards Grid */}

@@ -104,9 +104,13 @@ export async function POST(request: Request) {
       entity_type: 'STAFF_USER',
       entity_id: user.staff_number || user.username,
       user_id: user.id,
-      user_role: user.role,
       category: 'INTENDED_ADMIN_UPDATE',
-      details: { message: `Confidential password rotated by staff member @${user.username}` },
+      payload_after: {
+        userRole: user.role,
+        actorUsername: user.username,
+        actorStaffNumber: user.staff_number,
+        details: `Confidential password rotated by staff member @${user.username}`
+      },
       ip_address: '127.0.0.1'
     });
 

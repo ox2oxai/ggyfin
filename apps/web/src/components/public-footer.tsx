@@ -7,8 +7,11 @@ import { useLanguage } from './language-context';
 import { Building2, Shield, HeartHandshake, FileText, Lock, PhoneCall, Mail, User } from 'lucide-react';
 import {
   getInstitutionConfigSync,
+  getInstitutionConfigAsync,
   getCreditSchemesSync,
+  getCreditSchemesAsync,
   getBranchesSync,
+  getBranchesAsync,
   InstitutionConfig,
   CreditScheme,
   BranchRecord,
@@ -30,6 +33,11 @@ export function PublicFooter() {
       setBranches(getBranchesSync());
     };
     handleSync();
+
+    getInstitutionConfigAsync().then(setConfig).catch(() => {});
+    getCreditSchemesAsync().then(setSchemes).catch(() => {});
+    getBranchesAsync().then(setBranches).catch(() => {});
+
     window.addEventListener('nbfc_config_updated', handleSync);
     window.addEventListener('nbfc_schemes_updated', handleSync);
     window.addEventListener('nbfc_branches_updated', handleSync);
@@ -50,8 +58,9 @@ export function PublicFooter() {
       investmentsLink: 'Rural Wealth: Micro-SIP & FDs',
       branchesTitle: 'Branch Network',
       contactAllLink: 'Branch Details & Nodal Office →',
-      grievanceTitle: 'Nodal Grievance Redressal',
-      grievanceOfficer: `Principal Nodal Officer: ${config.nodalOfficerName || 'Smt. Anita Deshmukh'}`,
+      grievanceTitle: 'Head Office & Grievance',
+      headOffice: config.headOfficeAddress || config.registeredOfficeAddress || 'Dhavaleshwar, Bagalakote Karnataka 587312',
+      grievanceOfficer: `Principal Nodal Officer: ${config.nodalOfficerName || 'Sunil'}`,
       tollFree: `Helpline: ${config.supportPhone || '1800-889-2020'}`,
       email: config.supportEmail || 'support@ggyfinance.in',
       escalation: 'Grievance Desk: Micro Lending Redressal Desk',
@@ -70,8 +79,9 @@ export function PublicFooter() {
       investmentsLink: 'ಗ್ರಾಮೀಣ ಹೂಡಿಕೆ: ಮ್ಯೂಚುಯಲ್ ಫಂಡ್ & ಎಫ್‌ಡಿ',
       branchesTitle: 'ಶಾಖಾ ಜಾಲ (Branches)',
       contactAllLink: 'ಶಾಖಾ ವಿವರಗಳು & ನೊಡಲ್ ಕಚೇರಿ →',
-      grievanceTitle: 'ಕುಂದುಕೊರತೆ ನಿವಾರಣೆ',
-      grievanceOfficer: `ಮುಖ್ಯ ಕುಂದುಕೊರತೆ ಅಧಿಕಾರಿ: ${config.nodalOfficerName || 'ಶ್ರೀಮತಿ ಅನಿತಾ ದೇಶಮುಖ್'}`,
+      grievanceTitle: 'ಪ್ರಧಾನ ಕಚೇರಿ & ಕುಂದುಕೊರತೆ',
+      headOffice: config.headOfficeAddress || config.registeredOfficeAddress || 'ಧವಳೇಶ್ವರ, ಬಾಗಲಕೋಟೆ ಕರ್ನಾಟಕ 587312',
+      grievanceOfficer: `ಮುಖ್ಯ ಕುಂದುಕೊರತೆ ಅಧಿಕಾರಿ: ${config.nodalOfficerName || 'ಸುನೀಲ್'}`,
       tollFree: `ಸಹಾಯವಾಣಿ: ${config.supportPhone || '1800-889-2020'}`,
       email: config.supportEmail || 'support@ggyfinance.in',
       escalation: 'ಮೇಲ್ಮನವಿ: ಕಿರು ಸಾಲ ಕುಂದುಕೊರತೆ ನಿವಾರಣಾ ಕೋಶ',
@@ -171,11 +181,17 @@ export function PublicFooter() {
           <p className="font-bold text-amber-300 text-xs uppercase tracking-wider">
             {t.grievanceTitle}
           </p>
-          <p className="text-emerald-200 leading-relaxed text-xs">
-            {t.grievanceOfficer}<br />
-            {t.tollFree}<br />
-            Email: <span className="font-mono text-emerald-300">{t.email}</span>
-          </p>
+          <div className="text-emerald-200 leading-relaxed text-xs space-y-1">
+            <p className="text-[11px] text-emerald-100">
+              <strong className="text-white block">{lang === 'kn' ? 'ಪ್ರಧಾನ ನೋಂದಾಯಿತ ಕಚೇರಿ:' : 'Registered Head Office:'}</strong>
+              {t.headOffice}
+            </p>
+            <p className="pt-1 border-t border-emerald-800/60">
+              {t.grievanceOfficer}<br />
+              {t.tollFree}<br />
+              Email: <span className="font-mono text-emerald-300">{t.email}</span>
+            </p>
+          </div>
           <p className="text-[11px] text-amber-300 font-semibold pt-1">
             {t.escalation}
           </p>

@@ -56,6 +56,47 @@ export default function StaffWorkspacePage() {
       const rawLedger = localStorage.getItem('nbfc_ledger_transactions');
       if (rawLedger) setLedgerTxns(JSON.parse(rawLedger));
     } catch {}
+
+    // Fetch live cloud accounts and applications from Supabase
+    fetch('/api/accounts', { cache: 'no-store' })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.accounts)) {
+          const active = data.accounts.filter((a: any) => a.status === 'ACTIVE');
+          const pending = data.accounts.filter((a: any) => a.status === 'PENDING_APPROVAL');
+          setLiveAccounts(active);
+          if (pending.length > 0) {
+            setPendingApps(
+              pending.map((p: any) => ({
+                id: p.accountNumber,
+                cifNumber: p.customerId,
+                customerName: p.borrowerName,
+                phone: p.phone,
+                address: p.address,
+                maskedAadhaar: p.maskedAadhaar,
+                loanPurpose: p.product,
+                principalAmount: p.principal,
+                interestRate: p.interestRate,
+                tenureMonths: p.tenureMonths,
+                emiAmount: p.emiAmount,
+                makerName: 'field_officer',
+                submittedAt: p.createdAt ? p.createdAt.replace('T', ' ').slice(0, 16) : 'Today'
+              }))
+            );
+          }
+        }
+      })
+      .catch(() => {});
+
+    // Fetch live transactions from Supabase
+    fetch('/api/transactions', { cache: 'no-store' })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.transactions) && data.transactions.length > 0) {
+          setLedgerTxns(data.transactions);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const role = session?.role || UserRole.FIELD_OFFICER;

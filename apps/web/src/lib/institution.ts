@@ -7,6 +7,7 @@ export interface InstitutionConfig {
   nodalOfficerName: string;
   nodalOfficerContact: string;
   headOfficeAddress: string;
+  registeredOfficeAddress?: string;
   logoUrl?: string;
   // Dynamic NPCI UPI & Collection QR publishing parameters
   upiVpa?: string;
@@ -51,9 +52,10 @@ export const DEFAULT_INSTITUTION_CONFIG: InstitutionConfig = {
   registrationNumber: 'NBFC-ND/2026/7742',
   supportEmail: 'support@ggyfinance.in',
   supportPhone: '1800-889-2020',
-  nodalOfficerName: 'Smt. Anita Deshmukh',
+  nodalOfficerName: 'Sunil',
   nodalOfficerContact: 'grievance@ggyfinance.in • 080-28491001',
-  headOfficeAddress: '#104, Institutional Financial Zone, Outer Ring Road, Bengaluru - 560001',
+  headOfficeAddress: 'Dhavaleshwar, Bagalakote Karnataka 587312',
+  registeredOfficeAddress: 'Dhavaleshwar, Bagalakote Karnataka 587312',
   logoUrl: '',
   upiVpa: 'ggycollect@icici',
   upiPayeeName: 'GGY Finance Ltd',
@@ -144,11 +146,18 @@ export function getInstitutionConfigSync(): InstitutionConfig {
       // Auto-migrate legacy instructions to prevent hydration text divergence
       if (parsed && typeof parsed.collectionInstructions === 'string' && parsed.collectionInstructions.includes('10-digit')) {
         parsed.collectionInstructions = DEFAULT_INSTITUTION_CONFIG.collectionInstructions;
-        try {
-          localStorage.setItem('nbfc_institution_config', JSON.stringify({ ...DEFAULT_INSTITUTION_CONFIG, ...parsed }));
-        } catch {}
       }
-      return { ...DEFAULT_INSTITUTION_CONFIG, ...parsed };
+      const addr = parsed.headOfficeAddress || parsed.registeredOfficeAddress || DEFAULT_INSTITUTION_CONFIG.headOfficeAddress;
+      const merged: InstitutionConfig = {
+        ...DEFAULT_INSTITUTION_CONFIG,
+        ...parsed,
+        headOfficeAddress: addr,
+        registeredOfficeAddress: addr
+      };
+      try {
+        localStorage.setItem('nbfc_institution_config', JSON.stringify(merged));
+      } catch {}
+      return merged;
     }
   } catch {}
   return DEFAULT_INSTITUTION_CONFIG;
@@ -161,8 +170,15 @@ export async function getInstitutionConfigAsync(): Promise<InstitutionConfig> {
       if (res.ok) {
         const data = await res.json();
         if (data.success && data.config) {
-          localStorage.setItem('nbfc_institution_config', JSON.stringify(data.config));
-          return data.config;
+          const addr = data.config.headOfficeAddress || data.config.registeredOfficeAddress || DEFAULT_INSTITUTION_CONFIG.headOfficeAddress;
+          const normalized: InstitutionConfig = {
+            ...DEFAULT_INSTITUTION_CONFIG,
+            ...data.config,
+            headOfficeAddress: addr,
+            registeredOfficeAddress: addr
+          };
+          localStorage.setItem('nbfc_institution_config', JSON.stringify(normalized));
+          return normalized;
         }
       }
     } catch {}
