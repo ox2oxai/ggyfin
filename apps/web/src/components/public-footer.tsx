@@ -1,72 +1,85 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { GGYBrandMark } from './brand-mark';
 import { useLanguage } from './language-context';
 import { Building2, Shield, HeartHandshake, FileText, Lock, PhoneCall, Mail, User } from 'lucide-react';
+import {
+  getInstitutionConfigSync,
+  getCreditSchemesSync,
+  getBranchesSync,
+  InstitutionConfig,
+  CreditScheme,
+  BranchRecord
+} from '../lib/institution';
 
 export function PublicFooter() {
   const { lang } = useLanguage();
+  const [config, setConfig] = useState<InstitutionConfig>(getInstitutionConfigSync());
+  const [schemes, setSchemes] = useState<CreditScheme[]>(getCreditSchemesSync());
+  const [branches, setBranches] = useState<BranchRecord[]>(getBranchesSync());
+
+  useEffect(() => {
+    const handleSync = () => {
+      setConfig(getInstitutionConfigSync());
+      setSchemes(getCreditSchemesSync());
+      setBranches(getBranchesSync());
+    };
+    handleSync();
+    window.addEventListener('nbfc_config_updated', handleSync);
+    window.addEventListener('nbfc_schemes_updated', handleSync);
+    window.addEventListener('nbfc_branches_updated', handleSync);
+    return () => {
+      window.removeEventListener('nbfc_config_updated', handleSync);
+      window.removeEventListener('nbfc_schemes_updated', handleSync);
+      window.removeEventListener('nbfc_branches_updated', handleSync);
+    };
+  }, []);
+
+  const activeSchemes = schemes.filter((s) => s.isActive).slice(0, 4);
+  const activeBranches = branches.filter((b) => b.isActive);
 
   const labels = {
     en: {
-      brandDesc: 'Empowering rural micro-entrepreneurs, dairy farmers, and village artisans with honest, transparent, and technology-driven credit solutions across Karnataka.',
+      brandDesc: 'Empowering micro-entrepreneurs, dairy farmers, and village households with honest, transparent, and technology-driven doorstep credit solutions.',
       schemesTitle: 'Credit Schemes',
-      scheme1: 'SCHM-701: Kirana Retail Capital',
-      scheme2: 'SCHM-702: Dairy Development Loan',
-      scheme3: 'SCHM-703: Powerloom Artisan Loan',
-      scheme4: 'SCHM-704: Organic Agri-Allied Loan',
       investmentsLink: 'Rural Wealth: Micro-SIP & FDs',
-      branchesTitle: 'Karnataka Branches',
-      branch1: 'Bengaluru City & Rural Hub',
-      branch2: 'Ramanagara & Channapatna Hub',
-      branch3: 'Mandya & Maddur Hub',
-      branch4: 'Tumakuru & Kunigal Hub',
-      branch5: 'Mysuru & Nanjangud Hub',
-      contactAllLink: 'All Branches & Nodal Office →',
+      branchesTitle: 'Branch Network',
+      contactAllLink: 'Branch Details & Nodal Office →',
       grievanceTitle: 'Nodal Grievance Redressal',
-      grievanceOfficer: 'Principal Nodal Officer: Smt. Anita Deshmukh',
-      tollFree: 'Toll-Free: 1800-209-4321 (9 AM - 6 PM)',
-      email: 'nodal@ggyfinance.in',
-      escalation: 'Grievance Desk: Karnataka State Micro Lending Redressal',
+      grievanceOfficer: `Principal Nodal Officer: ${config.nodalOfficerName || 'Smt. Anita Deshmukh'}`,
+      tollFree: `Helpline: ${config.supportPhone || '1800-889-2020'}`,
+      email: config.supportEmail || 'support@ggyfinance.in',
+      escalation: 'Grievance Desk: Micro Lending Redressal Desk',
       portalAccess: 'Secure Portal Access',
       borrowerLogin: 'Borrower Portal',
       staffLogin: 'Staff Portal',
       privacy: 'DPDP Privacy Notice',
       terms: 'Terms & Conditions',
       fairPractices: 'Fair Practices Code',
-      rbiReg: 'Karnataka Reg: KA-ML/2024/7742',
-      copyright: '© 2026 GGY Finance (Karnataka) Private Limited. All rights reserved. 100% Data Sovereignty inside Indian Data Centers.'
+      rbiReg: `Registration: ${config.registrationNumber || 'NBFC-ND/2026/7742'}`,
+      copyright: `© ${new Date().getFullYear()} ${config.organizationName || 'GGY Finance Ltd.'}. All rights reserved. 100% Data Sovereignty inside Indian Data Centers.`
     },
     kn: {
-      brandDesc: 'ಕರ್ನಾಟಕದ ಗ್ರಾಮೀಣ ಸಣ್ಣ ವ್ಯಾಪಾರಿಗಳು, ಹೈನುಗಾರಿಕೆ ಕುಟುಂಬಗಳು ಮತ್ತು ನೇಕಾರರಿಗೆ ಪಾರದರ್ಶಕ ಮತ್ತು ಪ್ರಾಮಾಣಿಕ ಕಿರು ಸಾಲ ಸೇವೆ.',
+      brandDesc: 'ಗ್ರಾಮೀಣ ಸಣ್ಣ ವ್ಯಾಪಾರಿಗಳು, ಹೈನುಗಾರಿಕೆ ಕುಟುಂಬಗಳು ಮತ್ತು ಕುಶಲಕರ್ಮಿಗಳಿಗೆ ಪಾರದರ್ಶಕ ಮತ್ತು ಪ್ರಾಮಾಣಿಕ ಮನೆಬಾಗಿಲ ಸಾಲ ಸೇವೆ.',
       schemesTitle: 'ಸಾಲ ಯೋಜನೆಗಳು (Schemes)',
-      scheme1: 'SCHM-701: ಕಿರಾಣಿ & ಸಣ್ಣ ವ್ಯಾಪಾರ ಬಂಡವಾಳ',
-      scheme2: 'SCHM-702: ಹೈನುಗಾರಿಕೆ ಅಭಿವೃದ್ಧಿ ಸಾಲ',
-      scheme3: 'SCHM-703: ನೇಯ್ಗೆ & ಕೈಮಗ್ಗ ಕುಶಲಕರ್ಮಿ ಸಾಲ',
-      scheme4: 'SCHM-704: ಕಿರು ಕೃಷಿ & ತೋಟಗಾರಿಕೆ ಸಾಲ',
       investmentsLink: 'ಗ್ರಾಮೀಣ ಹೂಡಿಕೆ: ಮ್ಯೂಚುಯಲ್ ಫಂಡ್ & ಎಫ್‌ಡಿ',
-      branchesTitle: 'ಕರ್ನಾಟಕ ಶಾಖಾ ಜಾಲ',
-      branch1: 'ಬೆಂಗಳೂರು ನಗರ & ಗ್ರಾಮಾಂತರ',
-      branch2: 'ರಾಮನಗರ & ಚನ್ನಪಟ್ಟಣ',
-      branch3: 'ಮಂಡ್ಯ & ಮದ್ದೂರು',
-      branch4: 'ತುಮಕೂರು & ಕುಣಿಗಲ್',
-      branch5: 'ಮೈಸೂರು & ನಂಜನಗೂಡು',
-      contactAllLink: 'ಎಲ್ಲಾ ಶಾಖೆಗಳ ಸಂಪರ್ಕ & ನೊಡಲ್ ಕಚೇರಿ →',
+      branchesTitle: 'ಶಾಖಾ ಜಾಲ (Branches)',
+      contactAllLink: 'ಶಾಖಾ ವಿವರಗಳು & ನೊಡಲ್ ಕಚೇರಿ →',
       grievanceTitle: 'ಕುಂದುಕೊರತೆ ನಿವಾರಣೆ',
-      grievanceOfficer: 'ಮುಖ್ಯ ಕುಂದುಕೊರತೆ ಅಧಿಕಾರಿ: ಶ್ರೀಮತಿ ಅನಿತಾ ದೇಶಮುಖ್',
-      tollFree: 'ಉಚಿತ ಕರೆ: 1800-209-4321 (ಬೆಳಿಗ್ಗೆ 9 - ಸಂಜೆ 6)',
-      email: 'nodal@ggyfinance.in',
-      escalation: 'ಮೇಲ್ಮನವಿ: ಕರ್ನಾಟಕ ರಾಜ್ಯ ಕುಂದುಕೊರತೆ ನಿವಾರಣಾ ಕೋಶ',
+      grievanceOfficer: `ಮುಖ್ಯ ಕುಂದುಕೊರತೆ ಅಧಿಕಾರಿ: ${config.nodalOfficerName || 'ಶ್ರೀಮತಿ ಅನಿತಾ ದೇಶಮುಖ್'}`,
+      tollFree: `ಸಹಾಯವಾಣಿ: ${config.supportPhone || '1800-889-2020'}`,
+      email: config.supportEmail || 'support@ggyfinance.in',
+      escalation: 'ಮೇಲ್ಮನವಿ: ಕಿರು ಸಾಲ ಕುಂದುಕೊರತೆ ನಿವಾರಣಾ ಕೋಶ',
       portalAccess: 'ಆಂತರಿಕ ಪೋರ್ಟಲ್ ಪ್ರವೇಶ',
       borrowerLogin: 'ಗ್ರಾಹಕರ ಪೋರ್ಟಲ್',
       staffLogin: 'ಸಿಬ್ಬಂದಿ ಪೋರ್ಟಲ್',
       privacy: 'ಗೌಪ್ಯತಾ ನೀತಿ (DPDP 2023)',
       terms: 'ನಿಯಮಗಳು & ಷರತ್ತುಗಳು',
       fairPractices: 'ಪ್ರಾಮಾಣಿಕ ಸಾಲ ನೀತಿ',
-      rbiReg: 'ಕರ್ನಾಟಕ ನೋಂದಣಿ: KA-ML/2024/7742',
-      copyright: '© 2026 ಜಿಜಿವೈ ಫೈನಾನ್ಸ್ (GGY Finance Ltd). ಎಲ್ಲ ಹಕ್ಕುಗಳನ್ನು ಕಾಯ್ದಿರಿಸಲಾಗಿದೆ. ಭಾರತೀಯ ಡೇಟಾ ಕೇಂದ್ರಗಳಲ್ಲಿ ಸಂಪೂರ್ಣ ಭದ್ರತೆ.'
+      rbiReg: `ನೋಂದಣಿ: ${config.registrationNumber || 'NBFC-ND/2026/7742'}`,
+      copyright: `© ${new Date().getFullYear()} ${config.organizationName || 'ಜಿಜಿವೈ ಫೈನಾನ್ಸ್ (GGY Finance Ltd)'}. ಎಲ್ಲ ಹಕ್ಕುಗಳನ್ನು ಕಾಯ್ದಿರಿಸಲಾಗಿದೆ. ಭಾರತೀಯ ಡೇಟಾ ಕೇಂದ್ರಗಳಲ್ಲಿ ಸಂಪೂರ್ಣ ಭದ್ರತೆ.`
     }
   };
 
@@ -80,8 +93,8 @@ export function PublicFooter() {
           <div className="flex items-center gap-2.5">
             <GGYBrandMark size="sm" />
             <div>
-              <span className="font-black text-base text-white block tracking-tight">GGY Finance</span>
-              <span className="text-[10px] text-amber-300 font-extrabold uppercase tracking-wider">
+              <span className="font-bold text-base text-white block tracking-tight">{config.organizationName || 'GGY Finance'}</span>
+              <span className="text-[10px] text-amber-300 font-bold uppercase tracking-wider">
                 Micro Money Lending Platform
               </span>
             </div>
@@ -91,37 +104,24 @@ export function PublicFooter() {
           </p>
           <div className="pt-1">
             <span className="inline-block bg-emerald-950/80 text-emerald-200 border border-emerald-700/80 px-2.5 py-1 rounded-full text-[10px] font-mono">
-              Karnataka Reg: KA-ML/2024/7742
+              {t.rbiReg}
             </span>
           </div>
         </div>
 
         {/* Col 2: Core Banking Schemes */}
         <div className="space-y-2.5">
-          <p className="font-extrabold text-amber-300 text-xs uppercase tracking-wider">
+          <p className="font-bold text-amber-300 text-xs uppercase tracking-wider">
             {t.schemesTitle}
           </p>
           <ul className="space-y-2 text-emerald-200 text-xs">
-            <li>
-              <Link href="/#products" className="hover:text-white transition-colors">
-                {t.scheme1}
-              </Link>
-            </li>
-            <li>
-              <Link href="/#products" className="hover:text-white transition-colors">
-                {t.scheme2}
-              </Link>
-            </li>
-            <li>
-              <Link href="/#products" className="hover:text-white transition-colors">
-                {t.scheme3}
-              </Link>
-            </li>
-            <li>
-              <Link href="/#products" className="hover:text-white transition-colors">
-                {t.scheme4}
-              </Link>
-            </li>
+            {activeSchemes.map((s) => (
+              <li key={s.schemeCode}>
+                <Link href="/#products" className="hover:text-white transition-colors flex items-center justify-between">
+                  <span>{s.schemeCode}: {s.name}</span>
+                </Link>
+              </li>
+            ))}
             <li className="pt-1.5 border-t border-emerald-800/60">
               <Link href="/investments" className="text-amber-300 hover:text-white font-bold flex items-center gap-1">
                 <span>{t.investmentsLink}</span>
@@ -131,17 +131,18 @@ export function PublicFooter() {
           </ul>
         </div>
 
-        {/* Col 3: Karnataka Operational Branches */}
+        {/* Col 3: Operational Branches */}
         <div className="space-y-2.5">
-          <p className="font-extrabold text-amber-300 text-xs uppercase tracking-wider">
+          <p className="font-bold text-amber-300 text-xs uppercase tracking-wider">
             {t.branchesTitle}
           </p>
           <ul className="space-y-1.5 text-emerald-200 text-xs">
-            <li>{t.branch1}</li>
-            <li>{t.branch2}</li>
-            <li>{t.branch3}</li>
-            <li>{t.branch4}</li>
-            <li>{t.branch5}</li>
+            {activeBranches.map((b) => (
+              <li key={b.branchCode} className="text-emerald-200">
+                <span className="font-bold text-white block">{b.name}</span>
+                <span className="text-[11px] text-emerald-300/80 block">SOL: {b.solId} • {b.phone}</span>
+              </li>
+            ))}
             <li className="pt-1.5 border-t border-emerald-800/60">
               <Link href="/contact" className="text-amber-300 hover:text-white font-bold block">
                 {t.contactAllLink}
@@ -152,7 +153,7 @@ export function PublicFooter() {
 
         {/* Col 4: Grievance Redressal & Staff Access */}
         <div className="space-y-2.5">
-          <p className="font-extrabold text-amber-300 text-xs uppercase tracking-wider">
+          <p className="font-bold text-amber-300 text-xs uppercase tracking-wider">
             {t.grievanceTitle}
           </p>
           <p className="text-emerald-200 leading-relaxed text-xs">
@@ -164,7 +165,7 @@ export function PublicFooter() {
             {t.escalation}
           </p>
           <div className="pt-2 space-y-1.5">
-            <p className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-300/80">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-300/80">
               {t.portalAccess}
             </p>
             <div className="flex flex-wrap gap-2">

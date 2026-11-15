@@ -82,7 +82,7 @@ export default function AccountsPage() {
     name: '',
     aadhaarMasked: '',
     phone: '',
-    taluk: 'Channapatna, Ramanagara',
+    taluk: 'Primary Cluster',
     product: 'Dairy Development Micro-Loan',
     principal: 50000,
     interestRate: 14.5,
@@ -93,7 +93,7 @@ export default function AccountsPage() {
   const t = {
     en: {
       title: 'Loan Accounts & Lifecycle Management',
-      subtitle: 'Maker-Checker dual-control core banking ledger compliant with Karnataka State Lending Regulations & DPDP Act 2023.',
+      subtitle: 'Maker-Checker dual-control core banking ledger compliant with National NBFC Lending Regulations & DPDP Act 2023.',
       createBtn: 'New Loan Application (Maker)',
       searchPlaceholder: 'Search by borrower name, account number, or taluk...',
       all: 'All Accounts',
@@ -136,7 +136,7 @@ export default function AccountsPage() {
     },
     kn: {
       title: 'ಸಾಲ ಖಾತೆಗಳು ಮತ್ತು ನಿರ್ವಹಣೆ (Loan Accounts)',
-      subtitle: 'ಕರ್ನಾಟಕ ರಾಜ್ಯ ಕಿರು ಸಾಲ ನಿಯಮಾವಳಿಗಳು ಮತ್ತು DPDP ಕಾಯ್ದೆ 2023 ರ ಅನ್ವಯ ಡ್ಯುಯಲ್-ಕಂಟ್ರೋಲ್ ಕೋರ್ ಬ್ಯಾಂಕಿಂಗ್ ಲೆಡ್ಜರ್.',
+      subtitle: 'ರಾಷ್ಟ್ರೀಯ ಕಿರು ಸಾಲ ನಿಯಮಾವಳಿಗಳು ಮತ್ತು DPDP ಕಾಯ್ದೆ 2023 ರ ಅನ್ವಯ ಡ್ಯುಯಲ್-ಕಂಟ್ರೋಲ್ ಕೋರ್ ಬ್ಯಾಂಕಿಂಗ್ ಲೆಡ್ಜರ್.',
       createBtn: 'ಹೊಸ ಸಾಲ ಅರ್ಜಿ (New Loan Application)',
       searchPlaceholder: 'ಸಾಲಗಾರರ ಹೆಸರು, ಖಾತೆ ಸಂಖ್ಯೆ ಅಥವಾ ತಾಲೂಕಿನ ಮೂಲಕ ಹುಡುಕಿ...',
       all: 'ಎಲ್ಲಾ ಖಾತೆಗಳು',
@@ -454,7 +454,7 @@ export default function AccountsPage() {
                     <Users className="w-10 h-10 text-slate-300 mx-auto mb-2" />
                     <p className="font-bold text-sm text-slate-800">No Loan Accounts Found</p>
                     <p className="text-xs text-slate-400 max-w-md mx-auto mt-1">
-                      Active borrower accounts will appear here once onboarded by Field Officers and sanctioned by Authorizers under Karnataka NBFC guidelines.
+                      Active borrower accounts will appear here once onboarded by Field Officers and sanctioned by Authorizers under NBFC guidelines.
                     </p>
                   </td>
                 </tr>
@@ -838,10 +838,10 @@ export default function AccountsPage() {
           <div className="bg-sandstone-50 rounded-3xl border-2 border-forest-900 max-w-lg w-full p-8 shadow-2xl space-y-5">
             <div className="text-center border-b-2 border-forest-900/20 pb-4">
               <p className="text-xs uppercase font-extrabold tracking-widest text-terracotta-600">
-                GGY Finance • Karnataka Reg: KA-ML/2024/7742
+                GGY Finance • Institutional Credit Certificate
               </p>
               <h2 className="text-xl font-black text-forest-900 mt-1">{t.closeNocTitle}</h2>
-              <p className="text-[11px] font-mono text-forest-800/70 mt-0.5">Certificate Ref: NOC-KA-2026-{selectedAccount.id.toUpperCase()}</p>
+              <p className="text-[11px] font-mono text-forest-800/70 mt-0.5">Certificate Ref: NOC-2026-{selectedAccount.id.toUpperCase()}</p>
             </div>
 
             <div className="text-xs space-y-3 text-forest-900 leading-relaxed">
@@ -894,7 +894,7 @@ export default function AccountsPage() {
               {t.deleteExplanation}
             </p>
             <div className="p-3 bg-sandstone-100 rounded-xl border border-clay text-[11px] text-forest-800/80">
-              <strong>Statutory Reference:</strong> Karnataka State Lending & Micro-Credit Regulations and DPDP Act 2023, Section 42 (8-Year Audit Retention).
+              <strong>Statutory Reference:</strong> NBFC Master Directions and DPDP Act 2023, Section 8(7) (8-Year Statutory Audit Retention).
             </div>
             <div className="flex justify-end pt-2">
               <button

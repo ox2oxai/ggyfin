@@ -29,7 +29,7 @@ export default function StoriesPage() {
     en: {
       badge: 'Rural Voices & Grassroots Impact',
       heroTitle: 'Field Stories & Community Impact',
-      heroSubtitle: 'Real Stories of Village Micro-Entrepreneurs Across Karnataka',
+      heroSubtitle: 'Real Stories of Village Micro-Entrepreneurs Across Rural Communities',
       heroDesc: 'Behind every micro-loan is a story of grit, family dignity, and economic progress. Meet the dairy farmers, kirana owners, and village artisans transforming their households with GGY Finance.',
       statsAum: '₹4.8+ Crores',
       statsAumLabel: 'Total Micro-Capital Disbursed',

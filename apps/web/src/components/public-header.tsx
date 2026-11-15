@@ -6,11 +6,22 @@ import { usePathname } from 'next/navigation';
 import { GGYBrandMark } from './brand-mark';
 import { useLanguage } from './language-context';
 import { Menu, X, MessageCircle } from 'lucide-react';
+import { getInstitutionConfigSync, InstitutionConfig } from '../lib/institution';
 
 export function PublicHeader() {
   const { lang, setLang } = useLanguage();
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [config, setConfig] = useState<InstitutionConfig>(getInstitutionConfigSync());
+
+  useEffect(() => {
+    const handleSync = () => {
+      setConfig(getInstitutionConfigSync());
+    };
+    handleSync();
+    window.addEventListener('nbfc_config_updated', handleSync);
+    return () => window.removeEventListener('nbfc_config_updated', handleSync);
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -31,26 +42,26 @@ export function PublicHeader() {
 
   const labels = {
     en: {
-      topBar: 'Karnataka State Registered Micro-Lending Platform • Doorstep Financial Services',
-      brandName: 'GGY Finance',
+      topBar: config.platformTagline || 'National Micro-Lending Platform • Doorstep Financial Services',
+      brandName: config.organizationName || 'GGY Finance',
       tagline: 'Micro Money Lending Platform',
       home: 'Home',
       about: 'About Us',
       investments: 'Investments',
       contact: 'Contact Us',
-      tollFree: 'Toll-Free: 1800-209-4321',
+      tollFree: `Helpline: ${config.supportPhone || '1800-889-2020'}`,
       dpdp: 'DPDP Act 2023 Compliant',
       whatsappQuick: 'WhatsApp Advisory'
     },
     kn: {
-      topBar: 'ಕರ್ನಾಟಕ ರಾಜ್ಯ ನೋಂದಾಯಿತ ಕಿರು ಸಾಲ ಸೇವಾ ಸಂಸ್ಥೆ • ಮನೆಬಾಗಿಲ ಆರ್ಥಿಕ ಸೇವೆ',
-      brandName: 'ಜಿಜಿವೈ ಫೈನಾನ್ಸ್ (GGY Finance)',
+      topBar: 'ರಾಷ್ಟ್ರೀಯ ಕಿರು ಸಾಲ ಸೇವಾ ಸಂಸ್ಥೆ • ಮನೆಬಾಗಿಲ ಆರ್ಥಿಕ ಸೇವೆ',
+      brandName: config.organizationName || 'ಜಿಜಿವೈ ಫೈನಾನ್ಸ್ (GGY Finance)',
       tagline: 'ಕಿರು ಹಣಕಾಸು ಸಾಲ ವೇದಿಕೆ (Micro Money Lending Platform)',
       home: 'ಮುಖಪುಟ',
       about: 'ನಮ್ಮ ಬಗ್ಗೆ',
       investments: 'ಹೂಡಿಕೆಗಳು',
       contact: 'ಸಂಪರ್ಕಿಸಿ',
-      tollFree: 'ಉಚಿತ ಕರೆ: 1800-209-4321',
+      tollFree: `ಸಹಾಯವಾಣಿ: ${config.supportPhone || '1800-889-2020'}`,
       dpdp: 'DPDP ಕಾಯ್ದೆ 2023 ಅನುಸರಣೆ',
       whatsappQuick: 'ವಾಟ್ಸಾಪ್ ಸಹಾಯ'
     }

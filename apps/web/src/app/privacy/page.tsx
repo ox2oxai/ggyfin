@@ -1,22 +1,31 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { PublicHeader } from '../../components/public-header';
 import { PublicFooter } from '../../components/public-footer';
 import { useLanguage } from '../../components/language-context';
 import { ShieldCheck, Lock, EyeOff, Server, UserCheck, HelpCircle } from 'lucide-react';
+import { getInstitutionConfigSync, InstitutionConfig } from '../../lib/institution';
 
 export default function PrivacyPolicyPage() {
   const { lang } = useLanguage();
+  const [config, setConfig] = useState<InstitutionConfig>(getInstitutionConfigSync());
+
+  useEffect(() => {
+    const handleSync = () => setConfig(getInstitutionConfigSync());
+    handleSync();
+    window.addEventListener('nbfc_config_updated', handleSync);
+    return () => window.removeEventListener('nbfc_config_updated', handleSync);
+  }, []);
 
   const content = {
     en: {
       badge: 'Statutory Data Protection Policy',
       title: 'Privacy Policy & Data Governance',
-      effectiveDate: 'Effective Date: April 1, 2026 | Last Updated: November 14, 2026',
-      intro: 'GGY Finance Ltd. ("GGY Finance", "we", "our", or "the Company") is a Karnataka State-registered micro-lending platform (Reg No: KA-ML/2024/7742). We are committed to protecting the privacy, confidentiality, and security of our borrowers and customer applicants in strict compliance with the Digital Personal Data Protection Act, 2023 (DPDP Act), Karnataka State Lending Guidelines, and UIDAI regulations.',
+      effectiveDate: 'Effective Date: April 1, 2026 | Last Updated: November 15, 2026',
+      intro: `${config.organizationName || 'GGY Finance Ltd.'} ("we", "our", or "the Company") is a registered micro-lending institution (Reg No: ${config.registrationNumber || 'NBFC-ND/2026/7742'}). We are committed to protecting the privacy, confidentiality, and security of our borrowers and customer applicants in strict compliance with the Digital Personal Data Protection Act, 2023 (DPDP Act), RBI Master Directions on Microfinance, and UIDAI regulations.`,
       s1Title: '1. Legislative Framework & Scope',
-      s1Text: 'This Privacy Policy governs the collection, processing, storage, and retention of personal data collected through our field officers, web applications, and customer support channels across Karnataka.',
+      s1Text: 'This Privacy Policy governs the collection, processing, storage, and retention of personal data collected through our field officers, web applications, and customer support channels across our operating jurisdictions.',
       s2Title: '2. Principles of Data Minimization & Consent',
       s2Text: 'We adhere strictly to the principle of purpose limitation. We only collect data necessary to evaluate creditworthiness, fulfill statutory KYC, and service loan accounts. Every customer must provide affirmative, explicit DPDP consent before an application is drafted.',
       s3Title: '3. What We Collect vs. What We NEVER Collect',
@@ -47,16 +56,16 @@ export default function PrivacyPolicyPage() {
         'Right to Grievance Redressal: Redress grievances directly with our Data Protection Officer.'
       ],
       s7Title: '7. Data Protection & Grievance Contact',
-      s7Officer: 'Data Protection Officer (DPO) & Principal Nodal Officer: Shri A. Deshmukh',
-      s7Address: 'GGY Finance Ltd., Regional Headquarters, Mandya, Karnataka - 571401',
-      s7Email: 'dpo@ggyfinance.in | grievance@ggyfinance.in',
-      s7Phone: 'Toll-Free Helpline: 1800-209-4321 (9:00 AM - 6:00 PM IST)'
+      s7Officer: `Data Protection Officer (DPO) & Principal Nodal Officer: ${config.nodalOfficerName || 'Smt. Anita Deshmukh'}`,
+      s7Address: `${config.organizationName || 'GGY Finance Ltd.'}, Registered Head Office: ${config.headOfficeAddress}`,
+      s7Email: `${config.supportEmail || 'support@ggyfinance.in'}`,
+      s7Phone: `Helpline: ${config.supportPhone || '1800-889-2020'} (9:00 AM - 6:00 PM IST)`
     },
     kn: {
       badge: 'ಶಾಸನಬದ್ಧ ಡೇಟಾ ಸಂರಕ್ಷಣಾ ನೀತಿ',
       title: 'ಗೌಪ್ಯತಾ ನೀತಿ ಮತ್ತು ಡೇಟಾ ಆಡಳಿತ (Privacy Policy)',
-      effectiveDate: 'ಜಾರಿಗೆ ಬಂದ ದಿನಾಂಕ: 1 ಏಪ್ರಿಲ್ 2026 | ನವೀಕರಿಸಿದ್ದು: 14 ನವೆಂಬರ್ 2026',
-      intro: 'ಜಿಜಿವೈ ಫೈನಾನ್ಸ್ ಸಂಸ್ಥೆಯು ಕರ್ನಾಟಕ ರಾಜ್ಯ ನೋಂದಾಯಿತ ಕಿರು ಸಾಲ ಸಂಸ್ಥೆಯಾಗಿದ್ದು (ನೋಂದಣಿ ಸಂಖ್ಯೆ: KA-ML/2024/7742), ಭಾರತ ಸರ್ಕಾರದ ಡಿಜಿಟಲ್ ವೈಯಕ್ತಿಕ ಡೇಟಾ ಸಂರಕ್ಷಣಾ ಕಾಯ್ದೆ 2023 (DPDP Act) ಮತ್ತು ರಾಜ್ಯದ ಕಿರು ಸಾಲ ನಿಯಮಾವಳಿಗಳಿಗೆ ಬದ್ಧವಾಗಿದೆ.',
+      effectiveDate: 'ಜಾರಿಗೆ ಬಂದ ದಿನಾಂಕ: 1 ಏಪ್ರಿಲ್ 2026 | ನವೀಕರಿಸಿದ್ದು: 15 ನವೆಂಬರ್ 2026',
+      intro: `${config.organizationName || 'ಜಿಜಿವೈ ಫೈನಾನ್ಸ್'} ಸಂಸ್ಥೆಯು ನೋಂದಾಯಿತ ಕಿರು ಸಾಲ ಸಂಸ್ಥೆಯಾಗಿದ್ದು (ನೋಂದಣಿ ಸಂಖ್ಯೆ: ${config.registrationNumber || 'NBFC-ND/2026/7742'}), ಭಾರತ ಸರ್ಕಾರದ ಡಿಜಿಟಲ್ ವೈಯಕ್ತಿಕ ಡೇಟಾ ಸಂರಕ್ಷಣಾ ಕಾಯ್ದೆ 2023 (DPDP Act) ಮತ್ತು ಕಿರು ಸಾಲ ನಿಯಮಾವಳಿಗಳಿಗೆ ಬದ್ಧವಾಗಿದೆ.`,
       s1Title: '1. ನಿಯಂತ್ರಣ ಚೌಕಟ್ಟು ಮತ್ತು ವ್ಯಾಪ್ತಿ',
       s1Text: 'ಈ ಗೌಪ್ಯತಾ ನೀತಿಯು ನಮ್ಮ ಕ್ಷೇತ್ರಾಧಿಕಾರಿಗಳು ಮತ್ತು ಸಾಲ ಪೋರ್ಟಲ್ ಮೂಲಕ ಸಂಗ್ರಹಿಸಲಾಗುವ ಎಲ್ಲಾ ಗ್ರಾಹಕರ ಮಾಹಿತಿಯ ಸುರಕ್ಷತೆಯನ್ನು ಖಚಿತಪಡಿಸುತ್ತದೆ.',
       s2Title: '2. ಸ್ಪಷ್ಟ ಸಮ್ಮತಿ (DPDP Consent)',
@@ -78,21 +87,21 @@ export default function PrivacyPolicyPage() {
       ],
       s4Title: '4. ಗೂಢಲಿಪೀಕರಣ ಮತ್ತು ವಾಲ್ಟ್ ಭದ್ರತೆ (AES-256-GCM)',
       s4Text: 'ಗ್ರಾಹಕರ ಪ್ರತಿಯೊಂದು ದಾಖಲೆಯನ್ನು ಅತ್ಯುನ್ನತ ಮಿಲಿಟರಿ ದರ್ಜೆಯ AES-256-GCM ಗೂಢಲಿಪೀಕರಣದ ಮೂಲಕ ಸರ್ವರ್‌ನಲ್ಲಿ ಸುರಕ್ಷಿತವಾಗಿಡಲಾಗುತ್ತದೆ. ಪರಿಶೀಲನಾ ಅಧಿಕಾರಿಗಳು ಕೇವಲ 60 ಸೆಕೆಂಡುಗಳ ಕಾಲಾವಧಿಯ ತಾತ್ಕಾಲಿಕ ಟೋಕನ್ ಮೂಲಕ ಮಾತ್ರ ದಾಖಲೆಯನ್ನು ನೋಡಬಹುದು.',
-      s5Title: '5. ಭಾರತದಲ್ಲೇ ಡೇಟಾ ಸಂಗ್ರಹಣೆ (Indian Data Sovereignty)',
-      s5Text: 'ನಮ್ಮ ಎಲ್ಲಾ ಸರ್ವರ್‌ಗಳು ಮತ್ತು ಡೇಟಾ ಕೇಂದ್ರಗಳು ಭಾರತದ ಮುಂಬೈ (AWS Mumbai ap-south-1) ವ್ಯಾಪ್ತಿಯಲ್ಲೇ ಇವೆ. ಯಾವುದೇ ಮಾಹಿತಿಯನ್ನು ವಿದೇಶಿ ಸರ್ವರ್‌ಗಳಿಗೆ ರವಾನಿಸುವುದಿಲ್ಲ.',
-      s6Title: '6. ಗ್ರಾಹಕರ ಶಾಸನಬದ್ಧ ಹಕ್ಕುಗಳು (DPDP Rights)',
-      s6Text: 'DPDP ಕಾಯ್ದೆಯನ್ವಯ ಪ್ರತಿಯೊಬ್ಬ ಗ್ರಾಹಕರಿಗೂ ಈ ಕೆಳಗಿನ ಹಕ್ಕುಗಳಿವೆ:',
+      s5Title: '5. ಭಾರತೀಯ ಡೇಟಾ ಸಾರ್ವಭೌಮತ್ವ (Data Localization)',
+      s5Text: '100% ಗ್ರಾಹಕರ ಮಾಹಿತಿ ಮತ್ತು ದಾಖಲೆಗಳು ಭಾರತೀಯ ಗಡಿಗಳೊಳಗಿನ ಸರ್ವರ್‌ಗಳಲ್ಲಿ ಮಾತ್ರ ಸಂಗ್ರಹವಾಗುತ್ತವೆ. ಯಾವುದೇ ಡೇಟಾವನ್ನು ವಿದೇಶಿ ಸರ್ವರ್‌ಗಳಿಗೆ ರವಾನಿಸುವುದಿಲ್ಲ.',
+      s6Title: '6. ಡೇಟಾ ಪ್ರಿನ್ಸಿಪಾಲ್ ಹಕ್ಕುಗಳು (ನಿಮ್ಮ ಹಕ್ಕುಗಳು)',
+      s6Text: 'DPDP ಕಾಯ್ದೆ 2023 ರ ಅಡಿಯಲ್ಲಿ ನಿಮ್ಮ ಹಕ್ಕುಗಳು:',
       s6Rights: [
-        'ಮಾಹಿತಿ ಪರಿಶೀಲನಾ ಹಕ್ಕು: ನಿಮ್ಮ ಸಾಲದ ಮಾಹಿತಿ ವಿವರಗಳನ್ನು ಪಡೆಯುವ ಹಕ್ಕು.',
-        'ತಿದ್ದುಪಡಿ ಹಕ್ಕು: ತಪ್ಪಾದ ವಿಳಾಸ ಅಥವಾ ವಿವರಗಳನ್ನು ಸರಿಪಡಿಸಿಕೊಳ್ಳುವ ಹಕ್ಕು.',
-        'ದಾಖಲೆ ಅಳಿಸುವ ಹಕ್ಕು: ಸಾಲ ಪೂರ್ಣವಾಗಿ ಚುಕ್ತಾ ಆಗಿ ನಿರಾಕ್ಷೇಪಣಾ ಪ್ರಮಾಣಪತ್ರ (NOC) ಪಡೆದ ನಂತರ ಡೇಟಾ ಅಳಿಸಲು ವಿನಂತಿಸುವ ಹಕ್ಕು.',
-        'ದೂರು ಸಲ್ಲಿಕೆ ಹಕ್ಕು: ಡೇಟಾ ಸಂರಕ್ಷಣಾ ಅಧಿಕಾರಿಗೆ ನೇರವಾಗಿ ದೂರು ಸಲ್ಲಿಸುವ ಹಕ್ಕು.'
+        'ಮಾಹಿತಿ ಪರಿಶೀಲಿಸುವ ಹಕ್ಕು: ನಿಮ್ಮ ವೈಯಕ್ತಿಕ ಡೇಟಾ ಪ್ರಕ್ರಿಯೆಯ ಸಾರಾಂಶವನ್ನು ಪಡೆಯಬಹುದು.',
+        'ತಿದ್ದುಪಡಿ ಹಕ್ಕು: ತಪ್ಪಾದ ಅಥವಾ ಅಪೂರ್ಣ ಮಾಹಿತಿಯನ್ನು ನವೀಕರಿಸಲು ಕೋರಬಹುದು.',
+        'ದಾಖಲೆ ಅಳಿಸುವ ಹಕ್ಕು: ಸಾಲ ಪೂರ್ಣ ಮರುಪಾವತಿಯಾಗಿ ₹0.00 ಬಾಕಿ ಪ್ರಮಾಣಪತ್ರ (NOC) ಪಡೆದ ನಂತರ ದಾಖಲೆಗಳನ್ನು ಅಳಿಸಲು ಕೋರಬಹುದು.',
+        'ದೂರು ನಿವಾರಣಾ ಹಕ್ಕು: ಕುಂದುಕೊರತೆ ಅಧಿಕಾರಿಗೆ ನೇರವಾಗಿ ದೂರು ಸಲ್ಲಿಸಬಹುದು.'
       ],
-      s7Title: '7. ಡೇಟಾ ಸಂರಕ್ಷಣಾ ಅಧಿಕಾರಿಗಳ ವಿವರ',
-      s7Officer: 'ಮುಖ್ಯ ಡೇಟಾ ಸಂರಕ್ಷಣಾ ಅಧಿಕಾರಿ (DPO): ಶ್ರೀ ಎ. ದೇಶಮುಖ್',
-      s7Address: 'ಜಿಜಿವೈ ಫೈನಾನ್ಸ್ ಲಿಮಿಟೆಡ್, ಪ್ರಾದೇಶಿಕ ಕಚೇರಿ, ಮಂಡ್ಯ, ಕರ್ನಾಟಕ - 571401',
-      s7Email: 'dpo@ggyfinance.in | grievance@ggyfinance.in',
-      s7Phone: 'ಉಚಿತ ಸಹಾಯವಾಣಿ: 1800-209-4321 (ಬೆಳಿಗ್ಗೆ 9 ರಿಂದ ಸಂಜೆ 6 ರವರೆಗೆ)'
+      s7Title: '7. ಡೇಟಾ ಸಂರಕ್ಷಣಾ ಮತ್ತು ಕುಂದುಕೊರತೆ ಸಂಪರ್ಕ',
+      s7Officer: `ಮುಖ್ಯ ಡೇಟಾ ಸಂರಕ್ಷಣಾ ಅಧಿಕಾರಿ & ನೊಡಲ್ ಅಧಿಕಾರಿ: ${config.nodalOfficerName || 'ಶ್ರೀಮತಿ ಅನಿತಾ ದೇಶಮುಖ್'}`,
+      s7Address: `${config.organizationName || 'ಜಿಜಿವೈ ಫೈನಾನ್ಸ್'}, ಪ್ರಧಾನ ಕಚೇರಿ: ${config.headOfficeAddress}`,
+      s7Email: `${config.supportEmail || 'support@ggyfinance.in'}`,
+      s7Phone: `ಸಹಾಯವಾಣಿ: ${config.supportPhone || '1800-889-2020'}`
     }
   };
 
@@ -102,120 +111,118 @@ export default function PrivacyPolicyPage() {
     <div className="min-h-screen bg-[#F8FAF8] text-slate-900 flex flex-col selection:bg-orange-500 selection:text-white">
       <PublicHeader />
 
-      {/* Hero Section: Royal Saffron Sunburst */}
-      <section className="relative bg-gradient-to-br from-orange-600 via-amber-600 to-orange-700 text-white pt-16 pb-20 px-4 sm:px-10 text-center border-b border-orange-800 shadow-inner overflow-hidden">
-        <div className="absolute -top-32 left-1/3 w-[600px] h-[400px] bg-white/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="max-w-4xl mx-auto relative z-10 space-y-4">
-          <div className="inline-flex items-center gap-2 bg-white/20 border border-white/30 backdrop-blur-md px-4 py-1.5 rounded-full text-xs font-black text-white shadow-sm">
-            <ShieldCheck className="w-4 h-4 text-amber-200" />
+      {/* Hero Banner */}
+      <section className="bg-gradient-to-br from-emerald-900 via-emerald-800 to-[#062e1c] text-white pt-14 pb-16 px-4 sm:px-10 text-center border-b border-emerald-950">
+        <div className="max-w-4xl mx-auto space-y-4">
+          <div className="inline-flex items-center gap-2 bg-emerald-800/80 border border-emerald-600/60 px-4 py-1.5 rounded-full text-xs font-bold text-emerald-200">
+            <ShieldCheck className="w-4 h-4 text-emerald-300" />
             <span>{t.badge}</span>
           </div>
-          <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight drop-shadow-md">
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-white">
             {t.title}
           </h1>
-          <p className="text-amber-200 text-xs sm:text-sm font-bold">
+          <p className="text-xs font-mono text-emerald-300/90">
             {t.effectiveDate}
           </p>
-          <div className="bg-white/15 backdrop-blur-md p-5 rounded-2xl border border-white/20 text-white text-xs sm:text-sm leading-relaxed max-w-3xl mx-auto font-medium">
-            {t.intro}
-          </div>
         </div>
       </section>
 
-      {/* Privacy & Data Governance Sections */}
-      <main className="py-14 px-4 sm:px-8 max-w-4xl mx-auto flex-1 w-full space-y-6">
+      {/* Main Content */}
+      <main className="max-w-4xl mx-auto px-4 sm:px-8 py-12 space-y-8 text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">
+        <div className="p-6 bg-white rounded-3xl border border-slate-200 shadow-xs space-y-4">
+          <p className="font-semibold text-slate-900 text-sm sm:text-base leading-relaxed">
+            {t.intro}
+          </p>
+        </div>
+
         {/* Section 1 */}
-        <div className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200/90 shadow-xs space-y-3">
-          <h3 className="font-black text-base sm:text-lg text-slate-950 flex items-center gap-2.5">
-            <ShieldCheck className="w-5 h-5 text-orange-600 shrink-0" />
+        <div className="p-6 bg-white rounded-3xl border border-slate-200 shadow-xs space-y-3">
+          <h2 className="text-base sm:text-lg font-bold text-slate-950 flex items-center gap-2">
+            <Server className="w-5 h-5 text-orange-600" />
             <span>{t.s1Title}</span>
-          </h3>
-          <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">{t.s1Text}</p>
+          </h2>
+          <p>{t.s1Text}</p>
         </div>
 
         {/* Section 2 */}
-        <div className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200/90 shadow-xs space-y-3">
-          <h3 className="font-black text-base sm:text-lg text-slate-950 flex items-center gap-2.5">
-            <UserCheck className="w-5 h-5 text-emerald-600 shrink-0" />
+        <div className="p-6 bg-white rounded-3xl border border-slate-200 shadow-xs space-y-3">
+          <h2 className="text-base sm:text-lg font-bold text-slate-950 flex items-center gap-2">
+            <UserCheck className="w-5 h-5 text-emerald-700" />
             <span>{t.s2Title}</span>
-          </h3>
-          <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">{t.s2Text}</p>
+          </h2>
+          <p>{t.s2Text}</p>
         </div>
 
-        {/* Section 3: Data Minimization Matrix */}
-        <div className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200/90 shadow-xs space-y-4">
-          <h3 className="font-black text-base sm:text-lg text-slate-950">{t.s3Title}</h3>
+        {/* Section 3 */}
+        <div className="p-6 bg-white rounded-3xl border border-slate-200 shadow-xs space-y-4">
+          <h2 className="text-base sm:text-lg font-bold text-slate-950 flex items-center gap-2">
+            <EyeOff className="w-5 h-5 text-amber-600" />
+            <span>{t.s3Title}</span>
+          </h2>
 
-          <div className="bg-emerald-50/80 p-5 rounded-2xl border border-emerald-200 space-y-2.5">
-            <h4 className="font-extrabold text-emerald-950 text-xs sm:text-sm flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-600"></span>
-              <span>{t.s3CollectTitle}</span>
-            </h4>
-            <ul className="space-y-1.5 text-xs sm:text-sm text-emerald-900/90 pl-4 list-disc">
+          <div className="space-y-2">
+            <p className="font-bold text-slate-900">{t.s3CollectTitle}</p>
+            <ul className="list-disc pl-5 space-y-1 text-slate-600">
               {t.s3CollectList.map((item, idx) => (
-                <li key={idx} className="leading-relaxed">{item}</li>
+                <li key={idx}>{item}</li>
               ))}
             </ul>
           </div>
 
-          <div className="bg-rose-50/80 p-5 rounded-2xl border border-rose-200 space-y-2.5">
-            <h4 className="font-extrabold text-rose-950 text-xs sm:text-sm flex items-center gap-2">
-              <EyeOff className="w-4 h-4 text-rose-600" />
-              <span>{t.s3NeverTitle}</span>
-            </h4>
-            <ul className="space-y-1.5 text-xs sm:text-sm text-rose-900/90 pl-4 list-disc">
+          <div className="space-y-2 pt-2 border-t border-slate-100">
+            <p className="font-bold text-red-700">{t.s3NeverTitle}</p>
+            <ul className="list-disc pl-5 space-y-1 text-red-900/80">
               {t.s3NeverList.map((item, idx) => (
-                <li key={idx} className="leading-relaxed">{item}</li>
+                <li key={idx}>{item}</li>
               ))}
             </ul>
           </div>
         </div>
 
         {/* Section 4 */}
-        <div className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200/90 shadow-xs space-y-3">
-          <h3 className="font-black text-base sm:text-lg text-slate-950 flex items-center gap-2.5">
-            <Lock className="w-5 h-5 text-orange-600 shrink-0" />
+        <div className="p-6 bg-white rounded-3xl border border-slate-200 shadow-xs space-y-3">
+          <h2 className="text-base sm:text-lg font-bold text-slate-950 flex items-center gap-2">
+            <Lock className="w-5 h-5 text-emerald-700" />
             <span>{t.s4Title}</span>
-          </h3>
-          <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">{t.s4Text}</p>
+          </h2>
+          <p>{t.s4Text}</p>
         </div>
 
         {/* Section 5 */}
-        <div className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200/90 shadow-xs space-y-3">
-          <h3 className="font-black text-base sm:text-lg text-slate-950 flex items-center gap-2.5">
-            <Server className="w-5 h-5 text-emerald-600 shrink-0" />
+        <div className="p-6 bg-white rounded-3xl border border-slate-200 shadow-xs space-y-3">
+          <h2 className="text-base sm:text-lg font-bold text-slate-950 flex items-center gap-2">
+            <Server className="w-5 h-5 text-blue-600" />
             <span>{t.s5Title}</span>
-          </h3>
-          <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">{t.s5Text}</p>
+          </h2>
+          <p>{t.s5Text}</p>
         </div>
 
         {/* Section 6 */}
-        <div className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200/90 shadow-xs space-y-3">
-          <h3 className="font-black text-base sm:text-lg text-slate-950 flex items-center gap-2.5">
-            <UserCheck className="w-5 h-5 text-amber-600 shrink-0" />
+        <div className="p-6 bg-white rounded-3xl border border-slate-200 shadow-xs space-y-3">
+          <h2 className="text-base sm:text-lg font-bold text-slate-950 flex items-center gap-2">
+            <HelpCircle className="w-5 h-5 text-orange-600" />
             <span>{t.s6Title}</span>
-          </h3>
-          <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">{t.s6Text}</p>
-          <ul className="space-y-2 text-xs sm:text-sm text-slate-700 pt-1">
+          </h2>
+          <p>{t.s6Text}</p>
+          <ul className="list-disc pl-5 space-y-1.5 text-slate-700">
             {t.s6Rights.map((item, idx) => (
-              <li key={idx} className="flex items-start gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 mt-2 shrink-0"></span>
-                <span className="leading-relaxed">{item}</span>
-              </li>
+              <li key={idx}>{item}</li>
             ))}
           </ul>
         </div>
 
-        {/* Section 7: DPO Contact (Deep Imperial Forest) */}
-        <div className="bg-gradient-to-b from-[#064e3b] to-[#022c22] text-white p-7 sm:p-8 rounded-3xl border border-emerald-900 shadow-xl space-y-3">
-          <h3 className="font-black text-base sm:text-lg text-white flex items-center gap-2.5">
-            <HelpCircle className="w-5 h-5 text-amber-300 shrink-0" />
+        {/* Section 7 */}
+        <div className="p-6 bg-emerald-50/70 rounded-3xl border border-emerald-200 shadow-xs space-y-3">
+          <h2 className="text-base sm:text-lg font-bold text-emerald-950 flex items-center gap-2">
+            <ShieldCheck className="w-5 h-5 text-emerald-700" />
             <span>{t.s7Title}</span>
-          </h3>
-          <p className="text-emerald-100 font-extrabold text-xs sm:text-sm">{t.s7Officer}</p>
-          <p className="text-emerald-200/90 text-xs sm:text-sm">{t.s7Address}</p>
-          <p className="text-emerald-200/90 text-xs sm:text-sm font-mono">{t.s7Email}</p>
-          <p className="text-amber-300 font-bold text-xs sm:text-sm font-mono">{t.s7Phone}</p>
+          </h2>
+          <div className="space-y-1.5 text-emerald-900 font-medium">
+            <p className="font-bold text-emerald-950">{t.s7Officer}</p>
+            <p>{t.s7Address}</p>
+            <p className="font-mono text-xs">{t.s7Email}</p>
+            <p className="font-mono text-xs">{t.s7Phone}</p>
+          </div>
         </div>
       </main>
 

@@ -20,6 +20,23 @@ import {
   StaffRecord
 } from '../../../lib/staff';
 import {
+  InstitutionConfig,
+  CreditScheme,
+  BranchRecord,
+  getInstitutionConfigSync,
+  getInstitutionConfigAsync,
+  saveInstitutionConfig,
+  getCreditSchemesSync,
+  getCreditSchemesAsync,
+  saveCreditSchemes,
+  getBranchesSync,
+  getBranchesAsync,
+  saveBranches,
+  DEFAULT_INSTITUTION_CONFIG,
+  DEFAULT_CREDIT_SCHEMES,
+  DEFAULT_BRANCHES
+} from '../../../lib/institution';
+import {
   Shield,
   Users,
   Settings,
@@ -50,7 +67,13 @@ import {
   Copy,
   X,
   Edit3,
-  BadgeCheck
+  BadgeCheck,
+  Upload,
+  Image as ImageIcon,
+  Plus,
+  Percent,
+  RefreshCw,
+  FileText
 } from 'lucide-react';
 
 interface StaffUser {
@@ -111,7 +134,7 @@ interface AuditEvent {
 const DEFAULT_SUPER_ADMIN_STAFF: StaffUser[] = DEFAULT_STAFF_DIRECTORY as StaffUser[];
 
 export default function SuperAdminItDashboard() {
-  const [activeTab, setActiveTab] = useState<'staff' | 'gateways' | 'telemetry'>('staff');
+  const [activeTab, setActiveTab] = useState<'staff' | 'institution' | 'schemes' | 'gateways' | 'telemetry'>('staff');
   const [staffList, setStaffList] = useState<StaffUser[]>(DEFAULT_SUPER_ADMIN_STAFF);
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('ALL');
@@ -122,6 +145,21 @@ export default function SuperAdminItDashboard() {
   const [editEmail, setEditEmail] = useState('');
   const [editPhone, setEditPhone] = useState('');
   const [editBranch, setEditBranch] = useState('2020');
+
+  // Institution Profile & Dynamic Branding State
+  const [instConfig, setInstConfig] = useState<InstitutionConfig>(DEFAULT_INSTITUTION_CONFIG);
+  const [logoPreview, setLogoPreview] = useState<string>('');
+  const [isSavingInst, setIsSavingInst] = useState(false);
+
+  // Credit Schemes State
+  const [schemesList, setSchemesList] = useState<CreditScheme[]>(DEFAULT_CREDIT_SCHEMES);
+  const [editingScheme, setEditingScheme] = useState<CreditScheme | null>(null);
+  const [isSchemeModalOpen, setIsSchemeModalOpen] = useState(false);
+
+  // Operational Branches State
+  const [branchesList, setBranchesList] = useState<BranchRecord[]>(DEFAULT_BRANCHES);
+  const [editingBranch, setEditingBranch] = useState<BranchRecord | null>(null);
+  const [isBranchModalOpen, setIsBranchModalOpen] = useState(false);
 
   const [actionSuccessMsg, setActionSuccessMsg] = useState('');
   const [actionErrorMsg, setActionErrorMsg] = useState('');
@@ -165,15 +203,54 @@ export default function SuperAdminItDashboard() {
     }
   };
 
+  // Sync Institution, Credit Schemes & Branches
+  const syncInstitutionData = () => {
+    try {
+      getInstitutionConfigAsync().then((c) => {
+        setInstConfig(c);
+        if (c.logoUrl) setLogoPreview(c.logoUrl);
+      }).catch(() => {
+        const c = getInstitutionConfigSync();
+        setInstConfig(c);
+        if (c.logoUrl) setLogoPreview(c.logoUrl);
+      });
+
+      getCreditSchemesAsync().then((s) => {
+        setSchemesList(s);
+      }).catch(() => {
+        setSchemesList(getCreditSchemesSync());
+      });
+
+      getBranchesAsync().then((b) => {
+        setBranchesList(b);
+      }).catch(() => {
+        setBranchesList(getBranchesSync());
+      });
+    } catch {
+      setInstConfig(getInstitutionConfigSync());
+      setSchemesList(getCreditSchemesSync());
+      setBranchesList(getBranchesSync());
+    }
+  };
+
   useEffect(() => {
     syncStaffDirectory();
+    syncInstitutionData();
     window.addEventListener('storage', syncStaffDirectory);
+    window.addEventListener('storage', syncInstitutionData);
     window.addEventListener('nbfc_session_updated', syncStaffDirectory);
     window.addEventListener('nbfc_staff_updated', syncStaffDirectory);
+    window.addEventListener('nbfc_config_updated', syncInstitutionData);
+    window.addEventListener('nbfc_schemes_updated', syncInstitutionData);
+    window.addEventListener('nbfc_branches_updated', syncInstitutionData);
     return () => {
       window.removeEventListener('storage', syncStaffDirectory);
+      window.removeEventListener('storage', syncInstitutionData);
       window.removeEventListener('nbfc_session_updated', syncStaffDirectory);
       window.removeEventListener('nbfc_staff_updated', syncStaffDirectory);
+      window.removeEventListener('nbfc_config_updated', syncInstitutionData);
+      window.removeEventListener('nbfc_schemes_updated', syncInstitutionData);
+      window.removeEventListener('nbfc_branches_updated', syncInstitutionData);
     };
   }, []);
 
@@ -256,7 +333,7 @@ export default function SuperAdminItDashboard() {
   const [newEmail, setNewEmail] = useState('');
   const [newPhone, setNewPhone] = useState('');
   const [newRole, setNewRole] = useState<UserRole>(UserRole.FIELD_OFFICER);
-  const [newBranch, setNewBranch] = useState('KA-BLR-01');
+  const [newBranch, setNewBranch] = useState('2020');
   const [newPassword, setNewPassword] = useState('GGYSecurePassword@2026');
 
   // Gateways Config State
@@ -272,7 +349,7 @@ export default function SuperAdminItDashboard() {
       phoneNumberId: '10840192847192',
       wabaId: '928471928471',
       cloudApiVersion: 'v20.0',
-      webhookSecret: 'whsec_ggy_karnataka_2026_prod'
+      webhookSecret: 'whsec_ggy_fin_2026_prod'
     },
     sms: {
       dltEntityId: '1401552890000041289',
@@ -301,6 +378,129 @@ export default function SuperAdminItDashboard() {
     setActionErrorMsg(msg);
     setActionSuccessMsg('');
     setTimeout(() => setActionErrorMsg(''), 5000);
+  };
+
+  // Institution Profile & Branding Handlers
+  const handleLogoFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      notifyError('Image size exceeds 2MB limit. Please upload a smaller logo.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      setLogoPreview(dataUrl);
+      setInstConfig((prev) => ({ ...prev, logoUrl: dataUrl }));
+      notifySuccess('Logo uploaded! Click "Save Institution Profile & Branding" to apply platform-wide.');
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveLogo = () => {
+    setLogoPreview('');
+    setInstConfig((prev) => ({ ...prev, logoUrl: '' }));
+    notifySuccess('Custom logo removed. Default SVG emblem will be used.');
+  };
+
+  const handleSaveInstitutionProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingInst(true);
+    try {
+      await saveInstitutionConfig(instConfig);
+      appendAuditEvent({
+        category: 'INTENDED_ADMIN_UPDATE',
+        action: 'INSTITUTION_PROFILE_UPDATED',
+        actorStaffNumber: activeSession?.staffNumber || '202010',
+        actorUsername: activeSession?.username || 'it_superadmin',
+        actorRole: 'SUPER_ADMIN_IT',
+        target: instConfig.organizationName,
+        details: `Institution profile and branding updated by ${activeSession?.username || 'it_superadmin'}`
+      });
+      notifySuccess('Institution profile, branding, and registration details successfully saved.');
+    } catch {
+      notifyError('Failed to save institution profile. Please retry.');
+    } finally {
+      setIsSavingInst(false);
+    }
+  };
+
+  // Operational Branch Handlers
+  const handleSaveBranch = async (updatedBranch: BranchRecord) => {
+    try {
+      const existing = branchesList.some(b => b.branchCode === updatedBranch.branchCode);
+      const updatedList = existing
+        ? branchesList.map(b => b.branchCode === updatedBranch.branchCode ? updatedBranch : b)
+        : [...branchesList, updatedBranch];
+
+      setBranchesList(updatedList);
+      await saveBranches(updatedList);
+      appendAuditEvent({
+        category: 'INTENDED_ADMIN_UPDATE',
+        action: 'BRANCH_RECORD_SAVED',
+        actorStaffNumber: activeSession?.staffNumber || '202010',
+        actorUsername: activeSession?.username || 'it_superadmin',
+        actorRole: 'SUPER_ADMIN_IT',
+        target: `Branch ${updatedBranch.branchCode}`,
+        details: `Branch ${updatedBranch.branchCode} (${updatedBranch.name}) updated.`
+      });
+      notifySuccess(`Branch ${updatedBranch.branchCode} details saved successfully.`);
+      setIsBranchModalOpen(false);
+      setEditingBranch(null);
+    } catch {
+      notifyError('Failed to save branch. Please retry.');
+    }
+  };
+
+  // Credit Schemes Handlers
+  const handleSaveScheme = async (scheme: CreditScheme) => {
+    try {
+      const exists = schemesList.some(s => s.schemeCode === scheme.schemeCode);
+      const updatedList = exists
+        ? schemesList.map(s => s.schemeCode === scheme.schemeCode ? scheme : s)
+        : [...schemesList, scheme];
+
+      setSchemesList(updatedList);
+      await saveCreditSchemes(updatedList);
+      appendAuditEvent({
+        category: 'INTENDED_ADMIN_UPDATE',
+        action: exists ? 'CREDIT_SCHEME_UPDATED' : 'CREDIT_SCHEME_CREATED',
+        actorStaffNumber: activeSession?.staffNumber || '202010',
+        actorUsername: activeSession?.username || 'it_superadmin',
+        actorRole: 'SUPER_ADMIN_IT',
+        target: scheme.schemeCode,
+        details: `Credit scheme ${scheme.schemeCode} (${scheme.name}) rate ${scheme.interestRate}% saved.`
+      });
+      notifySuccess(`Credit scheme ${scheme.schemeCode} successfully saved.`);
+      setIsSchemeModalOpen(false);
+      setEditingScheme(null);
+    } catch {
+      notifyError('Failed to save credit scheme. Please retry.');
+    }
+  };
+
+  const handleToggleSchemeStatus = async (schemeCode: string) => {
+    const scheme = schemesList.find(s => s.schemeCode === schemeCode);
+    if (!scheme) return;
+
+    const nextState = !scheme.isActive;
+    const updatedList = schemesList.map(s => s.schemeCode === schemeCode ? { ...s, isActive: nextState } : s);
+    setSchemesList(updatedList);
+    await saveCreditSchemes(updatedList);
+
+    appendAuditEvent({
+      category: 'INTENDED_ADMIN_UPDATE',
+      action: nextState ? 'CREDIT_SCHEME_ACTIVATED' : 'CREDIT_SCHEME_DEACTIVATED',
+      actorStaffNumber: activeSession?.staffNumber || '202010',
+      actorUsername: activeSession?.username || 'it_superadmin',
+      actorRole: 'SUPER_ADMIN_IT',
+      target: schemeCode,
+      details: `Credit scheme ${schemeCode} status set to ${nextState ? 'ACTIVE' : 'INACTIVE'}`
+    });
+    notifySuccess(`Credit scheme ${schemeCode} is now ${nextState ? 'Active' : 'Inactive'}.`);
   };
 
   // Staff Management Actions
@@ -723,7 +923,7 @@ export default function SuperAdminItDashboard() {
           <span>Super Admin IT • Technical Systems Controller</span>
         </div>
         <h2 className="text-xl sm:text-2xl font-black tracking-tight">
-          Karnataka Digital Banking Infrastructure &amp; Staff Access Hub
+          Digital Banking Infrastructure &amp; Staff Access Hub
         </h2>
         <p className="text-xs text-orange-100 max-w-3xl leading-relaxed">
           Primary technical administrator console. Quarantined from live customer loan books and financial balances under statutory data isolation principles. Controls institutional staff provisioning, unique staff numbering, role access, and technical communications gateways.
@@ -792,22 +992,46 @@ export default function SuperAdminItDashboard() {
       )}
 
       {/* Tab Navigation */}
-      <div className="flex border-b border-slate-200 gap-4 text-xs font-bold text-slate-600">
+      <div className="flex border-b border-slate-200 gap-4 text-xs font-bold text-slate-600 overflow-x-auto pb-1">
         <button
           onClick={() => setActiveTab('staff')}
-          className={`pb-3 px-2 border-b-2 flex items-center gap-2 transition-colors cursor-pointer ${
+          className={`pb-3 px-2 border-b-2 flex items-center gap-2 transition-colors cursor-pointer shrink-0 ${
             activeTab === 'staff'
               ? 'border-orange-500 text-orange-600 font-black'
               : 'border-transparent hover:text-slate-900'
           }`}
         >
           <Users className="w-4 h-4" />
-          <span>Staff Accounts Directory ({staffList.length})</span>
+          <span>Staff Accounts ({staffList.length})</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('institution')}
+          className={`pb-3 px-2 border-b-2 flex items-center gap-2 transition-colors cursor-pointer shrink-0 ${
+            activeTab === 'institution'
+              ? 'border-orange-500 text-orange-600 font-black'
+              : 'border-transparent hover:text-slate-900'
+          }`}
+        >
+          <Building2 className="w-4 h-4" />
+          <span>Institution Profile &amp; Branding</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('schemes')}
+          className={`pb-3 px-2 border-b-2 flex items-center gap-2 transition-colors cursor-pointer shrink-0 ${
+            activeTab === 'schemes'
+              ? 'border-orange-500 text-orange-600 font-black'
+              : 'border-transparent hover:text-slate-900'
+          }`}
+        >
+          <Layers className="w-4 h-4" />
+          <span>Credit Schemes &amp; Products ({schemesList.length})</span>
         </button>
 
         <button
           onClick={() => setActiveTab('gateways')}
-          className={`pb-3 px-2 border-b-2 flex items-center gap-2 transition-colors cursor-pointer ${
+          className={`pb-3 px-2 border-b-2 flex items-center gap-2 transition-colors cursor-pointer shrink-0 ${
             activeTab === 'gateways'
               ? 'border-orange-500 text-orange-600 font-black'
               : 'border-transparent hover:text-slate-900'
@@ -819,7 +1043,7 @@ export default function SuperAdminItDashboard() {
 
         <button
           onClick={() => setActiveTab('telemetry')}
-          className={`pb-3 px-2 border-b-2 flex items-center gap-2 transition-colors cursor-pointer ${
+          className={`pb-3 px-2 border-b-2 flex items-center gap-2 transition-colors cursor-pointer shrink-0 ${
             activeTab === 'telemetry'
               ? 'border-orange-500 text-orange-600 font-black'
               : 'border-transparent hover:text-slate-900'
@@ -1010,7 +1234,387 @@ export default function SuperAdminItDashboard() {
       )}
 
       {/* ======================================================== */}
-      {/* TAB 2: GATEWAYS & CONFIG */}
+      {/* TAB 2: INSTITUTION PROFILE & BRANDING */}
+      {/* ======================================================== */}
+      {activeTab === 'institution' && (
+        <section className="space-y-6">
+          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-xs space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-100">
+              <div>
+                <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
+                  <Building2 className="w-5 h-5 text-orange-600" />
+                  <span>Institutional Profile, Regulatory Registration &amp; Dynamic Branding</span>
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Configure organization name, official regulatory registration number, contact helpline, support emails, and live logo branding on the fly without software recompilation.
+                </p>
+              </div>
+            </div>
+
+            <form onSubmit={handleSaveInstitutionProfile} className="space-y-6">
+              {/* Logo Branding Section */}
+              <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-xs font-black text-slate-900 flex items-center gap-2">
+                      <ImageIcon className="w-4 h-4 text-orange-600" />
+                      <span>Organization Logo &amp; Brand Emblem</span>
+                    </h4>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      Upload your official logo file (PNG, SVG, or JPG). Changes reflect in real-time across public headers, borrower portals, and staff consoles.
+                    </p>
+                  </div>
+                  {logoPreview && (
+                    <button
+                      type="button"
+                      onClick={handleRemoveLogo}
+                      className="px-3 py-1.5 text-[11px] font-bold text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl transition-colors cursor-pointer"
+                    >
+                      Remove Custom Logo
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-center gap-6 pt-2">
+                  <div className="w-24 h-24 rounded-2xl bg-white border-2 border-dashed border-slate-300 flex items-center justify-center p-2 overflow-hidden shadow-xs shrink-0">
+                    {logoPreview ? (
+                      <img src={logoPreview} alt="Institution Logo Preview" className="w-full h-full object-contain" />
+                    ) : (
+                      <div className="text-center text-slate-400">
+                        <Upload className="w-6 h-6 mx-auto mb-1 text-slate-300" />
+                        <span className="text-[10px] font-semibold">No Custom Logo</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex-1 space-y-2 w-full">
+                    <label className="block text-xs font-bold text-slate-700">
+                      Upload Logo Image (PNG / SVG / JPG, max 2MB)
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/png, image/jpeg, image/svg+xml, image/webp"
+                      onChange={handleLogoFileUpload}
+                      className="block w-full text-xs text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100 cursor-pointer"
+                    />
+                    <p className="text-[10px] text-slate-400 font-medium">
+                      Recommended: High-resolution PNG or SVG with transparent background.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Core Legal & Regulatory Fields */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1">
+                    Organization Legal Name
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    maxLength={100}
+                    value={instConfig.organizationName}
+                    onChange={(e) => setInstConfig({ ...instConfig, organizationName: e.target.value })}
+                    className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:ring-2 focus:ring-orange-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1">
+                    Platform Tagline &amp; Mission
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    maxLength={140}
+                    value={instConfig.platformTagline}
+                    onChange={(e) => setInstConfig({ ...instConfig, platformTagline: e.target.value })}
+                    className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs text-slate-800 focus:ring-2 focus:ring-orange-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1">
+                    Regulatory Registration Number (NBFC / MFI)
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    maxLength={50}
+                    value={instConfig.registrationNumber}
+                    onChange={(e) => setInstConfig({ ...instConfig, registrationNumber: e.target.value })}
+                    className="w-full p-3 bg-white border border-slate-200 rounded-xl font-mono text-xs font-bold text-slate-900 focus:ring-2 focus:ring-orange-500"
+                  />
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    Displayed in public footers, disclosures, and statutory loan agreements.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1">
+                    Customer Support Helpline (Toll-Free / Phone)
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    maxLength={30}
+                    value={instConfig.supportPhone}
+                    onChange={(e) => setInstConfig({ ...instConfig, supportPhone: e.target.value })}
+                    className="w-full p-3 bg-white border border-slate-200 rounded-xl font-mono text-xs text-slate-900 focus:ring-2 focus:ring-orange-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1">
+                    Official Support Email Address
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    maxLength={80}
+                    value={instConfig.supportEmail}
+                    onChange={(e) => setInstConfig({ ...instConfig, supportEmail: e.target.value })}
+                    className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:ring-2 focus:ring-orange-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1">
+                    Principal Nodal Grievance Officer
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    maxLength={80}
+                    value={instConfig.nodalOfficerName}
+                    onChange={(e) => setInstConfig({ ...instConfig, nodalOfficerName: e.target.value })}
+                    className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:ring-2 focus:ring-orange-500"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-bold text-slate-800 mb-1">
+                    Head Office Registered Postal Address
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    maxLength={200}
+                    value={instConfig.headOfficeAddress}
+                    onChange={(e) => setInstConfig({ ...instConfig, headOfficeAddress: e.target.value })}
+                    className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:ring-2 focus:ring-orange-500"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <button
+                  type="submit"
+                  disabled={isSavingInst}
+                  className="px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-black text-xs rounded-xl shadow-md transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>{isSavingInst ? 'Saving Configuration...' : 'Save Institution Profile & Branding'}</span>
+                </button>
+              </div>
+            </form>
+
+            {/* Operational Branches Section */}
+            <div className="pt-6 border-t border-slate-200 space-y-4">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h4 className="text-xs font-black text-slate-900 flex items-center gap-2">
+                    <Building2 className="w-4 h-4 text-orange-600" />
+                    <span>Operational Branch Directory ({branchesList.length})</span>
+                  </h4>
+                  <p className="text-[11px] text-slate-500 mt-0.5">
+                    Authorized banking branches and Service Outlets (SOL). Primary operational branch is Branch 2020.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingBranch({
+                      branchCode: '',
+                      solId: '',
+                      name: '',
+                      type: 'Branch Office',
+                      address: '',
+                      manager: '',
+                      phone: '',
+                      email: '',
+                      operatingHours: 'Mon - Sat: 9:00 AM - 6:00 PM',
+                      isActive: true
+                    });
+                    setIsBranchModalOpen(true);
+                  }}
+                  className="px-4 py-2 bg-orange-50 hover:bg-orange-100 text-orange-700 text-xs font-bold rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add Branch</span>
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {branchesList.map((branch) => (
+                  <div key={branch.branchCode} className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-3">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-[10px] font-black bg-orange-100 text-orange-900 px-2 py-0.5 rounded-full">
+                            SOL {branch.branchCode}
+                          </span>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${branch.isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'}`}>
+                            {branch.isActive ? 'Operational' : 'Inactive'}
+                          </span>
+                        </div>
+                        <h5 className="text-xs font-bold text-slate-900 mt-1">{branch.name}</h5>
+                        <p className="text-[11px] text-slate-500">{branch.type}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingBranch(branch);
+                          setIsBranchModalOpen(true);
+                        }}
+                        className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
+                        title="Edit Branch"
+                      >
+                        <Edit3 className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <div className="text-[11px] text-slate-600 space-y-1 font-medium">
+                      <p className="truncate"><strong>Address:</strong> {branch.address}</p>
+                      <p><strong>Manager:</strong> {branch.manager}</p>
+                      <p><strong>Contact:</strong> {branch.phone} • {branch.email}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ======================================================== */}
+      {/* TAB 3: CREDIT SCHEMES & PRODUCTS */}
+      {/* ======================================================== */}
+      {activeTab === 'schemes' && (
+        <section className="space-y-6">
+          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-xs space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-100">
+              <div>
+                <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
+                  <Layers className="w-5 h-5 text-orange-600" />
+                  <span>Credit Schemes, Loan Products &amp; Interest Rates</span>
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Manage active credit products, interest rates (% p.a.), loan bounds, and tenors dynamically. Changes update repayment calculators and loan applications immediately.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingScheme({
+                    schemeCode: `SCHM-${Math.floor(700 + Math.random() * 99)}`,
+                    name: '',
+                    minAmount: 10000,
+                    maxAmount: 100000,
+                    interestRate: 12.0,
+                    defaultTenureMonths: 12,
+                    minTenureMonths: 6,
+                    maxTenureMonths: 24,
+                    frequency: 'MONTHLY',
+                    purpose: '',
+                    isActive: true
+                  });
+                  setIsSchemeModalOpen(true);
+                }}
+                className="px-4 py-2.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-xs font-black rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Create New Credit Plan</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {schemesList.map((scheme) => (
+                <div
+                  key={scheme.schemeCode}
+                  className={`p-5 rounded-2xl border transition-all ${
+                    scheme.isActive
+                      ? 'bg-white border-slate-200/90 shadow-xs hover:border-orange-300'
+                      : 'bg-slate-50/70 border-slate-200 opacity-75'
+                  }`}
+                >
+                  <div className="flex justify-between items-start gap-3">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-[10px] font-black bg-orange-100 text-orange-900 px-2 py-0.5 rounded-full">
+                          {scheme.schemeCode}
+                        </span>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${scheme.isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'}`}>
+                          {scheme.isActive ? 'Active Plan' : 'Deactivated'}
+                        </span>
+                      </div>
+                      <h4 className="text-sm font-black text-slate-900">{scheme.name}</h4>
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => handleToggleSchemeStatus(scheme.schemeCode)}
+                        className={`px-2.5 py-1 text-[11px] font-bold rounded-lg transition-colors cursor-pointer ${
+                          scheme.isActive
+                            ? 'text-amber-700 bg-amber-50 hover:bg-amber-100'
+                            : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100'
+                        }`}
+                      >
+                        {scheme.isActive ? 'Deactivate' : 'Activate'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingScheme(scheme);
+                          setIsSchemeModalOpen(true);
+                        }}
+                        className="p-1.5 hover:bg-slate-100 text-slate-600 hover:text-slate-900 rounded-lg transition-colors cursor-pointer"
+                        title="Edit Scheme Details"
+                      >
+                        <Edit3 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-slate-500 mt-2 line-clamp-2">
+                    {scheme.purpose}
+                  </p>
+
+                  <div className="mt-4 pt-3 border-t border-slate-100 grid grid-cols-3 gap-2 text-center">
+                    <div className="bg-slate-50 p-2 rounded-xl">
+                      <span className="text-[10px] text-slate-400 font-bold block uppercase">Interest Rate</span>
+                      <span className="text-xs font-black text-orange-600">{scheme.interestRate}% p.a.</span>
+                    </div>
+                    <div className="bg-slate-50 p-2 rounded-xl">
+                      <span className="text-[10px] text-slate-400 font-bold block uppercase">Loan Limits</span>
+                      <span className="text-xs font-black text-slate-900">₹{(scheme.minAmount/1000)}k - ₹{(scheme.maxAmount/1000)}k</span>
+                    </div>
+                    <div className="bg-slate-50 p-2 rounded-xl">
+                      <span className="text-[10px] text-slate-400 font-bold block uppercase">Tenure</span>
+                      <span className="text-xs font-black text-slate-900">{scheme.minTenureMonths}-{scheme.maxTenureMonths}m</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ======================================================== */}
+      {/* TAB 4: GATEWAYS & CONFIG */}
       {/* ======================================================== */}
       {activeTab === 'gateways' && (
         <section className="space-y-6">
@@ -1606,12 +2210,11 @@ export default function SuperAdminItDashboard() {
                     onChange={(e) => setNewBranch(e.target.value)}
                     className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:ring-2 focus:ring-orange-500 cursor-pointer"
                   >
-                    <option value="2020">Branch 2020 (Headquarters &amp; Rural Operations)</option>
-                    <option value="KA-BLR-01">KA-BLR-01 (Bengaluru Hub)</option>
-                    <option value="KA-MND-01">KA-MND-01 (Mandya &amp; Maddur)</option>
-                    <option value="KA-RAM-01">KA-RAM-01 (Ramanagara &amp; Channapatna)</option>
-                    <option value="KA-TUM-01">KA-TUM-01 (Tumakuru &amp; Kunigal)</option>
-                    <option value="KA-MYS-01">KA-MYS-01 (Mysuru &amp; Nanjangud)</option>
+                    {branchesList.map((b) => (
+                      <option key={b.branchCode} value={b.branchCode}>
+                        Branch {b.branchCode} ({b.name})
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -1730,12 +2333,11 @@ export default function SuperAdminItDashboard() {
                   onChange={(e) => setEditBranch(e.target.value)}
                   className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:ring-2 focus:ring-orange-500 cursor-pointer"
                 >
-                  <option value="2020">Branch 2020 (Headquarters &amp; Rural Operations)</option>
-                  <option value="KA-BLR-01">KA-BLR-01 (Bengaluru Hub)</option>
-                  <option value="KA-MND-01">KA-MND-01 (Mandya &amp; Maddur)</option>
-                  <option value="KA-RAM-01">KA-RAM-01 (Ramanagara &amp; Channapatna)</option>
-                  <option value="KA-TUM-01">KA-TUM-01 (Tumakuru &amp; Kunigal)</option>
-                  <option value="KA-MYS-01">KA-MYS-01 (Mysuru &amp; Nanjangud)</option>
+                  {branchesList.map((b) => (
+                    <option key={b.branchCode} value={b.branchCode}>
+                      Branch {b.branchCode} ({b.name})
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -1752,6 +2354,329 @@ export default function SuperAdminItDashboard() {
                   className="flex-1 py-3 bg-forest-800 hover:bg-forest-900 text-white font-black rounded-xl shadow-md transition-all cursor-pointer"
                 >
                   Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* CREATE / EDIT CREDIT SCHEME MODAL */}
+      {/* ======================================================== */}
+      {isSchemeModalOpen && editingScheme && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-5 shadow-2xl border border-slate-200 animate-in zoom-in-95">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <Layers className="w-5 h-5 text-orange-600" />
+                <h3 className="text-lg font-black text-slate-950">
+                  {schemesList.some(s => s.schemeCode === editingScheme.schemeCode) ? 'Edit Credit Plan' : 'Create Credit Plan'}
+                </h3>
+              </div>
+              <button
+                onClick={() => {
+                  setIsSchemeModalOpen(false);
+                  setEditingScheme(null);
+                }}
+                className="text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSaveScheme(editingScheme);
+              }}
+              className="space-y-4 text-xs font-bold"
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-800 mb-1">Scheme Code</label>
+                  <input
+                    type="text"
+                    required
+                    readOnly={schemesList.some(s => s.schemeCode === editingScheme.schemeCode)}
+                    value={editingScheme.schemeCode}
+                    onChange={(e) => setEditingScheme({ ...editingScheme, schemeCode: e.target.value.toUpperCase() })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-800 mb-1">Interest Rate (% p.a.)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="1"
+                    max="36"
+                    required
+                    value={editingScheme.interestRate}
+                    onChange={(e) => setEditingScheme({ ...editingScheme, interestRate: parseFloat(e.target.value) || 0 })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono text-orange-600 font-black"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-800 mb-1">Scheme / Product Title</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Rural Working Capital Loan"
+                  value={editingScheme.name}
+                  onChange={(e) => setEditingScheme({ ...editingScheme, name: e.target.value })}
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-800 mb-1">Min Sanction (₹)</label>
+                  <input
+                    type="number"
+                    min="1000"
+                    step="1000"
+                    required
+                    value={editingScheme.minAmount}
+                    onChange={(e) => setEditingScheme({ ...editingScheme, minAmount: parseInt(e.target.value) || 0 })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-800 mb-1">Max Sanction (₹)</label>
+                  <input
+                    type="number"
+                    min="5000"
+                    max="200000"
+                    step="5000"
+                    required
+                    value={editingScheme.maxAmount}
+                    onChange={(e) => setEditingScheme({ ...editingScheme, maxAmount: parseInt(e.target.value) || 0 })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-slate-800 mb-1">Min Tenure (M)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="60"
+                    required
+                    value={editingScheme.minTenureMonths}
+                    onChange={(e) => setEditingScheme({ ...editingScheme, minTenureMonths: parseInt(e.target.value) || 1 })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-800 mb-1">Default Tenure (M)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="60"
+                    required
+                    value={editingScheme.defaultTenureMonths}
+                    onChange={(e) => setEditingScheme({ ...editingScheme, defaultTenureMonths: parseInt(e.target.value) || 1 })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-800 mb-1">Max Tenure (M)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="60"
+                    required
+                    value={editingScheme.maxTenureMonths}
+                    onChange={(e) => setEditingScheme({ ...editingScheme, maxTenureMonths: parseInt(e.target.value) || 1 })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-800 mb-1">Repayment Frequency</label>
+                <select
+                  value={editingScheme.frequency}
+                  onChange={(e) => setEditingScheme({ ...editingScheme, frequency: e.target.value as any })}
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold"
+                >
+                  <option value="MONTHLY">Monthly EMI</option>
+                  <option value="WEEKLY">Weekly Collections</option>
+                  <option value="WEEKLY_OR_MONTHLY">Weekly or Monthly (Flexible)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-slate-800 mb-1">Credit Purpose / Target Segment</label>
+                <textarea
+                  rows={2}
+                  required
+                  placeholder="e.g. Working capital liquidity for rural retail shops and small enterprises"
+                  value={editingScheme.purpose}
+                  onChange={(e) => setEditingScheme({ ...editingScheme, purpose: e.target.value })}
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-normal text-xs"
+                />
+              </div>
+
+              <div className="pt-2 flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsSchemeModalOpen(false);
+                    setEditingScheme(null);
+                  }}
+                  className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-xl transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-3 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-black rounded-xl shadow-md transition-all cursor-pointer"
+                >
+                  Save Credit Scheme
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* EDIT / CREATE BRANCH MODAL */}
+      {/* ======================================================== */}
+      {isBranchModalOpen && editingBranch && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-5 shadow-2xl border border-slate-200 animate-in zoom-in-95">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-orange-600" />
+                <h3 className="text-lg font-black text-slate-950">
+                  {branchesList.some(b => b.branchCode === editingBranch.branchCode) ? 'Edit Branch Location' : 'Register New Branch'}
+                </h3>
+              </div>
+              <button
+                onClick={() => {
+                  setIsBranchModalOpen(false);
+                  setEditingBranch(null);
+                }}
+                className="text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSaveBranch(editingBranch);
+              }}
+              className="space-y-4 text-xs font-bold"
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-800 mb-1">Branch SOL Code (Numeric)</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. 2020"
+                    maxLength={10}
+                    value={editingBranch.branchCode}
+                    onChange={(e) => setEditingBranch({ ...editingBranch, branchCode: e.target.value.replace(/\D/g, ''), solId: e.target.value.replace(/\D/g, '') })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-800 mb-1">Branch Category</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Principal SOL / Retail Hub"
+                    value={editingBranch.type}
+                    onChange={(e) => setEditingBranch({ ...editingBranch, type: e.target.value })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-800 mb-1">Branch Name</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Headquarters & Primary Branch"
+                  value={editingBranch.name}
+                  onChange={(e) => setEditingBranch({ ...editingBranch, name: e.target.value })}
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-800 mb-1">Postal Address</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Full office address"
+                  value={editingBranch.address}
+                  onChange={(e) => setEditingBranch({ ...editingBranch, address: e.target.value })}
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-800 mb-1">Branch Manager Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={editingBranch.manager}
+                    onChange={(e) => setEditingBranch({ ...editingBranch, manager: e.target.value })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-800 mb-1">Official Contact Phone</label>
+                  <input
+                    type="text"
+                    required
+                    value={editingBranch.phone}
+                    onChange={(e) => setEditingBranch({ ...editingBranch, phone: e.target.value })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-800 mb-1">Official Branch Email</label>
+                <input
+                  type="email"
+                  required
+                  value={editingBranch.email}
+                  onChange={(e) => setEditingBranch({ ...editingBranch, email: e.target.value.trim() })}
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                />
+              </div>
+
+              <div className="pt-2 flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsBranchModalOpen(false);
+                    setEditingBranch(null);
+                  }}
+                  className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-xl transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-3 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-black rounded-xl shadow-md transition-all cursor-pointer"
+                >
+                  Save Branch Location
                 </button>
               </div>
             </form>

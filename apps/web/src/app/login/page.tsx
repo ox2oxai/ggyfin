@@ -78,12 +78,31 @@ export default function LoginPage() {
     try {
       // Synchronize latest directory across server and local storage
       const directory = await getStaffDirectoryAsync();
-      const user = directory.find(
-        (u) => u.username.toLowerCase() === username.trim().toLowerCase()
+      const identifier = username.trim().toLowerCase();
+      let user = directory.find(
+        (u) =>
+          u.username.toLowerCase() === identifier ||
+          (u.staffNumber && u.staffNumber.trim().toLowerCase() === identifier) ||
+          (u.email && u.email.trim().toLowerCase() === identifier)
       );
 
+      // Ultimate fallback: if not present in cached directory, check DEFAULT_STAFF_DIRECTORY
       if (!user) {
-        setErrorMessage('Invalid credentials. Staff username not found in directory.');
+        user = DEFAULT_STAFF_DIRECTORY.find(
+          (u) =>
+            u.username.toLowerCase() === identifier ||
+            (u.staffNumber && u.staffNumber.trim().toLowerCase() === identifier) ||
+            (u.email && u.email.trim().toLowerCase() === identifier)
+        );
+        if (user) {
+          // Self-heal local store
+          const updated = [...directory.filter(u => u.username.toLowerCase() !== user!.username.toLowerCase()), user];
+          saveStaffDirectory(updated).catch(() => {});
+        }
+      }
+
+      if (!user) {
+        setErrorMessage('Invalid credentials. Staff username, staff ID, or email not found in directory.');
         setIsLoading(false);
         return;
       }
@@ -247,11 +266,11 @@ export default function LoginPage() {
           <GGYBrandMark size="xl" />
         </div>
 
-        <h2 className="mt-4 text-center text-2xl font-black text-slate-950 tracking-tight">
+        <h2 className="mt-4 text-center text-2xl font-bold text-slate-900 tracking-tight">
           GGY Finance Staff Portal
         </h2>
         <p className="mt-1 text-center text-xs text-slate-500 font-medium">
-          Micro-Lending Platform • Karnataka Dual-Control Core Banking
+          National Micro-Lending Platform • Dual-Control Core Banking
         </p>
       </div>
 
@@ -275,7 +294,7 @@ export default function LoginPage() {
           <form className="space-y-4" onSubmit={handleLogin}>
             <div>
               <label className="block text-xs font-bold text-slate-800 mb-1">
-                Staff Username
+                Staff Username, ID, or Email
               </label>
               <div className="relative rounded-xl">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -284,10 +303,10 @@ export default function LoginPage() {
                 <input
                   type="text"
                   required
-                  placeholder="e.g. it_superadmin"
-                  maxLength={30}
+                  placeholder="e.g. ngyaragatti or 202011"
+                  maxLength={80}
                   value={username}
-                  onChange={(e) => setUsername(sanitizeUsername(e.target.value))}
+                  onChange={(e) => setUsername(e.target.value)}
                   className="block w-full pl-10 pr-3 py-3 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-orange-500 transition-all font-mono"
                 />
               </div>

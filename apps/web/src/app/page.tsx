@@ -39,6 +39,7 @@ import { GGYBrandMark } from '../components/brand-mark';
 import { PublicHeader } from '../components/public-header';
 import { PublicFooter } from '../components/public-footer';
 import { useLanguage } from '../components/language-context';
+import { getCreditSchemesSync, CreditScheme } from '../lib/institution';
 
 interface ProductItem {
   id: string;
@@ -292,10 +293,10 @@ export default function HomePage() {
 
   const t = {
     en: {
-      heroPill: 'Karnataka Micro-Lending Platform • Doorstep Financial Services',
+      heroPill: 'National Micro-Lending Platform • Doorstep Financial Services',
       heroTitle1: 'Honest Micro Banking for',
       heroTitleAccent: 'Rural Bharat',
-      heroDesc: 'Transparent reducing-balance micro-loans and accessible wealth creation for Karnataka’s village entrepreneurs, dairy farmers, and weavers.',
+      heroDesc: 'Transparent reducing-balance micro-loans and accessible wealth creation for village entrepreneurs, dairy farmers, and artisans across rural Bharat.',
       btnCalculate: 'Calculate Monthly EMI',
       btnExplore: 'Explore Credit Facilities',
       statDisbursed: 'Disbursed Capital',
@@ -323,7 +324,7 @@ export default function HomePage() {
       applyPwa: 'Request Doorstep Application via Field Officer',
       videoSectionBadge: 'Customer Stories',
       videoSectionTitle: 'Voices from the Field',
-      videoSectionDesc: 'Real experiences from Karnataka borrowers who expanded their livelihood through honest, doorstep credit.',
+      videoSectionDesc: 'Real experiences from borrowers who expanded their livelihood through honest, doorstep credit.',
       watchVideo: 'Watch Story',
       playingPreview: 'Video Case Study Simulator',
       verifiedBorrower: 'Verified Borrower',
@@ -341,7 +342,7 @@ export default function HomePage() {
       pillPiggy: 'Daily Doorstep Piggy Savings'
     },
     kn: {
-      heroPill: 'ಕರ್ನಾಟಕ ಗ್ರಾಮೀಣ ಕಿರು ಸಾಲ ಸೇವಾ ವೇದಿಕೆ • ಮನೆಬಾಗಿಲ ಸೇವೆ',
+      heroPill: 'ರಾಷ್ಟ್ರೀಯ ಗ್ರಾಮೀಣ ಕಿರು ಸಾಲ ಸೇವಾ ವೇದಿಕೆ • ಮನೆಬಾಗಿಲ ಸೇವೆ',
       heroTitle1: 'ಗ್ರಾಮೀಣ ಭಾರತದ ಬೆಳವಣಿಗೆಗೆ',
       heroTitleAccent: 'ಪ್ರಾಮಾಣಿಕ ಕಿರು ಬ್ಯಾಂಕಿಂಗ್',
       heroDesc: 'ಗ್ರಾಮೀಣ ಸಣ್ಣ ವ್ಯಾಪಾರಿಗಳು, ಹೈನುಗಾರಿಕೆ ಕುಟುಂಬಗಳು ಮತ್ತು ನೇಕಾರರಿಗೆ ನೇರ ಮನೆಬಾಗಿಲ ಸಾಲ ಸೌಲಭ್ಯ ಹಾಗೂ ಸುಲಭ ಸಂಪತ್ತು ಸೃಷ್ಟಿ.',
@@ -352,7 +353,7 @@ export default function HomePage() {
       statEmpowered: 'ಸಬಲೀಕರಣಗೊಂಡ ಕುಟುಂಬಗಳು',
       statTurnaround: 'ಮನೆಬಾಗಿಲ ಪರಿಶೀಲನೆ ವೇಗ',
       productsSectionTitle: 'ಪ್ರಾಮಾಣಿಕ ಕಿರು ಸಾಲ ಸೌಲಭ್ಯಗಳು',
-      productsSectionDesc: 'ಗ್ರಾಮೀಣ ಸಬಲೀಕರಣ ಮತ್ತು ಪಾರದರ್ಶಕ ಸಾಲ ವಿತರಣೆಗೆ ರೂಪಿಸಲಾದ ಕರ್ನಾಟಕ ರಾಜ್ಯ ನಿಯಮಾವಳಿ ಆಧಾರಿತ ಕಿರು ಸಾಲ ಯೋಜನೆಗಳು.',
+      productsSectionDesc: 'ಗ್ರಾಮೀಣ ಸಬಲೀಕರಣ ಮತ್ತು ಪಾರದರ್ಶಕ ಸಾಲ ವಿತರಣೆಗೆ ರೂಪಿಸಲಾದ ನಿಯಮಾವಳಿ ಆಧಾರಿತ ಕಿರು ಸಾಲ ಯೋಜನೆಗಳು.',
       ratePerAnnum: '% ವಾರ್ಷಿಕ ಬಡ್ಡಿ',
       maxSanction: 'ಗರಿಷ್ಠ ಮಿತಿ:',
       calcTitle: 'ಇಎಂಐ (EMI) ಕ್ಯಾಲ್ಕುಲೇಟರ್ & ಯುಪಿಐ ಪ್ರಕ್ರಿಯೆ',
@@ -367,12 +368,12 @@ export default function HomePage() {
       totalPayable: 'ಒಟ್ಟು ಮರುಪಾವತಿಸಬೇಕಾದ ಮೊತ್ತ',
       qrTitle: 'ತ್ವರಿತ ಯುಪಿಐ (UPI) ಕ್ಯೂಆರ್ ಕೋಡ್',
       qrDesc: 'PhonePe, GPay, Paytm ಮೂಲಕ ನಿಮ್ಮ ಮಾಸಿಕ ಕಂತನ್ನು ತಕ್ಷಣವೇ ಸುಲಭವಾಗಿ ಮರುಪಾವತಿಸಿ.',
-      trustTitle: 'ಕರ್ನಾಟಕ ರಾಜ್ಯ ನಿಯಮಾವಳಿಗಳ ಕಟ್ಟುನಿಟ್ಟಾದ ಅನುಸರಣೆ',
+      trustTitle: 'ನಿಯಮಾವಳಿಗಳ ಕಟ್ಟುನಿಟ್ಟಾದ ಅನುಸರಣೆ & ಆಡಳಿತ',
       trustDesc: 'DPDP ಕಾಯ್ದೆ 2023 ರ ಅನ್ವಯ 100% ಭಾರತೀಯ ಸರ್ವರ್‌ಗಳಲ್ಲಿ ಡೇಟಾ ಸಂರಕ್ಷಣೆ ಮತ್ತು ಡ್ಯುಯಲ್-ಕಂಟ್ರೋಲ್ ಪರಿಶೀಲನೆ.',
       applyPwa: 'ಕ್ಷೇತ್ರಾಧಿಕಾರಿಗಳ ಮೂಲಕ ಮನೆಬಾಗಿಲಿಗೆ ಅರ್ಜಿ ಸಲ್ಲಿಸಿ',
       videoSectionBadge: 'ನೈಜ ಪ್ರಗತಿ ಕಥೆಗಳು',
       videoSectionTitle: 'ಕ್ಷೇತ್ರದ ಅನುಭವಗಳು & ಯಶೋಗಾಥೆಗಳು',
-      videoSectionDesc: 'ಪ್ರಾಮಾಣಿಕ ಮನೆಬಾಗಿಲ ಸಾಲ ಸೌಲಭ್ಯದಿಂದ ಆರ್ಥಿಕ ಪ್ರಗತಿ ಸಾಧಿಸಿದ ಕರ್ನಾಟಕದ ಗ್ರಾಹಕರ ಅನುಭವಗಳು.',
+      videoSectionDesc: 'ಪ್ರಾಮಾಣಿಕ ಮನೆಬಾಗಿಲ ಸಾಲ ಸೌಲಭ್ಯದಿಂದ ಆರ್ಥಿಕ ಪ್ರಗತಿ ಸಾಧಿಸಿದ ಗ್ರಾಹಕರ ನೈಜ ಅನುಭವಗಳು.',
       watchVideo: 'ವಿಡಿಯೋ ವೀಕ್ಷಿಸಿ',
       playingPreview: 'ವೀಡಿಯೊ ಕೇಸ್ ಸ್ಟಡಿ ಸಿಮ್ಯುಲೇಟರ್',
       verifiedBorrower: 'ದೃಢೀಕೃತ ಗ್ರಾಹಕರು',
@@ -897,22 +898,22 @@ export default function HomePage() {
         <div className="bg-white rounded-3xl border border-slate-200 p-8 sm:p-10 shadow-xs space-y-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 pb-6">
             <div>
-              <span className="text-xs uppercase font-extrabold tracking-wider text-orange-700">
-                Karnataka Micro-Lending Framework
+              <span className="text-xs uppercase font-bold tracking-wider text-orange-700">
+                National Micro-Lending Framework
               </span>
-              <h3 className="text-xl sm:text-2xl font-black text-slate-950 mt-1">
+              <h3 className="text-xl sm:text-2xl font-bold text-slate-900 mt-1">
                 {t.trustTitle}
               </h3>
             </div>
             <div className="flex items-center gap-2 bg-emerald-50 text-emerald-900 px-3.5 py-1.5 rounded-full border border-emerald-200 text-xs font-bold">
               <BadgeCheck className="w-4 h-4 text-emerald-700" />
-              <span>Registered State Micro-Lending Platform</span>
+              <span>Registered NBFC Micro-Lending Platform</span>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs text-slate-700 leading-relaxed">
             <div className="space-y-1.5">
-              <p className="font-black text-sm text-slate-950 flex items-center gap-1.5">
+              <p className="font-bold text-sm text-slate-900 flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4 text-emerald-700" />
                 <span>Dual-Control Maker-Checker</span>
               </p>
@@ -920,7 +921,7 @@ export default function HomePage() {
             </div>
 
             <div className="space-y-1.5">
-              <p className="font-black text-sm text-slate-950 flex items-center gap-1.5">
+              <p className="font-bold text-sm text-slate-900 flex items-center gap-1.5">
                 <Lock className="w-4 h-4 text-emerald-700" />
                 <span>UIDAI Masked Aadhaar Vault</span>
               </p>
@@ -928,11 +929,11 @@ export default function HomePage() {
             </div>
 
             <div className="space-y-1.5">
-              <p className="font-black text-sm text-slate-950 flex items-center gap-1.5">
+              <p className="font-bold text-sm text-slate-900 flex items-center gap-1.5">
                 <Building2 className="w-4 h-4 text-emerald-700" />
-                <span>Karnataka Branch Network</span>
+                <span>Branch Network &amp; Physical SOLs</span>
               </p>
-              <p>Physical banking service outlets across Bengaluru, Ramanagara, Mandya, Tumakuru, and Mysuru with dedicated Nodal Grievance Redressal.</p>
+              <p>Institutional branch outlets providing direct verification, doorstep service, and dedicated Nodal Grievance Redressal.</p>
             </div>
           </div>
         </div>

@@ -36,7 +36,7 @@ interface AuditEvent {
 
 export default function AnalyticsPage() {
   const [period, setPeriod] = useState('FY 2026-27 Q3');
-  const [cluster, setCluster] = useState('All Karnataka Clusters');
+  const [cluster, setCluster] = useState('All Operational Branches');
   const [downloadSuccess, setDownloadSuccess] = useState<string | null>(null);
 
   // Executive Audit Trail State
@@ -176,10 +176,8 @@ export default function AnalyticsPage() {
               onChange={(e) => setCluster(e.target.value)}
               className="bg-transparent font-bold text-forest-900 focus:outline-hidden cursor-pointer"
             >
-              <option value="All Karnataka Clusters">All Karnataka Clusters</option>
-              <option value="Mandya (Maddur/Malavalli)">Mandya Cluster</option>
-              <option value="Ramanagara (Channapatna)">Ramanagara Cluster</option>
-              <option value="Mysuru (Hunsur/Nanjangud)">Mysuru Cluster</option>
+              <option value="All Operational Branches">All Operational Branches</option>
+              <option value="Branch 2020 (Headquarters)">Branch 2020 (Headquarters)</option>
             </select>
           </div>
         </div>

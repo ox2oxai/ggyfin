@@ -1,18 +1,44 @@
-import React from 'react';
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { getInstitutionConfigSync } from '../lib/institution';
 
 interface GGYBrandMarkProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
   withText?: boolean;
   subtitle?: string;
+  customLogoUrl?: string;
+  customTitle?: string;
 }
 
 export function GGYBrandMark({
   size = 'md',
   className = '',
   withText = false,
-  subtitle
+  subtitle,
+  customLogoUrl,
+  customTitle
 }: GGYBrandMarkProps) {
+  const [logoUrl, setLogoUrl] = useState<string>(customLogoUrl || '');
+  const [orgName, setOrgName] = useState<string>(customTitle || 'GGY Finance');
+
+  useEffect(() => {
+    const updateFromConfig = () => {
+      const cfg = getInstitutionConfigSync();
+      if (!customLogoUrl && cfg.logoUrl) {
+        setLogoUrl(cfg.logoUrl);
+      }
+      if (!customTitle && cfg.organizationName) {
+        setOrgName(cfg.organizationName);
+      }
+    };
+
+    updateFromConfig();
+    window.addEventListener('nbfc_config_updated', updateFromConfig);
+    return () => window.removeEventListener('nbfc_config_updated', updateFromConfig);
+  }, [customLogoUrl, customTitle]);
+
   const sizeMap = {
     sm: { box: 'w-8 h-8 rounded-lg', svg: 20, text: 'text-sm', sub: 'text-[9px]' },
     md: { box: 'w-11 h-11 rounded-xl', svg: 26, text: 'text-base sm:text-lg', sub: 'text-[11px]' },
@@ -22,7 +48,18 @@ export function GGYBrandMark({
 
   const currentSize = sizeMap[size];
 
-  const emblem = (
+  const emblem = logoUrl ? (
+    <div
+      className={`${currentSize.box} bg-white shadow-sm border border-slate-200/80 p-1 flex items-center justify-center relative overflow-hidden flex-shrink-0 transition-transform hover:scale-105 ${className}`}
+      aria-label="Institution Logo"
+    >
+      <img
+        src={logoUrl}
+        alt={orgName}
+        className="w-full h-full object-contain"
+      />
+    </div>
+  ) : (
     <div
       className={`${currentSize.box} bg-gradient-to-br from-[#064e3b] via-[#043e2f] to-[#022c22] text-white flex items-center justify-center shadow-md border border-emerald-500/30 ring-1 ring-white/10 relative overflow-hidden flex-shrink-0 transition-transform hover:scale-105 ${className}`}
       aria-label="GGY Finance Brand Emblem"
@@ -76,11 +113,11 @@ export function GGYBrandMark({
     <div className="flex items-center gap-3">
       {emblem}
       <div>
-        <h1 className={`font-black ${currentSize.text} text-slate-950 tracking-tight leading-tight`}>
-          GGY Finance
+        <h1 className={`font-bold ${currentSize.text} text-slate-900 tracking-tight leading-tight`}>
+          {orgName}
         </h1>
         {subtitle && (
-          <p className={`${currentSize.sub} text-orange-600 font-extrabold uppercase tracking-wider`}>
+          <p className={`${currentSize.sub} text-orange-600 font-bold uppercase tracking-wider`}>
             {subtitle}
           </p>
         )}

@@ -127,7 +127,7 @@ export default function BorrowerPortalPage() {
           fullName: primary.borrowerName,
           maskedAadhaar: primary.maskedAadhaar || 'XXXX-XXXX-8421',
           phone: primary.phone || '9845000000',
-          taluk: primary.taluk || 'Karnataka Cluster',
+          taluk: primary.taluk || 'Primary Cluster',
           dpdpConsentDate: '2026-04-10',
           accounts: matched.map((a: any) => ({
             accountNumber: a.accountNumber,
@@ -468,7 +468,7 @@ export default function BorrowerPortalPage() {
 
       {/* Footer */}
       <footer className="bg-forest-900 text-sandstone-300 text-[11px] py-4 px-4 text-center border-t border-forest-800">
-        <p>GGY Finance Borrower Self-Service Portal • Karnataka State Registered Micro-Lending Platform (KA-ML/2024/7742) • DPDP Act 2023 Compliant</p>
+        <p>GGY Finance Borrower Self-Service Portal • National Micro-Lending Platform • DPDP Act 2023 Compliant</p>
       </footer>
     </div>
   );

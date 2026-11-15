@@ -34,7 +34,7 @@ export default function FieldOfficerPage() {
   const [gender, setGender] = useState<Gender>(Gender.FEMALE);
   const [addressLine, setAddressLine] = useState('');
   const [pincode, setPincode] = useState('');
-  const [state, setState] = useState('Karnataka');
+  const [state, setState] = useState('');
   const [aadhaarLast4, setAadhaarLast4] = useState('');
   const [loanPurpose, setLoanPurpose] = useState<LoanPurpose>(LoanPurpose.DAIRY_LIVESTOCK);
   const [principalAmount, setPrincipalAmount] = useState<number>(60000);
