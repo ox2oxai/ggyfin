@@ -93,70 +93,39 @@ export default function LoginPage() {
     setErrorMessage('');
 
     try {
-      // Synchronize latest directory across server and local storage
-      const directory = await getStaffDirectoryAsync();
-      const identifier = username.trim().toLowerCase();
-      let user = directory.find(
-        (u) =>
-          u.username.toLowerCase() === identifier ||
-          (u.staffNumber && u.staffNumber.trim().toLowerCase() === identifier) ||
-          (u.email && u.email.trim().toLowerCase() === identifier)
-      );
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          identifier: username.trim(),
+          password
+        })
+      });
 
-      // Ultimate fallback: if not present in cached directory, check DEFAULT_STAFF_DIRECTORY
-      if (!user) {
-        user = DEFAULT_STAFF_DIRECTORY.find(
-          (u) =>
-            u.username.toLowerCase() === identifier ||
-            (u.staffNumber && u.staffNumber.trim().toLowerCase() === identifier) ||
-            (u.email && u.email.trim().toLowerCase() === identifier)
-        );
-        if (user) {
-          // Self-heal local store
-          const updated = [...directory.filter(u => u.username.toLowerCase() !== user!.username.toLowerCase()), user];
-          saveStaffDirectory(updated).catch(() => {});
-        }
-      }
+      const data = await res.json();
 
-      if (!user) {
-        setErrorMessage('Invalid credentials. Staff username, staff ID, or email not found in directory.');
+      if (!res.ok || !data.success) {
+        setErrorMessage(data.message || 'Invalid credentials. Please verify your credentials.');
         setIsLoading(false);
         return;
       }
 
-      if (!user.isActive) {
-        recordAuditLog({
-          category: 'SECURITY_EVENT',
-          action: 'SUSPENDED_LOGIN_BLOCKED',
-          actorStaffNumber: user.staffNumber || '202010',
-          actorUsername: user.username,
-          actorRole: user.role,
-          target: user.username,
-          details: `Blocked login attempt by suspended staff account @${user.username}`
+      const user = data.user;
+
+      if (data.mustResetPassword) {
+        setPendingUser({
+          id: user.id,
+          staffNumber: user.staffNumber,
+          username: user.username,
+          fullName: user.fullName,
+          email: user.email,
+          phone: user.phone,
+          role: user.role,
+          branchCode: user.branchCode,
+          isActive: true,
+          mustResetPassword: true,
+          createdAt: new Date().toISOString()
         });
-        setErrorMessage('Your account access has been suspended by the Super IT Admin. Please contact IT support.');
-        setIsLoading(false);
-        return;
-      }
-
-      if (user.password !== password) {
-        recordAuditLog({
-          category: 'SECURITY_EVENT',
-          action: 'FAILED_LOGIN_ATTEMPT',
-          actorStaffNumber: user.staffNumber || '202010',
-          actorUsername: user.username,
-          actorRole: user.role,
-          target: user.username,
-          details: `Failed authentication attempt for @${user.username}: Invalid password`
-        });
-        setErrorMessage('Invalid password. Please verify your credentials.');
-        setIsLoading(false);
-        return;
-      }
-
-      // Check if user is logging in with a temporary password from Super IT Admin
-      if (user.mustResetPassword) {
-        setPendingUser(user);
         setIsResetModalOpen(true);
         setIsLoading(false);
         return;
@@ -176,16 +145,6 @@ export default function LoginPage() {
           branchCode: user.branchCode
         })
       );
-
-      recordAuditLog({
-        category: user.role === UserRole.SUPER_ADMIN_IT ? 'INTENDED_ADMIN_UPDATE' : 'OPERATIONAL_BANKING_EVENT',
-        action: 'USER_LOGIN',
-        actorStaffNumber: user.staffNumber || '202010',
-        actorUsername: user.username,
-        actorRole: user.role,
-        target: user.branchCode,
-        details: `Staff user @${user.username} (${user.fullName}) authenticated into ${user.role} workspace`
-      });
 
       routeByRole(user.role);
     } catch {
@@ -218,22 +177,24 @@ export default function LoginPage() {
       return;
     }
 
-    if (pendingUser && newPassword === pendingUser.password) {
-      setResetError('Your new confidential password must be different from your temporary password.');
-      return;
-    }
-
     if (!pendingUser) return;
 
     try {
-      // Update password in staff directory
-      const directory = await getStaffDirectoryAsync();
-      const updated = directory.map((u) =>
-        u.id === pendingUser.id || u.username.toLowerCase() === pendingUser.username.toLowerCase()
-          ? { ...u, password: newPassword, mustResetPassword: false }
-          : u
-      );
-      await saveStaffDirectory(updated);
+      const res = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          identifier: pendingUser.username,
+          currentPassword: password,
+          newPassword
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        setResetError(data.message || 'Failed to update password. Please try again.');
+        return;
+      }
 
       // Establish session
       localStorage.setItem(
@@ -249,16 +210,6 @@ export default function LoginPage() {
           branchCode: pendingUser.branchCode
         })
       );
-
-      recordAuditLog({
-        category: 'INTENDED_ADMIN_UPDATE',
-        action: 'PASSWORD_RESET_COMPLETED',
-        actorStaffNumber: pendingUser.staffNumber || '202010',
-        actorUsername: pendingUser.username,
-        actorRole: pendingUser.role,
-        target: pendingUser.username,
-        details: `Initial temporary password rotated and first-login password established by @${pendingUser.username}`
-      });
 
       setIsResetModalOpen(false);
       routeByRole(pendingUser.role);
